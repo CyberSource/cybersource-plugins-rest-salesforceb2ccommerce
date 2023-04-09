@@ -1,0 +1,6 @@
+<link rel="stylesheet" href="${URLUtils.staticURL('/css/deviceDataCollection.css')}">
+<isif condition="${pdict.getDeviceFingerprint}">
+    <noscript>
+        <iframe id="deviceFPC" src="${pdict.url}"></iframe>
+    </noscript>
+</isif>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jobs xmlns="http://www.demandware.com/xml/impex/jobs/2015-07-01">
+    
+    <job job-id="Payment: Decision Manager Order Update" priority="0">
+        <description>Update unconfirmed orders based on Accept / Reject decisions made in Business Center.</description>
+        <parameters/>
+        <flow>
+            <context site-id="RefArch"/>
+            <step step-id="UpdateOrderStatus" type="ExecuteScriptModule" enforce-restart="false">
+                <description>Update unconfirmed orders based on Accept / Reject decisions made in Business Center.</description>
+                <parameters>
+                    <parameter name="ExecuteScriptModule.Module">int_cybs_sfra_base/cartridge/scripts/jobs/DMOrderStatusUpdate.js</parameter>
+                    <parameter name="ExecuteScriptModule.FunctionName">orderStatusUpdate</parameter>
+                    <parameter name="ExecuteScriptModule.Transactional">false</parameter>
+                </parameters>
+            </step>
+        </flow>
+        <rules/>
+        <triggers>
+            <run-recurring enabled="true">
+                <recurrence>
+                    <date-from>2020-08-04Z</date-from>
+                    <start-time>01:43:49.000Z</start-time>
+                    <interval>1h</interval>
+                    <day-of-week/>
+                </recurrence>
+            </run-recurring>
+        </triggers>
+    </job>
+
+</jobs>

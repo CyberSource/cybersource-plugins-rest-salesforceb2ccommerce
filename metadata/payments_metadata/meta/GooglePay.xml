@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xmlns="http://www.demandware.com/xml/impex/metadata/2006-10-31">
+    <type-extension type-id="SitePreferences">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="Cybersource_EnableGooglePay">
+                <display-name xml:lang="x-default">Enable Google Pay</display-name>
+                <description xml:lang="x-default">Enable/Disable Google Pay on checkout page</description>
+                <type>boolean</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>false</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_EnableGooglePayOnMiniCart">
+                <display-name xml:lang="x-default">Enable Google Pay On Mini Cart</display-name>
+                <description xml:lang="x-default">Enable/Disable google pay on mini cart</description>
+                <type>boolean</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>false</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_EnableGooglePayOnCart">
+                <display-name xml:lang="x-default">Enable Google Pay On Cart</display-name>
+                <description xml:lang="x-default">Enable/Disable google pay on cart page</description>
+                <type>boolean</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>false</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_GooglePayMerchantId">
+                <display-name xml:lang="x-default">Google Pay MerchantId</display-name>
+                <description xml:lang="x-default">Merchant Id required for Live Environments</description>
+                <type>string</type>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_GooglePayEnvironment">
+                <display-name xml:lang="x-default">Google Pay Environment</display-name>
+                <description xml:lang="x-default">Environment details of Google Pay. Possible values are Test or Production</description>
+                <type>enum-of-string</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <value-definitions>
+                    <value-definition default="true">
+                        <display xml:lang="x-default">TEST</display>
+                        <value>TEST</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">PRODUCTION</display>
+                        <value>PRODUCTION</value>
+                    </value-definition>
+                </value-definitions>
+            </attribute-definition>
+        </custom-attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="Cybersource_GooglePay">
+                <display-name xml:lang="x-default"></display-name>
+                <attribute attribute-id="Cybersource_EnableGooglePay"/>
+                <attribute attribute-id="Cybersource_EnableGooglePayOnMiniCart"/>
+                <attribute attribute-id="Cybersource_EnableGooglePayOnCart"/>
+                <attribute attribute-id="Cybersource_GooglePayMerchantId"/>
+                <attribute attribute-id="Cybersource_GooglePayEnvironment"/>
+            </attribute-group>
+        </group-definitions>
+    </type-extension>
+</metadata>

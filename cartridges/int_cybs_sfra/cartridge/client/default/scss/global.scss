@@ -1,0 +1,9 @@
+@charset "UTF-8";
+
+@import "~base/global";
+@import "components/applePay";
+@import "components/googlePay";
+
+body {
+    background-color: violet;
+}

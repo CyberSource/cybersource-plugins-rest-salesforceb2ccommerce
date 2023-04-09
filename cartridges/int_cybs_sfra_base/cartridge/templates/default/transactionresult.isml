@@ -1,0 +1,55 @@
+<iscontent type="text/html" charset="UTF-8" compact="true">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>${Resource.msg('test.unittestpagetitle','cybersource',null)}</title>
+</head>
+<body>
+<iscomment>
+	This template will populate the Unit Test result
+</iscomment>
+<!--  UI -->
+<h1>
+	<isif condition="${!empty(pdict.msgHeader)}" >
+		<isprint value="${pdict.msgHeader}"><br>
+	</isif>
+</h1>
+<isif condition="${!empty(pdict.response.clientReferenceInformation['code'])}" >
+    <strong>${Resource.msg('MerchantReferenceCode','cybersource',null)}</strong>
+	<isprint value="${pdict.response.clientReferenceInformation['code']}"><br>
+</isif>
+<isif condition="${!empty(pdict.response['id'])}" >
+	<strong>${Resource.msg('requestId','cybersource',null)}:</strong>
+	<isprint value="${pdict.response['id']}"><br>
+</isif>
+<isif condition="${!empty(pdict.response.orderInformation.amountDetails['totalAmount'])}" >
+    <strong>${Resource.msg('totalAmount','cybersource',null)}</strong>
+	<isprint value="${pdict.response.orderInformation.amountDetails['totalAmount']}"><br>
+</isif>
+<isif condition="${!empty(pdict.response.orderInformation.amountDetails['currency'])}" >
+    <strong>${Resource.msg('currency','cybersource',null)}</strong>
+	<isprint value="${pdict.response.orderInformation.amountDetails['currency']}"><br>
+</isif>
+
+<isif condition="${!empty(pdict.response.reversalAmountDetails['reversedAmount'])}" >
+    <strong>${Resource.msg('reversedAmount','cybersource',null)}</strong>
+	<isprint value="${pdict.response.reversalAmountDetails['reversedAmount']}"><br>
+</isif>
+<isif condition="${!empty(pdict.response.reversalAmountDetails['currency'])}" >
+    <strong>${Resource.msg('reversedCurrency','cybersource',null)}</strong>
+	<isprint value="${pdict.response.reversalAmountDetails['currency']}"><br>
+</isif>
+<isif condition="${!empty(pdict.response.processorInformation['responseCode'])}" >
+    <strong>${Resource.msg('responseCode','cybersource',null)}</strong>
+	<isprint value="${pdict.response.processorInformation['responseCode']}"><br>
+</isif>
+<isif condition="${!empty(pdict.response['reconciliationId'])}" >
+	<strong>${Resource.msg('reconciliationId','cybersource',null)}:</strong>
+	<isprint value="${pdict.response['reconciliationId']}"><br>
+</isif>
+<isif condition="${!empty(pdict.response['status'])}" >
+	<strong>${Resource.msg('status','cybersource',null)}:</strong>
+	<isprint value="${pdict.response['status']}"><br>
+</isif>
+</body>
+</html>

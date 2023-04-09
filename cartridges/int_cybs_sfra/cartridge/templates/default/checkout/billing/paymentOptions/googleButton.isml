@@ -1,0 +1,7 @@
+<isif condition="${miniCart}">
+	<div id="minicart-googlepay-container">
+	</div>
+	<iselse>
+		<div id="cart-googlepay-container">
+ 	</div>
+</isif>

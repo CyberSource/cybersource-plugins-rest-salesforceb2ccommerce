@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xmlns="http://www.demandware.com/xml/impex/metadata/2006-10-31">
+    <type-extension type-id="SitePreferences">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="Cybersource_DecisionManager">
+                <display-name xml:lang="x-default">Enable Decision Manager Services</display-name>
+                <description xml:lang="x-default">Enable or Disable Decision Manager for Cybersource Cartridge</description>
+                <type>boolean</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>true</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_ConversionDetailReportLookbackTime">
+                <display-name xml:lang="x-default">Conversion Detail Report Lookback time</display-name>
+                <description xml:lang="x-default">Number of hours the job will look back for new decisions. CS does not support lookbacks over 24 hours. Do not set above 24</description>
+                <type>int</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>23</default-value>
+            </attribute-definition>
+        </custom-attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="Cybersource_DecisionManager">
+                <display-name xml:lang="x-default">Decision Manager Configuration</display-name>
+                <attribute attribute-id="Cybersource_DecisionManager"/>
+                <attribute attribute-id="Cybersource_ConversionDetailReportLookbackTime"/>
+            </attribute-group>
+        </group-definitions>
+    </type-extension>
+</metadata>

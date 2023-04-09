@@ -1,0 +1,6 @@
+{
+   "packageInfo": {
+      "version": "0.0.1"
+   },
+   "hooks": "./hooks.json"
+}

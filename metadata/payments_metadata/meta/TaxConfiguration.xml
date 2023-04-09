@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xmlns="http://www.demandware.com/xml/impex/metadata/2006-10-31">
+    <type-extension type-id="SitePreferences">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="Cybersource_TaxCalculationEnabled">
+                <display-name xml:lang="x-default">Enable Tax calculation Services</display-name>
+                <description xml:lang="x-default">Enables or Disables Tax calculation for Cybersource Cartridge</description>
+                <type>boolean</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>true</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_NexusStateList">
+                <display-name xml:lang="x-default">List of nexus states</display-name>
+                <description xml:lang="x-default">When your company has nexus in the U.S. or Canada, you might be required to collect sales tax or seller's use tax in those countries</description>
+                <type>set-of-string</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>false</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_NoNexusStateList">
+                <display-name xml:lang="x-default">List of nexus states to exclude</display-name>
+                <description xml:lang="x-default">List of nexus states to exclude</description>
+                <type>set-of-string</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>false</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_VatRegistrationNumber">
+                <display-name xml:lang="x-default">Merchant's VAT Registration Number</display-name>
+                <description xml:lang="x-default">A VAT seller registration number is required in order to calculate international taxes and might be required for some Canadian transactions. International/VAT calculation is supported in specific countries</description>
+                <type>string</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value></default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_DefaultProductTaxCode">
+                <display-name xml:lang="x-default">Default Product Tax Code</display-name>
+                <description xml:lang="x-default">Default tax code used when tax code is not set on a product</description>
+                <type>string</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>5310</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_PurchaseOrderAcceptanceCity">
+                <display-name xml:lang="x-default">Purchase Order Acceptance City</display-name>
+                <description xml:lang="x-default">Purchase Order Acceptance City</description>
+                <type>string</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>Lyndhurst</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_PurchaseOrderAcceptanceStateCode">
+                <display-name xml:lang="x-default">Purchase Order Acceptance State Code</display-name>
+                <description xml:lang="x-default">Purchase Order Acceptance State Code. Use the State, Province, and Territory Codes for the United States and Canada</description>
+                <type>string</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>NJ</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_PurchaseOrderAcceptanceZipCode">
+                <display-name xml:lang="x-default">Purchase Order Acceptance zip code</display-name>
+                <description xml:lang="x-default">Purchase Order Acceptance zip code</description>
+                <type>string</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>07071</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_PurchaseOrderAcceptanceCountryCode">
+                <display-name xml:lang="x-default">Purchase Order Acceptance Country Code</display-name>
+                <description xml:lang="x-default">Purchase Order Acceptance Country Code.  Use the two-character ISO Standard Country Codes</description>
+                <type>string</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>US</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_PurchaseOrderOriginCity">
+                <display-name xml:lang="x-default">Purchase Order Origin City</display-name>
+                <description xml:lang="x-default">Purchase Order Origin City</description>
+                <type>string</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>Lyndhurst</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_PurchaseOrderOriginStateCode">
+                <display-name xml:lang="x-default">Purchase Order Origin State Code</display-name>
+                <description xml:lang="x-default">Purchase Order Origin State Code. Use the State, Province, and Territory Codes for the United States and Canada</description>
+                <type>string</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>NJ</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_PurchaseOrderOriginZipCode">
+                <display-name xml:lang="x-default">Purchase Order Origin Zip Code</display-name>
+                <description xml:lang="x-default">Purchase Order Origin Zip Code</description>
+                <type>string</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>07071</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_PurchaseOrderOriginCountryCode">
+                <display-name xml:lang="x-default">Purchase Order Origin Country Code</display-name>
+                <description xml:lang="x-default">Purchase Order Origin Country Code. Use the two-character ISO Standard Country Codes</description>
+                <type>string</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>US</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_ShipFromCity">
+                <display-name xml:lang="x-default">Ship From City</display-name>
+                <description xml:lang="x-default">Ship From City</description>
+                <type>string</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>Lyndhurst</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_ShipFromStateCode">
+                <display-name xml:lang="x-default">Ship From State Code</display-name>
+                <description xml:lang="x-default">Ship From State Code</description>
+                <type>string</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>NJ</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_ShipFromZipCode">
+                <display-name xml:lang="x-default">Ship From Zip Code</display-name>
+                <description xml:lang="x-default">Ship From Zip Code</description>
+                <type>string</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>07071</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_ShipFromCountryCode">
+                <display-name xml:lang="x-default">Ship From Country Code</display-name>
+                <description xml:lang="x-default">Ship From Country Code</description>
+                <type>string</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>US</default-value>
+            </attribute-definition>
+        </custom-attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="Cybersource_TaxConfiguration">
+                <display-name xml:lang="x-default">Tax Calulation Configuration</display-name>
+                <attribute attribute-id="Cybersource_TaxCalculationEnabled"/>
+                <attribute attribute-id="Cybersource_NexusStateList"/>
+                <attribute attribute-id="Cybersource_NoNexusStateList"/>
+                <attribute attribute-id="Cybersource_VatRegistrationNumber"/>
+                <attribute attribute-id="Cybersource_DefaultProductTaxCode"/>
+                <attribute attribute-id="Cybersource_PurchaseOrderAcceptanceCity"/>
+                <attribute attribute-id="Cybersource_PurchaseOrderAcceptanceStateCode"/>
+                <attribute attribute-id="Cybersource_PurchaseOrderAcceptanceZipCode"/>
+                <attribute attribute-id="Cybersource_PurchaseOrderAcceptanceCountryCode"/>
+                <attribute attribute-id="Cybersource_PurchaseOrderOriginCity"/>
+                <attribute attribute-id="Cybersource_PurchaseOrderOriginStateCode"/>
+                <attribute attribute-id="Cybersource_PurchaseOrderOriginZipCode"/>
+                <attribute attribute-id="Cybersource_PurchaseOrderOriginCountryCode"/>
+                <attribute attribute-id="Cybersource_ShipFromCity"/>
+                <attribute attribute-id="Cybersource_ShipFromStateCode"/>
+                <attribute attribute-id="Cybersource_ShipFromZipCode"/>
+                <attribute attribute-id="Cybersource_ShipFromCountryCode"/>
+            </attribute-group>
+        </group-definitions>
+    </type-extension>
+</metadata>
