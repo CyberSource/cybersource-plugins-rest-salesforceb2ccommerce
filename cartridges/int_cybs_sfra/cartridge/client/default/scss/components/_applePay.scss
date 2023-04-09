@@ -1,0 +1,68 @@
+@import "~base/variables";
+@import "bootstrap/scss/mixins/breakpoints";
+@import "bootstrap/scss/variables";
+
+.dw-apple-pay-button.apple-pay-cart,
+.dw-apple-pay-button.apple-pay-cart:hover {
+    padding: 0.5em 1em;
+    margin: auto;
+    border-radius: $border-radius;
+}
+
+.checkout-and-applepay .btn {
+    margin: 1%;
+    padding: 0.5em 1em;
+}
+
+.dw-apple-pay-button.apple-pay-pdp,
+.dw-apple-pay-button.apple-pay-pdp:hover {
+    padding: 0.5em 1em;
+    flex-basis: 0;
+    flex-grow: 1;
+    max-width: 100%;
+    border-radius: $border-radius;
+}
+
+isapplepay.btn {
+    display: none !important;
+}
+
+.add-to-cart,
+.add-to-cart-global {
+    flex-basis: 0;
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    @include media-breakpoint-down(xs) {
+        max-width: 100%;
+    }
+}
+
+.cart-and-ipay {
+    justify-content: center;
+
+    .pdp-checkout-button {
+        padding: 0 1.5em;
+
+        .add-to-cart {
+            padding: 0.5em 1em;
+        }
+
+        .add-to-cart-global {
+            padding: 0.5em 1em;
+        }
+    }
+
+    .pdp-apple-pay-button {
+        padding: 0 1.5em 0 0;
+    }
+}
+
+.applepay-tab-wrapper {
+    display: none;
+}
+
+body.apple-pay-enabled .applepay-tab-wrapper {
+    display: block;
+}

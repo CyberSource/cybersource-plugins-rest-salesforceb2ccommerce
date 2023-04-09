@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xmlns="http://www.demandware.com/xml/impex/metadata/2006-10-31">
+    <type-extension type-id="SitePreferences">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="Cybersource_TokenizationEnabled">
+                <display-name xml:lang="x-default">Enable Tokenization Services</display-name>
+                <description xml:lang="x-default">Enable or Disable the Tokenization Service saving Credit Card on My Account page</description>
+                <type>boolean</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>true</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_LimitSavedCardEnabled">
+                <display-name xml:lang="x-default">Enable limiting Saved Card</display-name>
+                <description xml:lang="x-default">Enable or Disable limiting Saved Card on My Account page</description>
+                <type>boolean</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>true</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_PaymentInstrumentAllowedInInterval">
+                <display-name xml:lang="x-default">Saved Card Allowed</display-name>
+                <description xml:lang="x-default">Number of Cards that can be added in a defined interval on My Account page</description>
+                <type>int</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>20</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_ResetIntervalInHours">
+                <display-name xml:lang="x-default">Reset Interval (in Hours)</display-name>
+                <description xml:lang="x-default">Number of hours that saved card attempts are counted</description>
+                <type>int</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>1</default-value>
+            </attribute-definition>
+        </custom-attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="Cybersource_Tokenization">
+                <display-name xml:lang="x-default">Tokenization Configuration</display-name>
+                <attribute attribute-id="Cybersource_TokenizationEnabled"/>
+                <attribute attribute-id="Cybersource_LimitSavedCardEnabled"/>
+                <attribute attribute-id="Cybersource_PaymentInstrumentAllowedInInterval"/>
+                <attribute attribute-id="Cybersource_ResetIntervalInHours"/>
+            </attribute-group>
+        </group-definitions>
+    </type-extension>
+</metadata>

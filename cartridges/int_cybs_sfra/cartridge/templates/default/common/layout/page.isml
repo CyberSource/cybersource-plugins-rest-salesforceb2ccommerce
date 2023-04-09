@@ -1,0 +1,57 @@
+<iscontent type="text/html" charset="UTF-8" compact="true" />
+<isinclude template="/components/modules" sf-toolkit="off" />
+<isset name="enableGooglePayOnMiniCart" value="${require('*/cartridge/configuration/index').enableGooglePayOnMiniCart}" scope="page" />
+<isset name="enableGooglePayOnCart" value="${require('*/cartridge/configuration/index').enableGooglePayOnCart}" scope="page" />
+
+<!DOCTYPE html>
+<html lang="${require('dw/util/Locale').getLocale(request.getLocale()).getLanguage()}">
+
+<head>
+	<!--[if gt IE 9]><!-->
+	<isinclude sf-toolkit="off" template="/common/scripts" />
+	<!--<![endif]-->
+	<isinclude template="/common/htmlHead" />
+	<isif condition="${pdict.canonicalUrl}">
+		<link rel="canonical" href="${pdict.canonicalUrl}" />
+	</isif>
+	<isactivedatahead/>
+	<isinclude template="/components/schema" />
+</head>
+
+<body>
+	<div class="page" data-action="${pdict.action}" data-querystring="${pdict.queryString}">
+		<isinclude template="/components/header/pageHeader" />
+		<div role="main" id="maincontent">
+			<isreplace/>
+		</div>
+		<isinclude template="/components/footer/pageFooter" />
+	</div>
+	<div class="error-messaging"></div>
+	<div class="modal-background"></div>
+	<iscontentasset aid="cookie_hint" />
+
+	
+	<input type="hidden" name="isGooglePayEnabledOnMiniCart" id="isGooglePayEnabledOnMiniCart" value="${enableGooglePayOnMiniCart}"/>
+	<input type="hidden" name="isGooglePayEnabledOnCart" id="isGooglePayEnabledOnCart" value="${enableGooglePayOnCart}"/>
+	<input type="hidden" name="cartridgeEnabled" id="cartridgeEnabled" value="${require('*/cartridge/configuration/index').cartridgeEnabled}"/>
+
+	<isif condition="${pdict.currentStage == null}">
+		<script src="${URLUtils.staticURL('/js/googlePayBilling.js')}" type="text/javascript"></script>
+
+		<script>
+	 var googlePayVariables = {
+		currencyCode: "${session.getCurrency().getCurrencyCode()}",
+		totalPriceStatus: 'FINAL',
+		sessionCallBack : "${dw.web.URLUtils.url('CheckoutServices-GetGooglePayToken')}",
+		returnURL : "${dw.web.URLUtils.https('Checkout-Begin', 'stage', 'placeOrder')}",
+		cartURL : "${dw.web.URLUtils.https('Checkout-Begin', 'stage', 'payment','payerAuthError', Resource.msg('message.payerAuthError', 'error', null))}"
+		//"${dw.web.URLUtils.https('Cart-Show')}",
+	 	}
+	 window.googlepayval = googlePayVariables;
+	</script>
+	</isif>
+
+	<isinclude url="${URLUtils.url('ConsentTracking-Check')}" />
+</body>
+
+</html>

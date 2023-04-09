@@ -1,0 +1,5 @@
+<li class="nav-item visasrc-tab-wrapper" data-method-id="${paymentOption.ID}">
+	<a class="nav-link visasrc-tab" data-toggle="tab" href="#visasrc-content" role="tab">
+		${paymentOption.name}
+	</a>
+</li>

@@ -1,0 +1,17 @@
+<isset name="isCartridgeEnabled" value="${require('*/cartridge/configuration/index').cartridgeEnabled}" scope="page" />
+<isset name="isVisaSRCEnabled" value="${require('*/cartridge/configuration/index').visaSRCEnabled}" scope="page" />
+<isset name="isGooglePayEnabled" value="${require('*/cartridge/configuration/index').googlePayEnabled}" scope="page" />
+<isloop items="${pdict.order.billing.payment.applicablePaymentMethods}" var="paymentOption" status="loopState">
+    <isif condition="${paymentOption.ID === 'CREDIT_CARD'}">
+        <isinclude template="checkout/billing/paymentOptions/creditCardTab" />
+    </isif>
+    <isif condition="${isCartridgeEnabled && paymentOption.ID === 'DW_APPLE_PAY'}">
+        <isinclude template="checkout/billing/paymentOptions/applePayTab" />
+    </isif>
+    <isif condition="${isCartridgeEnabled && isVisaSRCEnabled && paymentOption.ID === 'VISA_SRC'}">
+        <isinclude template="checkout/billing/paymentOptions/visaCheckoutTab" />
+    </isif>
+    <isif condition="${isCartridgeEnabled && isGooglePayEnabled && paymentOption.ID === 'DW_GOOGLE_PAY'}">
+            <isinclude template="checkout/billing/paymentOptions/googlePayTab" />
+    </isif>
+</isloop>

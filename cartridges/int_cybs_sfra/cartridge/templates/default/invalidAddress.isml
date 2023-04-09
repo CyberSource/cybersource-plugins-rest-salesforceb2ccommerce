@@ -1,0 +1,15 @@
+<div class="modal fade" id="invalidAddress">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title"> ${Resource.msg('dav.invalidAddress', 'payments', null)} </h4>
+            </div>
+            <div class="modal-body" style="text-align:center">
+                <button id="tryAgainBtn" type="button" class="btn btn-primary" data-dismiss="modal">
+                    ${Resource.msg('dav.tryagain', 'payments', null)} </button>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>

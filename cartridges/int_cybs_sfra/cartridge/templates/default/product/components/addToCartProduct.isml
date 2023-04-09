@@ -1,0 +1,19 @@
+<div class="cart-and-ipay" 
+     data-is-apple-session="${session.privacy.applepaysession === 'yes' ? 'true' : 'false'}">
+    <input type="hidden" class="add-to-cart-url" value="${pdict.addToCartUrl}">
+    <div class="row">
+        <div class="${session.privacy.applepaysession === 'yes'? 'col col-sm-5' : 'col-12'  } pdp-checkout-button">
+            <button class="add-to-cart btn btn-primary" data-pid="${product.id}"
+                    ${!product.readyToOrder || !product.available ? "disabled": ""}>
+                <i class="fa fa-shopping-bag"></i>
+                ${Resource.msg('button.addtocart', 'common', null)}
+            </button>
+        </div>
+
+        <isif condition="${(session.privacy.applepaysession === 'yes') && (product.available && product.readyToOrder)}">
+            <div class="col col-sm-5 pdp-apple-pay-button">
+                <isapplepay class="apple-pay-pdp btn" sku="${product.id}"></isapplepay>
+            </div>
+        </isif>
+    </div>
+</div>

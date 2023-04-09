@@ -1,0 +1,16 @@
+<div class="payment-details">
+    <isloop items="${pdict.order.billing.payment.selectedPaymentInstruments}" var="payment">
+        <isif condition="${payment.paymentMethod === 'VISA_SRC'}">
+            <isinclude template="checkout/billing/paymentOptions/visaSRCSummary" />
+        </isif>
+        <isif condition="${payment.paymentMethod === 'CREDIT_CARD'}">
+            <isinclude template="checkout/billing/paymentOptions/creditCardSummary" />
+        </isif>
+        <isif condition="${payment.paymentMethod === 'DW_APPLE_PAY'}">
+            <isinclude template="checkout/billing/paymentOptions/applePaySummary" />
+        </isif>
+        <isif condition="${payment.paymentMethod === 'DW_GOOGLE_PAY'}">
+            <isinclude template="checkout/billing/paymentOptions/googlePaySummary" />
+        </isif>
+    </isloop>
+</div>

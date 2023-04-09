@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xmlns="http://www.demandware.com/xml/impex/metadata/2006-10-31">
+    <type-extension type-id="SitePreferences">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="Cybersource_DAVEnabled">
+                <display-name xml:lang="x-default">Enable Delivery Address Verification Services</display-name>
+                <description xml:lang="x-default">Enable or Disable Delivery Address Verification for Cybersource Cartridge</description>
+                <type>boolean</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>true</default-value>
+            </attribute-definition>
+        </custom-attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="Cybersource_DeliveryAddressVerification">
+                <display-name xml:lang="x-default">Delivery Address Verification Configuration</display-name>
+                <attribute attribute-id="Cybersource_DAVEnabled"/>
+            </attribute-group>
+        </group-definitions>
+    </type-extension>
+</metadata>

@@ -1,0 +1,12 @@
+<div class="row">
+	<div class="col-12 checkout-continue">
+		<isif condition="${miniCart}">
+			<input type="hidden" id="carttotal" value="${pdict.totals.subTotal}" />
+			<iselseif condition="${pdict.totals.grandTotal==" - "}">
+				<input type="hidden" id="carttotal" value="${pdict.totals.subTotal}" />
+				<iselse>
+				<input type="hidden" id="carttotal" value="${pdict.totals.grandTotal}" />
+			</isif>
+			<isinclude template="checkout/billing/paymentOptions/googleButton" />
+	</div>
+</div>

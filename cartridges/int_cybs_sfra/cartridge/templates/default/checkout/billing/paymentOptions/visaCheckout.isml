@@ -1,0 +1,52 @@
+<isset name="visaSRCKey" value="${require('*/cartridge/configuration/index').visaSRCKey}" scope="page" />
+<isset name="VisaSRCProduction" value="${require('*/cartridge/configuration/index').VisaSRCProduction}" scope="page" />
+<isset name="visaSRCEnabled" value="${require('*/cartridge/configuration/index').visaSRCEnabled}" scope="page" />
+<isset name="isCartridgeEnabled" value="${require('*/cartridge/configuration/index').cartridgeEnabled}" scope="page" />
+<isset name="visaSRCEndpoints" value="${require('*/cartridge/configuration/index').visaSRCEndpoints}" scope="page" />
+
+
+<isif condition="${isCartridgeEnabled && visaSRCEnabled}">
+    <div class="tab-pane visasrc-content" id="visasrc-content" role="tabpanel">
+        <fieldset class="payment-form-fields">
+            <input type="hidden" class="form-control" name="${pdict.forms.billingForm.paymentMethod.htmlName}"
+                value="VISA_SRC">
+        </fieldset>
+        <script type="text/javascript">
+
+        //$('input[name$="paymentMethod"]').val()
+
+        function onVisaCheckoutReady() {
+            V.init({
+                apikey: "${visaSRCKey}"
+            });
+            V.on("payment.success", function (payment) {
+                console.log("success", payment);
+                $('<input>').attr({
+                    type: 'hidden',
+                    id: 'cardnumber',
+                    name: 'dwfrm_billing_creditCardFields_cardNumber',
+                }).appendTo('#visasrc-content fieldset');
+                $('input[name$="cardNumber"]').val(JSON.stringify(payment));
+                $('.submit-payment').click();
+            });
+            V.on("payment.cancel", function (payment) {
+                console.log(payment);
+            });
+            V.on("payment.error", function (payment, error) {
+                console.log(JSON.stringify(error));
+            });
+        }
+    </script>
+
+
+        <isif condition="${!VisaSRCProduction}">
+            <img alt="Visa SRC" class="v-button" role="button" src="${visaSRCEndpoints.Stage.image}" />
+            <script type="text/javascript" src="${visaSRCEndpoints.Stage.sdk}"></script>
+        </isif>
+
+        <isif condition="${VisaSRCProduction}">
+            <img alt="Visa SRC" class="v-button" role="button" src="${visaSRCEndpoints.Production.image}" />
+            <script type="text/javascript" src="${visaSRCEndpoints.Production.sdk}"></script>
+        </isif>
+    </div>
+</isif>

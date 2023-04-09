@@ -1,0 +1,9 @@
+<script>
+    var redirectURL;
+    <isif condition="${pdict.redirect}">
+        redirectURL = '${URLUtils.http('Checkout-Begin')}?stage=payment&payerAuthError=${pdict.errorMessage}';
+    <iselse>
+        redirectURL = '${URLUtils.http('Order-Confirm')}?ID=${pdict.orderID}&token=${pdict.orderToken}';
+    </isif>
+        window.top.window.location.href = redirectURL;
+</script>

@@ -1,0 +1,16 @@
+<div class="checkout-and-applepay">
+	<div class="row">
+	
+	    <div class="${session.privacy.applepaysession === 'yes'? 'col-6 col-sm-5' : 'col-12'  }" id="cart-checkout-button">
+		    <a href="${URLUtils.https('Checkout-Login')}" class="btn btn-primary btn-block checkout-btn ${pdict.valid.error ? 'disabled' : ''} col" role="button">
+		        ${Resource.msg('button.checkout','cart',null)}
+		    </a>
+	     </div>
+	    
+	     <isif condition="${session.privacy.applepaysession === 'yes'}" >
+		     <div class="col-6 col-sm-5" id="apple-pay-cart-button">
+		   		 <isapplepay class="apple-pay-cart btn btn-block"></isapplepay>
+		   	</div>
+	   	</isif>
+   	</div>
+</div>

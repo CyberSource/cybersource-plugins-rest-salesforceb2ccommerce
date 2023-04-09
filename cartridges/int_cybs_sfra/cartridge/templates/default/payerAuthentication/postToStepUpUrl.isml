@@ -1,0 +1,21 @@
+<iscomment> <isdecorate template="common/layout/checkout"> </iscomment>
+<iscontent type="text/html" charset="UTF-8" compact="true">
+
+
+	<iscomment> target="myStepUpFrame" </iscomment>
+	<form id="stepUpForm" name="stepup" method="POST" action="${pdict.stepUpUrl}">
+
+		<input type="hidden" name="JWT" value="${pdict.jwtToken}" />
+
+	</form>
+	<iscomment> <iFrame width="100%" height="100%" scrolling="auto" name="myStepUpFrame"> </iscomment>
+	<iscomment> </iFrame> </iscomment>
+	<script>window.onload = function() {
+	  // Auto submit form on page load
+
+       document.getElementById('stepUpForm').submit();
+     }
+     </script>
+
+</iscontent>
+<iscomment> </isdecorate> </iscomment>

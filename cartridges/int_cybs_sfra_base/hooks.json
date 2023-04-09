@@ -1,0 +1,58 @@
+{
+    "hooks": [
+        {
+            "name": "dw.extensions.applepay.paymentAuthorized.authorizeOrderPayment",
+            "script": "./cartridge/scripts/hooks/payment/processor/applePay"
+        },
+        {
+            "name": "dw.extensions.applepay.paymentAuthorized.placeOrder",
+            "script": "./cartridge/scripts/hooks/payment/processor/applePay"
+        },
+        {
+            "name": "dw.extensions.applepay.cancel",
+            "script": "./cartridge/scripts/hooks/payment/processor/applePay"
+        },
+        {
+            "name": "dw.extensions.applepay.getRequest",
+            "script": "./cartridge/scripts/hooks/payment/processor/applePay"
+        },
+        {
+            "name": "app.payment.processor.cybersource_credit",
+            "script": "./cartridge/scripts/hooks/payment/processor/basic_credit"
+        },
+        {
+            "name": "app.payment.form.processor.cybersource_credit",
+            "script": "../app_storefront_base/cartridge/scripts/hooks/payment/processor/basic_credit_form_processor"
+        },
+        {
+            "name": "app.payment.processor.basic_credit.base",
+            "script": "../app_storefront_base/cartridge/scripts/hooks/payment/processor/basic_credit"
+        },
+        {
+			"name": "app.payment.processor.payments_credit",
+			"script": "./cartridge/scripts/hooks/payment/processor/payments_credit"
+		},
+        {
+            "name": "app.payment.form.processor.payments_credit",
+            "script": "./cartridge/scripts/hooks/payment/processor/payments_credit_form_processor"
+        },
+        {
+			"name": "app.payment.processor.payments_visa_src",
+			"script": "./cartridge/scripts/hooks/payment/processor/visa_checkout"
+		},
+        {
+            "name": "app.payment.form.processor.payments_visa_src",
+            "script": "./cartridge/scripts/hooks/payment/processor/visa_checkout_form_processor"
+        },
+        {
+            "name": "app.fraud.detection",
+            "script": "./cartridge/scripts/hooks/fraudDetection"
+        },
+        {
+            "name": "dw.order.calculateTax",
+            "script": "./cartridge/scripts/hooks/cart/calculateAdjustments.js"
+        }
+
+        
+    ]
+}

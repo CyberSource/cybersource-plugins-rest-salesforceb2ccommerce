@@ -1,0 +1,45 @@
+<div class="modal fade" id="addressSelection">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title"> ${Resource.msg('dav.modalheader', 'payments', null)} </h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col">
+                        <h5> ${Resource.msg('dav.originaladdress', 'payments', null)} </h5>
+                        <hr>
+                        <b> ${Resource.msg('dav.address1', 'payments', null)} </b>:</br> <span id="originaladdress1"></span> </br>
+                        <b> ${Resource.msg('dav.address2', 'payments', null)} </b>:</br> <span id="originaladdress2"></span> </br>
+                        <b> ${Resource.msg('dav.state', 'payments', null)} </b>:</br> <span id="originaladministrativeArea"></span> </br>
+                        <b> ${Resource.msg('dav.country', 'payments', null)} </b>:</br> <span id="originalcountry"></span> </br>
+                        <b> ${Resource.msg('dav.city', 'payments', null)} </b>:</br> <span id="originallocality"></span> </br>
+                        <b> ${Resource.msg('dav.postalcode', 'payments', null)} </b>:</br> <span id="originalpostalCode"></span> </br> </br>
+                        <button id="useOriginalAddressButton" type="button" class="btn btn-primary"
+                            data-dismiss="modal"> ${Resource.msg('dav.useoriginaladdress', 'payments', null)} </button>
+                    </div>
+                    <div class="col">
+                        <h5> ${Resource.msg('dav.standardaddress', 'payments', null)} </h5>
+                        <hr>
+                        <b> ${Resource.msg('dav.address1', 'payments', null)} </b>:</br> <span id="standardaddress1"></span> </br>
+                        <b> ${Resource.msg('dav.address2', 'payments', null)} </b>:</br> <span id="standardaddress2"></span> </br>
+                        <b> ${Resource.msg('dav.state', 'payments', null)} </b>:</br> <span id="standardadministrativeArea"></span> </br>
+                        <b> ${Resource.msg('dav.country', 'payments', null)} </b>:</br> <span id="standardcountry"></span> </br>
+                        <b> ${Resource.msg('dav.city', 'payments', null)} </b>:</br> <span id="standardlocality"></span> </br>
+                        <b> ${Resource.msg('dav.postalcode', 'payments', null)} </b>:</br> <span id="standardpostalCode"></span> </br> </br>
+                        <button id="useStandardAddressButton" type="button" class="btn btn-primary"
+                            data-dismiss="modal"> ${Resource.msg('dav.usestandardaddress', 'payments', null)} </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="row">
+                    <div class="col">
+                    </div>
+                    <div class="col">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,4 @@
+Edit hooks.json to match app.payment.processor.basic_credit.base hook with it's correct path.  
+This should point to app_storefront_base cartridge.
+
+
