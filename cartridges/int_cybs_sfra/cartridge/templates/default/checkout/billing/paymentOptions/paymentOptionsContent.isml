@@ -4,7 +4,7 @@
     <isif condition="${paymentOption.ID === 'CREDIT_CARD'}">
         <isinclude template="checkout/billing/paymentOptions/creditCardContent" />
     </isif>
-    <isif condition="${paymentOption.ID === 'VISA_SRC' && isCartridgeEnabled}">
+    <isif condition="${paymentOption.ID === 'CLICK_TO_PAY' && isCartridgeEnabled}">
         <isinclude template="checkout/billing/paymentOptions/visaCheckout" />
     </isif>
     <isif condition="${paymentOption.ID === 'DW_APPLE_PAY' && isCartridgeEnabled}">

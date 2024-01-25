@@ -9,7 +9,7 @@
     <div class="tab-pane visasrc-content" id="visasrc-content" role="tabpanel">
         <fieldset class="payment-form-fields">
             <input type="hidden" class="form-control" name="${pdict.forms.billingForm.paymentMethod.htmlName}"
-                value="VISA_SRC">
+                value="CLICK_TO_PAY">
         </fieldset>
         <script type="text/javascript">
 

@@ -62,9 +62,9 @@ var baseUpdatePaymentInformation = base.methods.updatePaymentInformation;
 // eslint-disable-next-line consistent-return
 base.methods.updatePaymentInformation = function (order, customer) {
     // eslint-disable-line no-unused-vars
-    if ($(".tab-pane.active [name$='paymentMethod']").val() === 'VISA_SRC') {
+    if ($(".tab-pane.active [name$='paymentMethod']").val() === 'CLICK_TO_PAY') {
         var $paymentSummary = $('.payment-details');
-        var htmlToAppend = '<span>VISA SRC</span>';
+        var htmlToAppend = '<span>Click to Pay</span>';
         $paymentSummary.empty().append(htmlToAppend);
     } else {
         return baseUpdatePaymentInformation(order, customer);

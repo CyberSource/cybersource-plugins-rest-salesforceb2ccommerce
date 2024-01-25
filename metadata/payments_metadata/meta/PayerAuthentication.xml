@@ -43,6 +43,13 @@
                     </value-definition>
                 </value-definitions>
             </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_IsSCAEnabled">
+                <display-name xml:lang="x-default">Enable SCA</display-name>
+                <description xml:lang="x-default">Enable or Disable Strong Customer Authentication</description>
+                <type>boolean</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>false</default-value>
+            </attribute-definition>
         </custom-attribute-definitions>
         <group-definitions>
             <attribute-group group-id="Cybersource_PayerAuthentication">
@@ -52,6 +59,7 @@
                 <attribute attribute-id="Cybersource_CruiseOrgUnitId"/>
                 <attribute attribute-id="Cybersource_CruiseApiIdentifier"/>
                 <attribute attribute-id="Cybersource_CruiseEndPoint"/>
+                <attribute-definition attribute-id="Cybersource_IsSCAEnabled"></attribute-definition>
             </attribute-group>
         </group-definitions>
     </type-extension>

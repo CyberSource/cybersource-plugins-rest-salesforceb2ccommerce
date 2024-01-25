@@ -590,12 +590,12 @@ module.exports = {
         }
     },
 
-    VisaSRC: {
-        id: 'Cybersource_VisaSRC',
+    ClicktoPay: {
+        id: 'Cybersource_ClicktoPay',
         display_name: '',
         Preferences: {
-            VisaSRCProduction: {
-                id: 'Cybersource_VisaSRCProduction',
+            ClicktoPayProduction: {
+                id: 'Cybersource_ClicktoPayProduction',
                 display_name: 'True for production',
                 description: '',
                 type: Types.boolean,
@@ -604,9 +604,9 @@ module.exports = {
                     mandatory: false
                 }
             },
-            VisaSRCEnabled: {
-                id: 'Cybersource_VisaSRCEnabled',
-                display_name: 'Enable Visa SRC',
+            ClicktoPayEnabled: {
+                id: 'Cybersource_ClicktoPayEnabled',
+                display_name: 'Enable Click to Pay',
                 description: '',
                 type: Types.boolean,
                 default: false,
@@ -614,9 +614,9 @@ module.exports = {
                     mandatory: false
                 }
             },
-            VisaSRCKey: {
-                id: 'Cybersource_VisaSRCKey',
-                display_name: 'Visa SRC Key',
+            ClicktoPayKey: {
+                id: 'Cybersource_ClicktoPayKey',
+                display_name: 'Click to Pay Key',
                 description: '',
                 type: Types.string,
                 default: false,

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <payment-settings xmlns="http://www.demandware.com/xml/impex/paymentsettings/2009-09-15">
-    <payment-method method-id="VISA_SRC">
-        <name xml:lang="x-default">Visa SRC</name>
+    <payment-method method-id="CLICK_TO_PAY">
+        <name xml:lang="x-default">Click to Pay</name>
         <enabled-flag>false</enabled-flag>
         <processor-id>PAYMENTS_VISA_SRC</processor-id>
     </payment-method>

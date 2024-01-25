@@ -10,7 +10,7 @@ var configObject = require('~/cartridge/configuration/index');
 server.extend(page);
 var currentBasket = BasketMgr.getCurrentBasket();
 var paymentMethod = currentBasket && currentBasket.paymentInstrument && currentBasket.paymentInstrument.paymentMethod;
-var isVisaSRC = paymentMethod && paymentMethod === 'VISA_SRC';
+var isVisaSRC = paymentMethod && paymentMethod === 'CLICK_TO_PAY';
 // eslint-disable-next-line no-undef
 if (configObject.payerAuthenticationEnabled && configObject.cartridgeEnabled && empty(session.privacy.encryptedDataGP)
     && !isVisaSRC
@@ -210,7 +210,15 @@ server.append('PlaceOrder', server.middleware.https, function (req, res, next) {
         });
         // eslint-disable-next-line no-undef
         delete session.privacy.AuthorizeErrors;
+    }else {
+        res.json({
+            error: false,
+            ID: session.privacy.orderID,
+            token: session.privacy.orderToken,
+            continueUrl: URLUtils.url('COPlaceOrder-SubmitOrderConformation').toString()
+        });
     }
+
     return next();
 });
 /**
@@ -267,7 +275,7 @@ server.post('getResponse', server.middleware.https, function (req, res, next) {
 
     try {
         // eslint-disable-next-line block-scoped-var, no-undef
-        var enrollResponse = payerAuthentication.paEnroll(billingForm, shippingAddress, session.privacy.orderID, totalAmount, currencyCode, referenceId, card, lineItems, order.customer.registered);
+        var enrollResponse = payerAuthentication.paEnroll(billingForm, shippingAddress, session.privacy.orderID, totalAmount, currencyCode, referenceId, card, lineItems, order);
         if (enrollResponse.status === 'PENDING_AUTHENTICATION' && enrollResponse.errorInformation.reason === 'CONSUMER_AUTHENTICATION_REQUIRED') {
             if (enrollResponse.consumerAuthenticationInformation.acsUrl
                 && enrollResponse.consumerAuthenticationInformation.stepUpUrl
@@ -321,7 +329,7 @@ server.post('getResponse', server.middleware.https, function (req, res, next) {
             errorMessage: Resource.msg('message.payerAuthError', 'error', null),
             orderID: order.orderNo,
             orderToken: order.orderToken,
-            continueUrl: URLUtils.url('Order-Confirm').toString()
+            continueUrl: URLUtils.url('COPlaceOrder-SubmitOrderConformation').toString()
         });
     } catch (e) {
         if (!order) {
@@ -350,6 +358,7 @@ server.post('handlingConsumerAuthResponse', server.middleware.https, function (r
     var OrderMgr = require('dw/order/OrderMgr');
     var Resource = require('dw/web/Resource');
     var redirect;
+    var scaEnabled = dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_IsSCAEnabled');
 
     var billingForm = server.forms.getForm('billing');
     var order = getOrder();
@@ -368,8 +377,9 @@ server.post('handlingConsumerAuthResponse', server.middleware.https, function (r
     }
     var mapper = require('~/cartridge/scripts/util/mapper.js');
     var lineItems = mapper.MapOrderLineItems(order.allLineItems, true);
+    session.custom.SCA = true;
     // eslint-disable-next-line no-undef, block-scoped-var
-    var authenticateResponse = payerAuthentication.paConsumerAuthenticate(billingForm, session.privacy.orderID, totalAmount, currencyCode, session.privacy.transactionId, card, lineItems);
+    var authenticateResponse = payerAuthentication.paConsumerAuthenticate(billingForm, session.privacy.orderID, totalAmount, currencyCode, session.privacy.transactionId, card, lineItems, order);
 
     if (authenticateResponse.status === 'AUTHORIZED' || authenticateResponse.status === 'AUTHORIZED_PENDING_REVIEW') {
         var fraudDetectionStatus = hooksHelper('app.fraud.detection', 'fraudDetection', currentBasket, require('*/cartridge/scripts/hooks/fraudDetection').fraudDetection);
@@ -384,6 +394,15 @@ server.post('handlingConsumerAuthResponse', server.middleware.https, function (r
         }
         // Sending Email Confirmation
         sendConfirmationEmail();
+    }
+    // eslint-disable-next-line
+    else if(authenticateResponse.status === '201' && scaEnabled === true){
+        session.custom.SCA = false;
+        var response = payerAuthentication.paConsumerAuthenticate(billingForm, session.privacy.orderID, totalAmount, currencyCode, session.privacy.transactionId, card, lineItems, order);
+        redirect = true;
+        Transaction.wrap(function () {
+            OrderMgr.failOrder(order);
+        });
     } else {
         redirect = true;
         Transaction.wrap(function () {
@@ -395,7 +414,7 @@ server.post('handlingConsumerAuthResponse', server.middleware.https, function (r
         errorMessage: Resource.msg('message.payerAuthError', 'error', null) + ' ' + authenticateResponse.status,
         orderID: order.orderNo,
         orderToken: order.orderToken,
-        continueUrl: URLUtils.url('Order-Confirm').toString()
+        continueUrl: URLUtils.url('COPlaceOrder-SubmitOrderConformation').toString()
     });
     // eslint-disable-next-line no-undef
     session.privacy.orderID = '';
@@ -486,7 +505,7 @@ server.post('SubmitPaymentGP', function (req, res, next) {
         };
 
         viewData.email = {
-            value: paymentForm.contactInfoFields.email.value
+            value:  cart.customerEmail
         };
 
         viewData.phone = {

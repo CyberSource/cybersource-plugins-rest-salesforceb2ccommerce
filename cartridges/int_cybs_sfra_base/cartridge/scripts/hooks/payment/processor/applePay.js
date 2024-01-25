@@ -23,7 +23,11 @@ exports.authorizeOrderPayment = function (order, response) {
     var base64Encoded = Encoding.toBase64(byteData);
     var mapper = require('~/cartridge/scripts/util/mapper.js');
     var configObject = require('~/cartridge/configuration/index');
+    var enableCaptureForApplePay = false;
 
+    if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_ApplePayTransactionType').value === 'sale' ){
+        enableCaptureForApplePay = true;
+    } 
     var restRequest = {
         clientReferenceInformation: {
             code: order.currentOrderNo,
@@ -33,7 +37,8 @@ exports.authorizeOrderPayment = function (order, response) {
             }
         },
         processingInformation: {
-            paymentSolution: '001'
+            paymentSolution: '001',
+            capture: enableCaptureForApplePay
         },
         paymentInformation: {
             fluidData: {

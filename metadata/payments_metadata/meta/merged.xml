@@ -33,6 +33,22 @@
                 <type>string</type>
                 <externally-managed-flag>false</externally-managed-flag>
             </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_CardTransactionType">
+                <display-name xml:lang="x-default">Credit/Debit Card Transaction Type</display-name>
+                <type>enum-of-string</type>
+                <mandatory-flag>true</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <value-definitions>
+                    <value-definition default="true">
+                        <display xml:lang="x-default">Auth</display>
+                        <value>auth</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Sale</display>
+                        <value>sale</value>
+                    </value-definition>
+                </value-definitions>
+            </attribute-definition>
             <attribute-definition attribute-id="Cybersource_DAVEnabled">
                 <display-name xml:lang="x-default">Enable Delivery Address Verification Services</display-name>
                 <description xml:lang="x-default">Enable or Disable Delivery Address Verification for Cybersource Cartridge</description>
@@ -161,7 +177,7 @@
             </attribute-definition>
             <attribute-definition attribute-id="Cybersource_TokenizationEnabled">
                 <display-name xml:lang="x-default">Enable Tokenization Services</display-name>
-                <description xml:lang="x-default">Enable or Disable the Tokenization Service saving Credit Card on My Account page</description>
+                <description xml:lang="x-default">Enable or Disable the Tokenization Service saving Credit/Debit Card on My Account page</description>
                 <type>boolean</type>
                 <externally-managed-flag>false</externally-managed-flag>
                 <default-value>true</default-value>
@@ -332,6 +348,7 @@
                 <attribute attribute-id="Cybersource_MerchantKeyId"/>
                 <attribute attribute-id="Cybersource_MerchantKeySecret"/>
                 <attribute attribute-id="Cybersource_DeveloperId"/>
+                <attribute attribute-id="Cybersource_CardTransactionType"/>
             </attribute-group>
             <attribute-group group-id="Cybersource_DeliveryAddressVerification">
                 <display-name xml:lang="x-default">Delivery Address Verification Configuration</display-name>
