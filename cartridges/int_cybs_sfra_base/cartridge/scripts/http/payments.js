@@ -612,7 +612,7 @@ function httpAuthorizeWithVisaSrc(encPaymentData, callID, customerEmail, referen
         requestBody.deviceInformation = deviceSessionId;
     }
 
-    if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource__ClicktoPayTransactionType').value === 'sale' ) {
+    if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_ClicktoPayTransactionType').value === 'sale' ) {
         requestBody.processingInformation.capture = true;
     }
 

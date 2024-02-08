@@ -59,7 +59,7 @@
                 <attribute attribute-id="Cybersource_CruiseOrgUnitId"/>
                 <attribute attribute-id="Cybersource_CruiseApiIdentifier"/>
                 <attribute attribute-id="Cybersource_CruiseEndPoint"/>
-                <attribute-definition attribute-id="Cybersource_IsSCAEnabled"></attribute-definition>
+                <attribute attribute-id="Cybersource_IsSCAEnabled"/>
             </attribute-group>
         </group-definitions>
     </type-extension>

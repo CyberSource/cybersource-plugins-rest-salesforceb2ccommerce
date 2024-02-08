@@ -60,7 +60,7 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
     processingInformation.actionList.push('CONSUMER_AUTHENTICATION');
 
     //Capture service call if Payer Authentication is enabled
-    if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_CreditCardTransactionType').value === 'sale' ) {
+    if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_CardTransactionType').value === 'sale' ) {
         processingInformation.capture = true;
     }
 
