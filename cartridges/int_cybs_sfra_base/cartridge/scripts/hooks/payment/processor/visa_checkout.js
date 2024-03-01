@@ -23,7 +23,7 @@ function Handle(basket, paymentInformation) {
             currentBasket.removeAllPaymentInstruments();
 
             var paymentInstruments = currentBasket.getPaymentInstruments(
-                'VISA_SRC'
+                'CLICK_TO_PAY'
             );
 
             collections.forEach(paymentInstruments, function (item) {
@@ -31,7 +31,7 @@ function Handle(basket, paymentInformation) {
             });
 
             var paymentInstrument = currentBasket.createPaymentInstrument(
-                'VISA_SRC', currentBasket.totalGrossPrice
+                'CLICK_TO_PAY', currentBasket.totalGrossPrice
             );
 
             paymentInstrument.setCreditCardHolder(currentBasket.billingAddress.fullName);

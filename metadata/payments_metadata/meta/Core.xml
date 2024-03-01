@@ -33,6 +33,22 @@
                 <type>string</type>
                 <externally-managed-flag>false</externally-managed-flag>
             </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_CardTransactionType">
+                <display-name xml:lang="x-default">Credit/Debit Card Transaction Type</display-name>
+                <type>enum-of-string</type>
+                <mandatory-flag>true</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <value-definitions>
+                    <value-definition default="true">
+                        <display xml:lang="x-default">Auth</display>
+                        <value>auth</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Sale</display>
+                        <value>sale</value>
+                    </value-definition>
+                </value-definitions>
+            </attribute-definition>
         </custom-attribute-definitions>
         <group-definitions>
             <attribute-group group-id="Cybersource_Core">
@@ -42,6 +58,7 @@
                 <attribute attribute-id="Cybersource_MerchantKeyId"/>
                 <attribute attribute-id="Cybersource_MerchantKeySecret"/>
                 <attribute attribute-id="Cybersource_DeveloperId"/>
+                <attribute attribute-id="Cybersource_CardTransactionType"/>
             </attribute-group>
         </group-definitions>
     </type-extension>

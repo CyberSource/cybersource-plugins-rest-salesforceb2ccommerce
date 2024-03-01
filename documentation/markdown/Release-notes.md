@@ -1,5 +1,15 @@
 ## <ins>Release Notes
 
+**Version 24.1.0 (February 2023)**
+
+**New Features**
+• Upgrade the cartridge to support SFRA v6.3. 
+• Updated cartridge to make it compatible with Salesforce B2C Commerce Release 22.7 . 
+• Added Strong Customer Authentication for Credit Card.
+• Implemented Sale functionality for Credit Card, Google Pay, Visa SRC and Apple Pay. 
+• Updated API header in Http Signature Authentication.
+
+
 **Version 21.1.0 (July 2021)**
 
 **New Features**

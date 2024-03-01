@@ -4,7 +4,7 @@
         <custom-attribute-definitions>
             <attribute-definition attribute-id="Cybersource_TokenizationEnabled">
                 <display-name xml:lang="x-default">Enable Tokenization Services</display-name>
-                <description xml:lang="x-default">Enable or Disable the Tokenization Service saving Credit Card on My Account page</description>
+                <description xml:lang="x-default">Enable or Disable the Tokenization Service saving Credit/Debit Card on My Account page</description>
                 <type>boolean</type>
                 <externally-managed-flag>false</externally-managed-flag>
                 <default-value>true</default-value>

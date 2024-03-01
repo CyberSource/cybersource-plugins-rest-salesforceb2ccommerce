@@ -9,6 +9,7 @@ var checkoutHelper = require('*/cartridge/scripts/checkout/checkoutHelpers');
 var OrderModel = require('*/cartridge/models/order');
 var hooksHelper = require('*/cartridge/scripts/helpers/hooks');
 var configObject = require('../configuration/index');
+var csrfProtection = require('*/cartridge/scripts/middleware/csrf');
 
 if (configObject.cartridgeEnabled) {
     server.post('Submit', function (req, res, next) {
@@ -63,5 +64,15 @@ if (configObject.cartridgeEnabled) {
         return next();
     });
 }
+
+server.get('SubmitOrderConformation', csrfProtection.generateToken, function (req, res, next) {
+    var orderId = req.querystring.ID;
+    var token = req.querystring.token;
+    res.render('cart/RedirectToConformation', {
+        orderId: orderId,
+        orderToken: token
+    });
+    return next();
+});
 
 module.exports = server.exports();

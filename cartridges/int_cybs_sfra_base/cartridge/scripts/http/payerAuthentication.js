@@ -48,7 +48,7 @@ function setPaymentProcessorDetails(result) {
  * @param {*} lineItems *
  * @returns {*} *
  */
-function paEnroll(billingDetails, shippingAddress, referenceInformationCode, total, currency, referenceId, cardData, lineItems) {
+function paEnroll(billingDetails, shippingAddress, referenceInformationCode, total, currency, referenceId, cardData, lineItems, order) {
     var instance = new cybersourceRestApi.PaymentsApi(configObject);
 
     var clientReferenceInformation = new cybersourceRestApi.Ptsv2paymentsClientReferenceInformation();
@@ -58,6 +58,11 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
     processingInformation.commerceIndicator = 'internet';
     processingInformation.actionList = [];
     processingInformation.actionList.push('CONSUMER_AUTHENTICATION');
+
+    //Capture service call if Payer Authentication is enabled
+    if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_CardTransactionType').value === 'sale' ) {
+        processingInformation.capture = true;
+    }
 
     if (!configObject.fmeDmEnabled) {
         processingInformation.actionList.push('DECISION_SKIP');
@@ -72,7 +77,7 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
     amountDetails.currency = currency;
 
     var billTo = new cybersourceRestApi.Ptsv2paymentsOrderInformationBillTo();
-    billTo.email = billingDetails.contactInfoFields.email.htmlValue;
+    billTo.email = order.getCustomerEmail();
     billTo.country = billingDetails.addressFields.country.htmlValue;
     billTo.firstName = billingDetails.addressFields.firstName.htmlValue;
     billTo.lastName = billingDetails.addressFields.lastName.htmlValue;
@@ -83,7 +88,7 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
     billTo.locality = billingDetails.addressFields.city.htmlValue;
 
     var shipTo = new cybersourceRestApi.Ptsv2paymentsOrderInformationShipTo();
-    shipTo.email = billingDetails.contactInfoFields.email.htmlValue;
+    shipTo.email = order.getCustomerEmail();
     shipTo.country = shippingAddress.countryCode.toString().toUpperCase();
     shipTo.firstName = shippingAddress.firstName;
     shipTo.lastName = shippingAddress.lastName;
@@ -181,7 +186,7 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
  * @param {*} lineItems *
  * @returns {*} *
  */
-function paConsumerAuthenticate(billingDetails, referenceInformationCode, total, currency, transactionId, cardData, lineItems) {
+function paConsumerAuthenticate(billingDetails, referenceInformationCode, total, currency, transactionId, cardData, lineItems, order) {
     var instance = new cybersourceRestApi.PaymentsApi(configObject);
 
     var clientReferenceInformation = new cybersourceRestApi.Ptsv2paymentsClientReferenceInformation();
@@ -192,6 +197,11 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
     processingInformation.actionList = [];
     processingInformation.actionList.push('VALIDATE_CONSUMER_AUTHENTICATION');
 
+    //Capture service call if Payer Authentication is enabled
+    if (configObject.enableCapture === true) {
+        processingInformation.capture = true;
+    }
+
     if (!configObject.fmeDmEnabled) {
         processingInformation.actionList.push('DECISION_SKIP');
     }
@@ -201,7 +211,7 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
     amountDetails.currency = currency;
 
     var billTo = new cybersourceRestApi.Ptsv2paymentsOrderInformationBillTo();
-    billTo.email = billingDetails.contactInfoFields.email.htmlValue;
+    billTo.email =  order.getCustomerEmail();
     billTo.country = billingDetails.addressFields.country.htmlValue;
     billTo.firstName = billingDetails.addressFields.firstName.htmlValue;
     billTo.lastName = billingDetails.addressFields.lastName.htmlValue;
@@ -221,16 +231,16 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
 
     var paymentInformation = new cybersourceRestApi.Ptsv2paymentsPaymentInformation();
     var request = new cybersourceRestApi.CreatePaymentRequest();
+    if (session.custom.SCA === true) {
+        Cipher = new Cipher();
+        // eslint-disable-next-line no-undef
+        var encryptedSessionID = Cipher.encrypt(session.sessionID, session.privacy.key, 'AES/CBC/PKCS5Padding', session.privacy.iv, 0);
+        var deviceSessionId = new cybersourceRestApi.Ptsv2paymentsDeviceInformation();
+        deviceSessionId.fingerprintSessionId = encryptedSessionID;
 
-    Cipher = new Cipher();
-    // eslint-disable-next-line no-undef
-    var encryptedSessionID = Cipher.encrypt(session.sessionID, session.privacy.key, 'AES/CBC/PKCS5Padding', session.privacy.iv, 0);
-
-    var deviceSessionId = new cybersourceRestApi.Ptsv2paymentsDeviceInformation();
-    deviceSessionId.fingerprintSessionId = encryptedSessionID;
-
-    if (configObject.deviceFingerprintEnabled) {
-        request.deviceInformation = deviceSessionId;
+        if (configObject.deviceFingerprintEnabled) {
+            request.deviceInformation = deviceSessionId;
+        }
     }
 
     if (cardData.token != null) {
@@ -269,7 +279,9 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
     request.paymentInformation = paymentInformation;
 
     request.consumerAuthenticationInformation = consumerAuthenticationInformation;
-
+    if (session.custom.SCA === false) {
+        request.consumerAuthenticationInformation.challendeCode = '04';
+    }
     var result = '';
     instance.createPayment(request, function (data, error, response) { // eslint-disable-line no-unused-vars
         if (!error) {

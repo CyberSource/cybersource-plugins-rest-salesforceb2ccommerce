@@ -154,6 +154,20 @@ Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: 
    1. In the Business Manager, go to **Merchant Tools > Ordering > Payment Methods** and select **DW_APPLE_PAY**. And in **DW_APPLE_PAY details**, double check if **Payment Processor** = **"PAYMENTS_CREDIT"**
 
    ---
+
+   #### <ins>Site Preferences:
+   Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: Upload metadata" or import **"metadata/sfra_meta/meta/ApplePay.xml"** in Business Manager (**Administration > Site Development > Import & Export**)
+
+   Step 3: Go to **Merchant Tools > Custom Preferences > Apple Pay**
+   and set values for the following parameters:
+
+   Field | Description
+   ------------ | -------------
+   ApplePayTransactionType | Select Sale/Auth transaction type
+
+
+----
+
    #### 3. Google Pay
    #### <ins>Step 1: Create custom preferences for google pay
    1. Upload Cybersource metadata in Business Manager. If not follow “Step 2: Upload metadata” or import **metadata/payment_metadata/meta/GooglePay.xml** in Business Manager **(Administration > Site Development > Import & Export)**

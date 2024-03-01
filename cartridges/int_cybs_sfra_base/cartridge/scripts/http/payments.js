@@ -94,8 +94,12 @@ function httpAuthorizeWithToken(cardData, customerEmail, referenceInformationCod
         request.deviceInformation = deviceSessionId;
     }
 
-    if (configObject.enableCapture === true) {
-        request.processingInformation.capture = true;
+    var OrderMgr = require('dw/order/OrderMgr');
+    var order = OrderMgr.getOrder(referenceInformationCode);
+    if (order.paymentInstruments[0].paymentMethod === 'DW_GOOGLE_PAY') {
+        if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_GooglePayTransactionType').value === 'sale' ){
+            request.processingInformation.capture = true;
+        }
     }
 
     if (cardData.token) { // Token created in handle function (subscription ON or save CC)
@@ -608,7 +612,7 @@ function httpAuthorizeWithVisaSrc(encPaymentData, callID, customerEmail, referen
         requestBody.deviceInformation = deviceSessionId;
     }
 
-    if (configObject.enableCapture === true) {
+    if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_ClicktoPayTransactionType').value === 'sale' ) {
         requestBody.processingInformation.capture = true;
     }
 

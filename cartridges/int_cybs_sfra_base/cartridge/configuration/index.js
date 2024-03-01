@@ -23,7 +23,7 @@ var LogfileMaxSize = '5242880'; // 10 MB In Bytes
  * Send this value in all requests that are sent through the partner solution. CyberSource assigns the ID to the partner.
  * Note When you see a partner ID of 999 in reports, the partner ID that was submitted is incorrect.
  */
-var SolutionId = '3VKKRVBF';
+var SolutionId = 'J3P4XU2P';
 
 var CruiseDDCEndPoint = {
     Stage: 'https://centinelapistag.cardinalcommerce.com/V1/Cruise/Collect',
@@ -120,7 +120,6 @@ function getConfig(config) {
         deviceFingerprintThreadMatrixUrl: config.deviceFingerprintThreadMatrixUrl || customPreferences.DeviceFingerprint.Preferences.ThreadMatrixUrl.getValue(),
         deviceFingerprintTimeToLive: config.deviceFingerprintTimeToLive || customPreferences.DeviceFingerprint.Preferences.TimeToLive.getValue(),
 
-        // Future enhancement
         enableCapture: config.EnableCapture || false,
 
         // PayerAuthentication
@@ -138,9 +137,8 @@ function getConfig(config) {
         enableGooglePayOnCart: config.enableGooglePayOnCart || customPreferences.GooglePay.Preferences.EnableGooglePayOnCart.getValue(),
 
         // DecisionManager
-        visaSRCEnabled: config.vscCheckoutEnabled || customPreferences.VisaSRC.Preferences.VisaSRCEnabled.getValue(),
-        visaSRCKey: config.visaSRCKey || customPreferences.VisaSRC.Preferences.VisaSRCKey.getValue(),
-        VisaSRCProduction: config.VisaSRCProduction || customPreferences.VisaSRC.Preferences.VisaSRCProduction.getValue()
-    };
+        visaSRCEnabled: config.vscCheckoutEnabled || customPreferences.ClicktoPay.Preferences.ClicktoPayEnabled.getValue(),
+        visaSRCKey: config.visaSRCKey || customPreferences.ClicktoPay.Preferences.ClicktoPayKey.getValue(),
+        VisaSRCProduction: config.VisaSRCProduction || customPreferences.ClicktoPay.Preferences.ClicktoPayProduction.getValue()    };
 }
 module.exports = getConfig();

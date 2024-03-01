@@ -9,7 +9,7 @@ Step 2: Go to **Merchant Tools > Custom Preferences > Cybersource_Tokenization**
 
 Field Name | Description
 ------------ | -------------
-Enable Tokenization Services | Enable or Disable the Tokenization Service saving Credit Card on "My Account" page
+Enable Tokenization Services | Enable or Disable the Tokenization Service saving Credit/Debit Card on "My Account" page
 Enable limiting Saved Card | Enable or Disable limiting Saved Card on My Account page
 Saved Card Allowed | Number of Cards that can be added in a defined interval on My Account page
 Reset Interval (in Hours) | Number of hours that saved card attempts are counted

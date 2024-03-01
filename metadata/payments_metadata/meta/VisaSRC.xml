@@ -2,21 +2,37 @@
 <metadata xmlns="http://www.demandware.com/xml/impex/metadata/2006-10-31">
     <type-extension type-id="SitePreferences">
         <custom-attribute-definitions>
-            <attribute-definition attribute-id="Cybersource_VisaSRCEnabled">
-                <display-name xml:lang="x-default">Enable Visa SRC</display-name>
-                <description xml:lang="x-default">Enable/Disable Enable Visa SRC on checkout page</description>
+            <attribute-definition attribute-id="Cybersource_ClicktoPayEnabled">
+                <display-name xml:lang="x-default">Enable Click to Pay</display-name>
+                <description xml:lang="x-default">Enable/Disable Enable Click to Pay on checkout page</description>
                 <type>boolean</type>
                 <externally-managed-flag>false</externally-managed-flag>
                 <default-value>false</default-value>
             </attribute-definition>
-            <attribute-definition attribute-id="Cybersource_VisaSRCKey">
-                <display-name xml:lang="x-default">Visa SRC Key</display-name>
-                <description xml:lang="x-default">Visa SRC Key Id obtained through EBC Digital payments</description>
+            <attribute-definition attribute-id="Cybersource_ClicktoPayTransactionType">
+                <display-name xml:lang="x-default">Click to Pay Transaction Type</display-name>
+                <type>enum-of-string</type>
+                <mandatory-flag>true</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <value-definitions>
+                    <value-definition default="true">
+                        <display xml:lang="x-default">Auth</display>
+                        <value>auth</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Sale</display>
+                        <value>sale</value>
+                    </value-definition>
+                </value-definitions>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_ClicktoPayKey">
+                <display-name xml:lang="x-default">Click to Pay Key</display-name>
+                <description xml:lang="x-default">Click to Pay Key Id obtained through EBC Digital payments</description>
                 <type>string</type>
                 <externally-managed-flag>false</externally-managed-flag>
                 <default-value>false</default-value>
             </attribute-definition>
-            <attribute-definition attribute-id="Cybersource_VisaSRCProduction">
+            <attribute-definition attribute-id="Cybersource_ClicktoPayProduction">
                 <display-name xml:lang="x-default">True for production</display-name>
                 <description xml:lang="x-default">Set to Yes for Production</description>
                 <type>boolean</type>
@@ -25,11 +41,12 @@
             </attribute-definition>
         </custom-attribute-definitions>
         <group-definitions>
-            <attribute-group group-id="Cybersource_VisaSRC">
+            <attribute-group group-id="Cybersource_ClicktoPay">
                 <display-name xml:lang="x-default"></display-name>
-                <attribute attribute-id="Cybersource_VisaSRCEnabled"/>
-                <attribute attribute-id="Cybersource_VisaSRCKey"/>
-                <attribute attribute-id="Cybersource_VisaSRCProduction"/>
+                <attribute attribute-id="Cybersource_ClicktoPayEnabled"/>
+                <attribute attribute-id="Cybersource_ClicktoPayTransactionType"/>
+                <attribute attribute-id="Cybersource_ClicktoPayKey"/>
+                <attribute attribute-id="Cybersource_ClicktoPayProduction"/>
             </attribute-group>
         </group-definitions>
     </type-extension>
