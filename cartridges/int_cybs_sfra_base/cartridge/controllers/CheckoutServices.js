@@ -466,10 +466,6 @@ server.post('handlingConsumerAuthResponse', server.middleware.https, function (r
         orderToken: order.orderToken,
         continueUrl: URLUtils.url('COPlaceOrder-SubmitOrderConformation').toString()
     });
-    // eslint-disable-next-line no-undef
-    // session.privacy.orderID = '';
-    // eslint-disable-next-line no-undef
-    // session.privacy.orderToken = '';
     return next();
 });
 
