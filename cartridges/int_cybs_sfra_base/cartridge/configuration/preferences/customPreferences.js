@@ -332,7 +332,7 @@ module.exports = {
             },
             /** @type {CustomPreference} */
             NetworkTokenUpdates: {
-                id: '$reseller$_NetworkToken',
+                id: 'Cybersource_NetworkToken',
                 display_name: 'Network Token Updates',
                 description: 'Subscribe to Network Token life cycle updates',
                 type: Types.boolean,
