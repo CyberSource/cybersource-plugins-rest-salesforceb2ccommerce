@@ -135,7 +135,7 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
     processingInformation.actionList.push('CONSUMER_AUTHENTICATION');
 
     //Capture service call if Payer Authentication is enabled
-    if (dw.system.Site.getCurrent().getCustomPreferenceValue('$reseller$_CreditCardTransactionType').value === 'sale') {
+    if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_CreditCardTransactionType').value === 'sale') {
         processingInformation.capture = true;
     }
 
@@ -297,7 +297,7 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
     processingInformation.actionList.push('VALIDATE_CONSUMER_AUTHENTICATION');
 
     //Capture service call if Payer Authentication is enabled
-    if (dw.system.Site.getCurrent().getCustomPreferenceValue('$reseller$_CreditCardTransactionType').value === 'sale') {
+    if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_CreditCardTransactionType').value === 'sale') {
         processingInformation.capture = true;
     }
 

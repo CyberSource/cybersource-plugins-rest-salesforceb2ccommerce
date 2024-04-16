@@ -117,12 +117,12 @@ function httpAuthorizeWithToken(cardData, customerEmail, referenceInformationCod
     var OrderMgr = require('dw/order/OrderMgr');
     var order = OrderMgr.getOrder(referenceInformationCode);
     if (order.paymentInstruments[0].paymentMethod === 'DW_GOOGLE_PAY') {
-        if (dw.system.Site.getCurrent().getCustomPreferenceValue('$reseller$_GooglePayTransactionType').value === 'sale' ){
+        if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_GooglePayTransactionType').value === 'sale' ){
             request.processingInformation.capture = true;
         }
     }  
     if (order.paymentInstruments[0].paymentMethod === 'CREDIT_CARD') {
-        if (dw.system.Site.getCurrent().getCustomPreferenceValue('$reseller$_CreditCardTransactionType').value === 'sale' ){
+        if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_CreditCardTransactionType').value === 'sale' ){
             request.processingInformation.capture = true;
         }
     }   
@@ -209,7 +209,7 @@ function httpZeroDollarAuth(
     deviceSessionId.fingerprintSessionId = encryptedSessionID;
 
 
-   var scaEnabled = dw.system.Site.getCurrent().getCustomPreferenceValue('$reseller$_IsSCAEnabled');
+   var scaEnabled = dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_IsSCAEnabled');
 
    if(scaEnabled === true){
        session.custom.scaTokenFlag = true;
@@ -324,7 +324,7 @@ function httpZeroDollarAuthWithTransientToken(
     var clientReferenceInformation = new cybersourceRestApi.Ptsv2paymentsClientReferenceInformation();
     clientReferenceInformation.code = referenceInformationCode;
 
-    var scaEnabled = dw.system.Site.getCurrent().getCustomPreferenceValue('$reseller$_IsSCAEnabled');
+    var scaEnabled = dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_IsSCAEnabled');
 
     if (scaEnabled === true) {
         session.custom.scaTokenFlag = true;

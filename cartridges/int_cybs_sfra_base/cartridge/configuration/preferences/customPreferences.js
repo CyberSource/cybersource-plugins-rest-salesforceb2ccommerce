@@ -331,6 +331,17 @@ module.exports = {
                 }
             },
             /** @type {CustomPreference} */
+            NetworkTokenUpdates: {
+                id: '$reseller$_NetworkToken',
+                display_name: 'Network Token Updates',
+                description: 'Subscribe to Network Token life cycle updates',
+                type: Types.boolean,
+                default: false,
+                flags: {
+                    mandatory: false
+                }
+            },
+            /** @type {CustomPreference} */
             LimitSavedCardEnabled: {
                 id: 'Cybersource_LimitSavedCardEnabled',
                 display_name: 'Enable limiting Saved Card',
@@ -481,46 +492,12 @@ module.exports = {
                 }
             },
             /** @type {CustomPreference} */
-            CruiseAPIKey: {
-                id: 'Cybersource_CruiseApiKey',
-                display_name: 'Cruise API Key',
-                description: 'A shared secret value between the merchant and Payer Authentication system. This value should never be exposed to the public',
-                type: Types.Password,
-                default: undefined,
-                flags: {
-                    mandatory: false
-                }
-            },
-            /** @type {CustomPreference} */
-            CruiseOrgUnitID: {
-                id: 'Cybersource_CruiseOrgUnitId',
-                display_name: 'Cruise Org Unit Id',
-                description: 'GUID to identify the merchant organization within Payer Authentication systems',
-                type: Types.string,
-                default: undefined,
-                flags: {
-                    mandatory: false
-                }
-            },
-
-            /** @type {CustomPreference} */
-            CruiseAPIIdentifier: {
-                id: 'Cybersource_CruiseApiIdentifier',
-                display_name: 'Cruise API Identifier',
-                description: 'GUID used to identify the specific API Key',
-                type: Types.string,
-                default: undefined,
-                flags: {
-                    mandatory: false
-                }
-            },
-            /** @type {CustomPreference} */
-            CruiseEndPoint: {
-                id: 'Cybersource_CruiseEndPoint',
-                display_name: 'Cruise End Point',
-                description: 'Environment details of Cruise API',
-                type: Types.EnumOfString,
-                default: 'Stage',
+            EnableSCA: {
+                id: 'Cybersource_IsSCAEnabled',
+                display_name: 'Enable SCA',
+                description: 'Enable or Disable Strong Customer Authentication',
+                type: Types.boolean,
+                default: false,
                 flags: {
                     mandatory: false
                 }
