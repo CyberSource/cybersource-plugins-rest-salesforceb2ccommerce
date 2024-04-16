@@ -2,7 +2,7 @@
 
 var Cipher = require('dw/crypto/Cipher');
 var configObject = require('../../configuration/index');
-
+var URLUtils = require('dw/web/URLUtils');
 var cybersourceRestApi = require('../../apiClient/index');
 var mapper = require('~/cartridge/scripts/util/mapper.js');
 
@@ -36,6 +36,81 @@ function setPaymentProcessorDetails(result) {
     }
 }
 
+
+
+/**
+ * *
+ * @param {*} billingDetails *
+ * @param {*} referenceInformationCode *
+ * @param {*} cardData *
+ * @returns {*} *
+ */
+function paSetup(billingDetails, referenceInformationCode, cardData) {
+    var instance = new cybersourceRestApi.PayerAuthenticationApi(configObject);
+
+    var clientReferenceInformation = new cybersourceRestApi.Ptsv2paymentsClientReferenceInformation();
+    clientReferenceInformation.code = referenceInformationCode;
+
+    var processingInformation = new cybersourceRestApi.Ptsv2paymentsProcessingInformation();
+    processingInformation.commerceIndicator = 'internet';
+
+    var paymentInformation = new cybersourceRestApi.Ptsv2paymentsPaymentInformation();
+    var request = new cybersourceRestApi.CreatePaymentRequest();
+
+    var tokenInformation;
+    var card;
+    if (cardData.token != null) {
+        var customer = new cybersourceRestApi.Ptsv2paymentsPaymentInformationCustomer();
+        tokenInformation = mapper.deserializeTokenInformation(cardData.token);
+        customer.customerId = tokenInformation.paymentInstrument.id;
+        paymentInformation.customer = customer;
+        card = new cybersourceRestApi.Ptsv2paymentsPaymentInformationCard();
+        card.securityCode = cardData.securityCode;
+        paymentInformation.card = card;
+    } else if (cardData.jwttoken != null) {
+        tokenInformation = new cybersourceRestApi.Ptsv2paymentsTokenInformation();
+        tokenInformation.transientTokenJwt = cardData.jwttoken;
+        request.tokenInformation = tokenInformation;
+    } else if (cardData.fluidData != null) {
+        processingInformation.commerceIndicator = 'internet';
+        processingInformation.visaCheckoutId = cardData.callId;
+        processingInformation.paymentSolution = 'visacheckout';
+        var fluidData = new cybersourceRestApi.Ptsv2paymentsPaymentInformationFluidData();
+        fluidData.value = cardData.fluidData;
+        fluidData.key = configObject.visaSRCKey;
+        paymentInformation.fluidData = fluidData;
+    } else {
+        card = new cybersourceRestApi.Ptsv2paymentsPaymentInformationCard();
+        card.expirationMonth = billingDetails.creditCardFields.expirationMonth.value;
+        card.expirationYear = billingDetails.creditCardFields.expirationYear.value;
+        card.number = billingDetails.creditCardFields.cardNumber.value;
+        card.securityCode = billingDetails.creditCardFields.securityCode.value;
+        card.type = billingDetails.creditCardFields.cardType.value;
+        paymentInformation.card = card;
+    }
+    if (!paymentInformation.card) {
+        paymentInformation.card = {};
+    }
+    paymentInformation.card.typeSelectionIndicator = '1';
+
+
+    request.clientReferenceInformation = clientReferenceInformation;
+    request.processingInformation = processingInformation;
+    request.paymentInformation = paymentInformation;
+
+
+    var result = '';
+    instance.payerAuthSetup(request, function (data, error, response) { // eslint-disable-line no-unused-vars
+        if (!error) {
+            result = data;
+        } else {
+            throw new Error(data);
+        }
+    });
+    setPaymentProcessorDetails(result);
+    return result;
+}
+
 /**
  * *
  * @param {*} billingDetails *
@@ -60,7 +135,7 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
     processingInformation.actionList.push('CONSUMER_AUTHENTICATION');
 
     //Capture service call if Payer Authentication is enabled
-    if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_CardTransactionType').value === 'sale' ) {
+    if (dw.system.Site.getCurrent().getCustomPreferenceValue('$reseller$_CreditCardTransactionType').value === 'sale') {
         processingInformation.capture = true;
     }
 
@@ -109,10 +184,34 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
 
     var consumerAuthenticationInformation = new cybersourceRestApi.Ptsv2paymentsConsumerAuthenticationInformation();
     consumerAuthenticationInformation.referenceId = referenceId;
+    consumerAuthenticationInformation.returnUrl = URLUtils.https('CheckoutServices-handlingConsumerAuthResponse').toString();
 
+    if (session.custom.Flag3ds === true || session.custom.scaTokenFlag === true) {   
+        session.custom.Flag3ds = true;
+        consumerAuthenticationInformation.challengeCode = '04';
+    }
+   
     var paymentInformation = new cybersourceRestApi.Ptsv2paymentsPaymentInformation();
     var request = new cybersourceRestApi.CreatePaymentRequest();
 
+
+
+    var SecureRandom = require('dw/crypto/SecureRandom');
+    SecureRandom = new SecureRandom();
+
+    // eslint-disable-next-line no-undef
+    if (!session.privacy.key || !session.privacy.iv) {
+        var key = SecureRandom.nextBytes(32);
+        var iv = SecureRandom.nextBytes(16);
+        // eslint-disable-next-line no-undef
+        key = dw.crypto.Encoding.toBase64(key);
+        // eslint-disable-next-line no-undef
+        iv = dw.crypto.Encoding.toBase64(iv);
+        // eslint-disable-next-line no-undef
+        session.privacy.key = key;
+        // eslint-disable-next-line no-undef
+        session.privacy.iv = iv;
+    }
     Cipher = new Cipher();
     // eslint-disable-next-line no-undef
     var encryptedSessionID = Cipher.encrypt(session.sessionID, session.privacy.key, 'AES/CBC/PKCS5Padding', session.privacy.iv, 0);
@@ -198,7 +297,7 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
     processingInformation.actionList.push('VALIDATE_CONSUMER_AUTHENTICATION');
 
     //Capture service call if Payer Authentication is enabled
-    if (configObject.enableCapture === true) {
+    if (dw.system.Site.getCurrent().getCustomPreferenceValue('$reseller$_CreditCardTransactionType').value === 'sale') {
         processingInformation.capture = true;
     }
 
@@ -211,7 +310,7 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
     amountDetails.currency = currency;
 
     var billTo = new cybersourceRestApi.Ptsv2paymentsOrderInformationBillTo();
-    billTo.email =  order.getCustomerEmail();
+    billTo.email = order.getCustomerEmail();
     billTo.country = billingDetails.addressFields.country.htmlValue;
     billTo.firstName = billingDetails.addressFields.firstName.htmlValue;
     billTo.lastName = billingDetails.addressFields.lastName.htmlValue;
@@ -231,18 +330,18 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
 
     var paymentInformation = new cybersourceRestApi.Ptsv2paymentsPaymentInformation();
     var request = new cybersourceRestApi.CreatePaymentRequest();
-    if (session.custom.SCA === true) {
+ 
         Cipher = new Cipher();
         // eslint-disable-next-line no-undef
         var encryptedSessionID = Cipher.encrypt(session.sessionID, session.privacy.key, 'AES/CBC/PKCS5Padding', session.privacy.iv, 0);
+
         var deviceSessionId = new cybersourceRestApi.Ptsv2paymentsDeviceInformation();
         deviceSessionId.fingerprintSessionId = encryptedSessionID;
 
         if (configObject.deviceFingerprintEnabled) {
             request.deviceInformation = deviceSessionId;
         }
-    }
-
+    
     if (cardData.token != null) {
         /* eslint-disable block-scoped-var */
         var customer = new cybersourceRestApi.Ptsv2paymentsPaymentInformationCustomer();
@@ -279,9 +378,7 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
     request.paymentInformation = paymentInformation;
 
     request.consumerAuthenticationInformation = consumerAuthenticationInformation;
-    if (session.custom.SCA === false) {
-        request.consumerAuthenticationInformation.challendeCode = '04';
-    }
+   
     var result = '';
     instance.createPayment(request, function (data, error, response) { // eslint-disable-line no-unused-vars
         if (!error) {
@@ -304,6 +401,7 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
 
 if (configObject.cartridgeEnabled) {
     module.exports = {
+        paSetup: paSetup,
         paEnroll: paEnroll,
         paConsumerAuthenticate: paConsumerAuthenticate
     };

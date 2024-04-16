@@ -23,7 +23,7 @@ server.prepend(
             res.redirectUrl = URLUtils.url('Checkout-Begin').toString() + '?stage=payment';
             return next();
         }
-
+        session.custom.Flag3ds = false;
         // eslint-disable-next-line no-undef
         if (session.getCustomer().getProfile() !== null) {
             // eslint-disable-next-line no-undef

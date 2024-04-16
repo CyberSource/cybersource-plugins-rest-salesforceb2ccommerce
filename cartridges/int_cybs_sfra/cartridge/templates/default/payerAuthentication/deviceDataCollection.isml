@@ -1,12 +1,19 @@
 <link rel="stylesheet" href="${URLUtils.staticURL('/css/deviceDataCollection.css')}">
 <div id="deviceDataCollection">
-	<h1 id="paymentprocessingmessage">
+	<h2 id="paymentprocessingmessage">
 		${Resource.msg('processing.payment', 'payments', null)}
-	</h1>
+	</h2>
 	<form id="collectionForm" name="devicedata" target="paFrame" method="POST" action="${pdict.deviceDataUrl}">
 		<input type="hidden" id="bin" name="Bin" value="${pdict.cardNumber}" />
 		<input type="hidden" name="JWT" value="${pdict.jwtToken}" />
 	</form>
 	<iframe scrolling="no" id="paFrame" name="paFrame" src=""></iframe>
+
+	 <form class="payerAuthRedirect" action="${pdict.action}" method="POST" name="payerAuthRedirect"
+            target="_parent">
+			<input type="hidden" name="MD" value="${pdict.orderNo}" />
+        </form>  
+
 	<script src="${URLUtils.staticURL('/js/deviceDataCollection.js')}" type="text/javascript"></script>
+
 </div>

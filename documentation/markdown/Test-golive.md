@@ -35,6 +35,19 @@ Maestro (UK Domestic) | 6759 4111 0000 0008 |  |
 | |5641 8211 1116 6669|  | 	 	 
 UATP |1354 1234 5678 911|  | 
 
+Test card numbers for Network Tokens:
+
+Test Card | Brand Number |CVV Expires
+Visa      |4895 3799 8000 0580 |
+Visa      |4895 3799 8000 0572 |
+Visa      |4895 3799 8000 0564 |
+Visa      |4895 3799 8000 0325 |
+MasterCard  |5120 3422 3315 0747 |
+MasterCard  |5120 3432 8749 9758 |
+MasterCard  |5120 3501 0006 4594 |
+MasterCard  |2222 6904 2006 4590 |
+
+
 Register SFCC sandbox to Apple Sandbox Account.
  
    1. Go to: **“Merchant Tools > Site Preferences > Apple pay**

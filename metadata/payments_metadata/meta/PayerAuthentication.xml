@@ -9,40 +9,6 @@
                 <externally-managed-flag>false</externally-managed-flag>
                 <default-value>false</default-value>
             </attribute-definition>
-            <attribute-definition attribute-id="Cybersource_CruiseApiKey">
-                <display-name xml:lang="x-default">Cruise API Key</display-name>
-                <description xml:lang="x-default">A shared secret value between the merchant and Payer Authentication system. This value should never be exposed to the public</description>
-                <type>password</type>
-                <externally-managed-flag>false</externally-managed-flag>
-            </attribute-definition>
-            <attribute-definition attribute-id="Cybersource_CruiseOrgUnitId">
-                <display-name xml:lang="x-default">Cruise Org Unit Id</display-name>
-                <description xml:lang="x-default">GUID to identify the merchant organization within Payer Authentication systems</description>
-                <type>string</type>
-                <externally-managed-flag>false</externally-managed-flag>
-            </attribute-definition>
-            <attribute-definition attribute-id="Cybersource_CruiseApiIdentifier">
-                <display-name xml:lang="x-default">Cruise API Identifier</display-name>
-                <description xml:lang="x-default">GUID used to identify the specific API Key</description>
-                <type>string</type>
-                <externally-managed-flag>false</externally-managed-flag>
-            </attribute-definition>
-            <attribute-definition attribute-id="Cybersource_CruiseEndPoint">
-                <display-name xml:lang="x-default">Cruise End Point</display-name>
-                <description xml:lang="x-default">Environment details of Cruise API</description>
-                <type>enum-of-string</type>
-                <externally-managed-flag>false</externally-managed-flag>
-                <value-definitions>
-                    <value-definition default="true">
-                        <display xml:lang="x-default">Stage</display>
-                        <value>Stage</value>
-                    </value-definition>
-                    <value-definition>
-                        <display xml:lang="x-default">Production</display>
-                        <value>Production</value>
-                    </value-definition>
-                </value-definitions>
-            </attribute-definition>
             <attribute-definition attribute-id="Cybersource_IsSCAEnabled">
                 <display-name xml:lang="x-default">Enable SCA</display-name>
                 <description xml:lang="x-default">Enable or Disable Strong Customer Authentication</description>
@@ -55,10 +21,6 @@
             <attribute-group group-id="Cybersource_PayerAuthentication">
                 <display-name xml:lang="x-default">Payer Authentication Configuration</display-name>
                 <attribute attribute-id="Cybersource_PayerAuthEnabled"/>
-                <attribute attribute-id="Cybersource_CruiseApiKey"/>
-                <attribute attribute-id="Cybersource_CruiseOrgUnitId"/>
-                <attribute attribute-id="Cybersource_CruiseApiIdentifier"/>
-                <attribute attribute-id="Cybersource_CruiseEndPoint"/>
                 <attribute attribute-id="Cybersource_IsSCAEnabled"/>
             </attribute-group>
         </group-definitions>
