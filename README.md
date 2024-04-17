@@ -9,7 +9,7 @@
 * **JavaScript Controllers Friendly:** **YES**
 
 ### Contact ###
-* Global Partner Solutions - CS: <GlobalPartnerSolutionsCS@visa.com>
+* Global Partner Solutions - Customer Support : <GlobalPartnerSolutionsCS@visa.com>
 
 ----
 
