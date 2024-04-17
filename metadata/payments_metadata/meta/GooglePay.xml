@@ -27,14 +27,14 @@
             </attribute-definition>
             <attribute-definition attribute-id="Cybersource_EnableGooglePayOnMiniCart">
                 <display-name xml:lang="x-default">Enable Google Pay On Mini Cart</display-name>
-                <description xml:lang="x-default">Enable/Disable google pay on mini cart</description>
+                <description xml:lang="x-default">Enable/Disable Google Pay on mini cart</description>
                 <type>boolean</type>
                 <externally-managed-flag>false</externally-managed-flag>
                 <default-value>false</default-value>
             </attribute-definition>
             <attribute-definition attribute-id="Cybersource_EnableGooglePayOnCart">
                 <display-name xml:lang="x-default">Enable Google Pay On Cart</display-name>
-                <description xml:lang="x-default">Enable/Disable google pay on cart page</description>
+                <description xml:lang="x-default">Enable/Disable Google Pay on cart page</description>
                 <type>boolean</type>
                 <externally-managed-flag>false</externally-managed-flag>
                 <default-value>false</default-value>

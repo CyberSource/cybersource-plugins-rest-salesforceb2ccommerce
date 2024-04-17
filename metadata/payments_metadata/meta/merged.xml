@@ -203,6 +203,13 @@
                 <externally-managed-flag>false</externally-managed-flag>
                 <default-value>1</default-value>
             </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_NetworkToken">
+                <display-name xml:lang="x-default">Network Token Updates</display-name>
+                <description xml:lang="x-default">Subscribe to Network Token life cycle updates</description>
+                <type>boolean</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>false</default-value>
+            </attribute-definition>
             <attribute-definition attribute-id="Cybersource_FlexMicroform">
                 <display-name xml:lang="x-default">Enable Secure Acceptance - Flex Microfrom</display-name>
                 <description xml:lang="x-default">Enable or Disable Cybersource Flex Microform service</description>
@@ -259,30 +266,12 @@
                 <externally-managed-flag>false</externally-managed-flag>
                 <default-value>false</default-value>
             </attribute-definition>
-            <attribute-definition attribute-id="Cybersource_CruiseApiKey">
-                <display-name xml:lang="x-default">Cruise API Key</display-name>
-                <description xml:lang="x-default">A shared secret value between the merchant and Payer Authentication system. This value should never be exposed to the public</description>
-                <type>string</type>
+            <attribute-definition attribute-id="Cybersource_IsSCAEnabled">
+                <display-name xml:lang="x-default">Enable SCA</display-name>
+                <description xml:lang="x-default">Enable or Disable Strong Customer Authentication</description>
+                <type>boolean</type>
                 <externally-managed-flag>false</externally-managed-flag>
-            </attribute-definition>
-            <attribute-definition attribute-id="Cybersource_CruiseOrgUnitId">
-                <display-name xml:lang="x-default">Cruise Org Unit Id</display-name>
-                <description xml:lang="x-default">GUID to identify the merchant organization within Payer Authentication systems</description>
-                <type>string</type>
-                <externally-managed-flag>false</externally-managed-flag>
-            </attribute-definition>
-            <attribute-definition attribute-id="Cybersource_CruiseApiIdentifier">
-                <display-name xml:lang="x-default">Cruise API Identifier</display-name>
-                <description xml:lang="x-default">GUID used to identify the specific API Key</description>
-                <type>string</type>
-                <externally-managed-flag>false</externally-managed-flag>
-            </attribute-definition>
-            <attribute-definition attribute-id="Cybersource_CruiseEndPoint">
-                <display-name xml:lang="x-default">Cruise End Point</display-name>
-                <description xml:lang="x-default">Environment details of Cruise API</description>
-                <type>enum-of-string</type>
-                <externally-managed-flag>false</externally-managed-flag>
-                <default-value>Stage</default-value>
+                <default-value>false</default-value>
             </attribute-definition>
             <attribute-definition attribute-id="Cybersource_EnableGooglePay">
                 <display-name xml:lang="x-default">Enable Google Pay</display-name>
@@ -380,6 +369,7 @@
                 <attribute attribute-id="Cybersource_LimitSavedCardEnabled"/>
                 <attribute attribute-id="Cybersource_PaymentInstrumentAllowedInInterval"/>
                 <attribute attribute-id="Cybersource_ResetIntervalInHours"/>
+                <attribute attribute-id="Cybersource_NetworkToken"/>
             </attribute-group>
             <attribute-group group-id="Cybersource_FlexMicroform">
                 <display-name xml:lang="x-default">Flex Microform Configuration</display-name>
@@ -400,10 +390,7 @@
             <attribute-group group-id="Cybersource_PayerAuthentication">
                 <display-name xml:lang="x-default">Payer Authentication Configuration</display-name>
                 <attribute attribute-id="Cybersource_PayerAuthEnabled"/>
-                <attribute attribute-id="Cybersource_CruiseApiKey"/>
-                <attribute attribute-id="Cybersource_CruiseOrgUnitId"/>
-                <attribute attribute-id="Cybersource_CruiseApiIdentifier"/>
-                <attribute attribute-id="Cybersource_CruiseEndPoint"/>
+                <attribute attribute-id="Cybersource_IsSCAEnabled"/>
             </attribute-group>
             <attribute-group group-id="Cybersource_GooglePay">
                 <display-name xml:lang="x-default"></display-name>

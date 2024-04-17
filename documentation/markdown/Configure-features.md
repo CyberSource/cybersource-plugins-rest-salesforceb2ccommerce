@@ -5,7 +5,7 @@ Refer to this [link](https://www.cybersource.com/en-us/solutions/payment-securit
 
 Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: Upload metadata" or import **"metadata/payment_metadata/meta/Tokenization.xml"** in Business Manager (**Administration > Site Development > Import & Export**)
 
-Step 2: Go to **Merchant Tools > Custom Preferences > Cybersource_Tokenization** and set values for the following parameters:
+Step 2: Go to **Merchant Tools > Site Preferences > Custom Preferences > Cybersource_Tokenization** and set values for the following parameters:
 
 Field Name | Description
 ------------ | -------------
@@ -16,13 +16,31 @@ Reset Interval (in Hours) | Number of hours that saved card attempts are counted
 
 **NOTE:** If you want to utilize **"save card to account"** feature through "Payment flow/Checkout flow", make sure to set **"Enable tokenization Services"** to **"Yes"**
 
+### **1.1 Network Tokens**
 
+A Network Token is a card scheme generated token, that represents customer card information for secure transactions that references a customer’s actual PAN.
+
+Your Cybersource Merchant ID needs to be enabled for Network Token’s before you can use this service.  Please contact your Cybersource representative to request enablement.
+
+The Cybersource cartridge will subscribe to the Token Life Cycle web hook and make the necessary updates to the saved card details.
+
+Step 1: Upload Cybersource metadata in Business Manager. If not follow “Step 2: Upload metadata” or import “metadata/payments_metadata/meta/Tokenization.xml” and “metadata/payments_metadata/meta/custom-objecttype-definitions.xml” in Business Manager (Administration > Site Development > Import & Export)
+
+Step 2: Go to Merchant Tools > Site Preferences > Custom Preferences > Cybersource_Tokenization and set values for the following parameters:
+Field Name | Description
+------------ | -------------
+Enable Tokenization Services | Enable or Disable the Tokenization Service saving Credit/Debit Card on "My Account" page
+Network Token Updates | Subscribe to Network Token life cycle updates
+
+Step 3: Go to Merchant Tools > Custom objects > Custom Object Editor and check if the custom object type "Network Tokens Webhook" exists without any object.
+
+A custom object of this type would be created only if the Network Tokens webhook is subscribed.
 
 ### **2. Delivery Address Verification**
 
 Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: Upload metadata" or import **"metadata/payment_metadata/meta/DeliveryAddressVerification.xml"** in Business Manager (**Administration > Site Development > Import & Export**)
 
-Step 2: Go to **Merchant Tools > Custom Preferences > Cybersource_DeliveryAddressVerification** and set values for the parameter:
+Step 2: Go to **Merchant Tools > Site Preferences > Custom Preferences > Cybersource_DeliveryAddressVerification** and set values for the parameter:
 
 Field | Description
 ------------ | -------------
@@ -34,7 +52,7 @@ Enable Delivery Address Verification Services | Enableor Disable Delivery Addres
 
 Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: Upload metadata" or import **"metadata/payment_metadata/meta/TaxConfiguration.xml"** in Business Manager (**Administration > Site Development > Import & Export**)
 
-Step 2: Go to **Merchant Tools > Custom Preferences > cybersource_TaxConfiguration** and set values for the following parameters:
+Step 2: Go to **Merchant Tools > Site Preferences > Custom Preferences > Cybersource_TaxConfiguration** and set values for the following parameters:
 
 Field | Description
 ------------ | -------------
@@ -64,7 +82,7 @@ Refer to this [link](https://www.cybersource.com/en-us/solutions/fraud-and-risk-
 
 Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: Upload metadata" or import **"metadata/payment_metadata/meta/DecisionManager.xml"** in Business Manager (**Administration > Site Development > Import & Export**)
 
-Step 2: Go to **Merchant Tools > Custom Preferences > cybersource_DecisionManager**
+Step 2: Go to **Merchant Tools > Site Preferences > Custom Preferences > Cybersource_DecisionManager**
 and set values for the following parameter:
 
 Field | Description
@@ -90,7 +108,7 @@ Step 3.2: Open Business Manager. Go to  **Administration > Operations > Jobs** a
  ExecuteScriptModule.Transactional | Indicates if the script module's function requires transaction handling.
  ExecuteScriptModule.TimeoutInSeconds | The timeout in seconds for the script module's function
  
-Step 3.3: Go to **Merchant Tools > Custom Preferences > cybersource_DecisionManager** and set values for the following parameter:
+Step 3.3: Go to **Merchant Tools > Site Preferences > Custom Preferences > cybersource_DecisionManager** and set values for the following parameter:
 
  Field | Description
  ------------ | -------------
@@ -104,7 +122,7 @@ Device FingerPrint is a powerful feature of Decision Manager and Fraud Managemen
 
 Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: Upload metadata" or import **"metadata/payment_metadata/meta/DeviceFingerprint.xml"** in Business Manager (**Administration > Site Development > Import & Export**)
 
-Step 2: Go to **Merchant Tools > Custom Preferences > Cybersource_DeviceFingerprint**
+Step 2: Go to **Merchant Tools > Site Preferences > Custom Preferences > Cybersource_DeviceFingerprint**
 and set values for the following parameters:
 
 Field | Description
@@ -118,7 +136,7 @@ TTL (Time To Live) | Time, in milliseconds between generating a new fingerprint 
 
 ### **6. Capture Service**
 
-The interface you will use to make capture requests is in the form of a single function:
+A single function is available to make capture requests.
 
     httpCapturePayment(requestID, merchantRefCode, purchaseTotal, currency)
 
@@ -142,8 +160,7 @@ currency | Currency code (ex. ‘USD’)
 
 ### **6. Auth Reversal Service**
 
-Ensure you have followed all steps in the **"Cartridge Installation"** guide above. A Cybersource Merchant ID, Cybersource Merchant Key are required for this service.  Enter these values in the corresponding site preferences under the **"Cybersource: Core"** group.
-The interface you will use to make auth reversal requests is in the form of a single function:
+A single function is available to make auth reversal requests.
 
     httpAuthReversal(requestID, merchantRefCode,  amount, currency)
 
@@ -190,27 +207,6 @@ Hook Name | Service Request to modify
 ------------ | -------------
 AuthReversal | Credit Card Authorization Reversal
 Capture | Credit Card Capture
-
-
-
-### **8. Failover/Recovery Process**
-
-Visa has dedicated data centers in Virginia and Colorado. There are no single points of failure. Visa Data Centers implement redundant, dual-powered equipment, multiple data and power feeds, and fault tolerance at all levels with 99.995% uptime. In case of any failover, please open support case @ https://support.cybersource.com
-
-Disable Cartridge
-- Go to **Merchant Tools > Custom Preferences > Cybersource Core** and set values for the following parameters:
-
-Field | Description | Value to Set
------------- | ------------- | -----------
-Enable Cybersource Cartridge | Enable or disable Cyberdource Cartridge. If disabled none of the Cybersource services are invoked | **No**
-
-
-
-### **9. Supported Locales**
-
-Out of box cartridge supports most of the locales like English (United States), English (United Kingdom), French (FRANCE), English (Austria), German (GERMANY), Dutch (NETHERLANDS) and more. 
-
-
 
 <div style="text-align: right;font-size: 20px" ><a href="Test-golive.md">Next Step: Test and Go Live</a></div> 
 

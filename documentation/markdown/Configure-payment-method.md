@@ -5,7 +5,7 @@
 1. Credit Card
 2. Apple Pay
 3. Google Pay
-4. VISA SRC
+4. Click to Pay
 
 ----
 
@@ -46,7 +46,7 @@ Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: 
 
  Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: Upload metadata" or import **"metadata/payment_metadata/meta/PayerAuthentication.xml"** in Business Manager (**Administration > Site Development > Import & Export**)
 
- Step 3: Go to **Merchant Tools > Custom Preferences > Cybersource_PayerAuthentication**
+ Step 2: Go to **Merchant Tools > Custom Preferences > Cybersource_PayerAuthentication**
  and set values for the following parameters:
 
  Field | Description
@@ -57,6 +57,23 @@ Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: 
  Cruise API Identifier | GUID used to identify the specific API Key
  Cruise End Point | Environment details of Cruise API
 
+ #### <ins> Enforce Strong Consumer Authentication
+When Payer Authentication is enabled, if a transaction gets declined with the reason as Strong Customer Authentication required, then another request will be sent from cartridge automatically for the same order and the customer will be 3DS challenged.
+
+In case merchants would like the cardholder to be 3DS Challenged when saving a card IsSCAEnabled setting can be updated to enable it for credit cards.
+
+Note: The scaEnabled setting is applicable only if Payer Authentication is enabled.
+
+Site Preferences:
+Step 1: Upload Cybersource metadata in Business Manager. If not follow “Upload metadata” or import "metadata/sfra_meta/meta/PayerAuthentication.xml" in Business Manager (Administration > Site Development > Import & Export)
+
+Step 2: Go to Merchant Tools > Site Preferences   > Custom Preferences > Cybersource_PayerAuthentication and set values for the following parameters:
+Field | Description
+ ------------ | -------------
+IsSCAEnabled  |  Enable Strong Customer Authentication
+
+Set the value for IsSCAEnabled to yes to use Strong Customer Authentication feature.
+
 ---
 
 #### 2. Apple Pay
@@ -64,9 +81,9 @@ Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: 
 
  #### <ins>Step 1: Create a merchant identifier in Apple portal:
 
- A merchant identifier uniquely identifies you to Apple Pay as a merchant who is able to accept payments. You can use the same merchant identifier for multiple native and web apps. It never expires.
+ A merchant identifier uniquely identifies you to Apple Pay as a merchant who is able to accept payments. You can use the same merchant identifier for multiple native and web apps.
 
-  1. Go to Apple portal : https://help.apple.com/developer-account/#/devb2e62b839?sub=dev103e030bb
+  1. Go to Apple portal : https://developer.apple.com
 
   2. In Certificates, Identifiers & Profiles, select Identifiers from the sidebar, then click the Add button (+) in the upper-left corner.
 
@@ -153,58 +170,56 @@ Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: 
    #### <ins>Step 6: Payment Processor
    1. In the Business Manager, go to **Merchant Tools > Ordering > Payment Methods** and select **DW_APPLE_PAY**. And in **DW_APPLE_PAY details**, double check if **Payment Processor** = **"PAYMENTS_CREDIT"**
 
-   ---
-
    #### <ins>Site Preferences:
    Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: Upload metadata" or import **"metadata/sfra_meta/meta/ApplePay.xml"** in Business Manager (**Administration > Site Development > Import & Export**)
 
-   Step 3: Go to **Merchant Tools > Custom Preferences > Apple Pay**
+   Step 3: Go to **Merchant Tools > Site Preferences > Custom Preferences > Apple Pay**
    and set values for the following parameters:
 
    Field | Description
    ------------ | -------------
    ApplePayTransactionType | Select Sale/Auth transaction type
 
-
-----
-
+   ---
    #### 3. Google Pay
-   #### <ins>Step 1: Create custom preferences for google pay
+   #### <ins>Step 1: Create custom preferences for Google Pay
    1. Upload Cybersource metadata in Business Manager. If not follow “Step 2: Upload metadata” or import **metadata/payment_metadata/meta/GooglePay.xml** in Business Manager **(Administration > Site Development > Import & Export)**
-   2. Go to **Merchant Tools > Custom Preferences > Google Pay** and set values for the following parameters:
+   2. Go to **Merchant Tools > Site Preferences > Custom Preferences > Google Pay** and set values for the following parameters:
 
    Field  |  Description
    ------------ | -------------
    Enable Google Pay | Enable/Disable Google Pay on checkout page
-   Enable Google Pay on Mini Cart | Enable/Disable google pay on mini cart
-   Enable Google Pay on Cart | Enable/Disable google pay on cart page
+   Enable Google Pay on Mini Cart | Enable/Disable Google Pay on mini cart
+   Enable Google Pay on Cart | Enable/Disable Google Pay on cart page
    Google Pay Merchant Id | Merchant Id required for Live Environments
    Google Pay Environment | Environment details of Google Pay. Possible values are Test or Production
+   Google Pay Transaction Type | Select Sale/Auth transaction Type
 
    #### <ins>Step 2: Payment Processor
    1. In the Business Manager, go to **Merchant Tools > Ordering > Payment Methods** and select **DW_GOOGLE_PAY**. And in **DW_GOOGLE_PAY details**, double check if **Payment Processor** = **"PAYMENTS_CREDIT"**
    
    #### <ins>Step 3: Request Production Access
-   1. If you want to use google pay in **LIVE Environment**,then navigate to this link https://pay.google.com/business/console/ in order to get google pay merchant Id.
+   1. If you want to use Google Pay in **LIVE Environment**,then navigate to this link https://pay.google.com/business/console/ in order to get Google Pay merchant Id.
 
 ---
 
-   #### 4. Visa SRC
-   #### <ins>Step 1: Create custom preferences for Visa SRC
+   #### 4. Click to Pay
+   #### <ins>Step 1: Create custom preferences for Click to Pay
    1. Upload Cybersource metadata in Business Manager. If not follow “Step 2: Upload metadata” or import **metadata/payment_metadata/meta/VisaSRC.xml** in Business Manager **(Administration > Site Development > Import & Export)**
-   2. Go to Merchant Tools > Custom Preferences > Visa SRC and set values for the following parameters:
+   2. Go to Merchant Tools > Site Preferences > Custom Preferences > Click to Pay and set values for the following parameters:
 
    Field | Description
    ------------ | -------------
-   Enable Visa SRC | Enable/Disable Enable Visa SRC on checkout page
-   Visa SRC Key | Visa SRC Key Id obtained through EBC Digital payments
+   Enable Click to Pay | Enable/Disable Enable Click to Pay on checkout page
+   Click to Pay Key | Click to Pay Key Id obtained through EBC Digital payments
    True for production | Set to Yes for Production
+   Click to Pay Transaction Type | Select Sale/Auth transaction Type
    
    #### <ins>Step 2: Payment Processor
-   1. In the Business Manager, go to **Merchant Tools > Ordering > Payment Methods** and select **VISA_SRC**. And in **VISA_SRC details**, double check if **Payment Processor** = **"PAYMENTS_VISA_SRC"**
+   1. In the Business Manager, go to **Merchant Tools > Ordering > Payment Methods** and select **CLICK_TO_PAY**. And in **CLICK_TO_PAY details**, double check if **Payment Processor** = **"PAYMENTS_VISA_SRC"**
 
    #### <ins>Notes:
-   Currently Visa SRC is only available in checkout view.
+   Currently Click to Pay is only available in checkout view.
 
 
 ---

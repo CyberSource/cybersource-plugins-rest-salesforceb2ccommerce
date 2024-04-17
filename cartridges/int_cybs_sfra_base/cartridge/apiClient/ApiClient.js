@@ -6,7 +6,11 @@ var MessageDigest = require('dw/crypto/MessageDigest');
 
 var MerchantConfig = require('./merchantConfig');
 var Logger = require('./logger');
-var PaymentsHttpService = dw.svc.LocalServiceRegistry.createService("PaymentHttpService", {
+
+var _exports = function () {}
+
+_exports.prototype.createService = function (){
+ var PaymentsHttpService = dw.svc.LocalServiceRegistry.createService("PaymentHttpService", {
     createRequest: function (svc, url, headers, method, requestBody) {
         var keys = Object.keys(headers);
         var StringHeaders = "";
@@ -32,12 +36,12 @@ var PaymentsHttpService = dw.svc.LocalServiceRegistry.createService("PaymentHttp
         return msg;
     }
 });
-
-var _exports = function () {}
+ return PaymentsHttpService;
+};
 
 _exports.prototype.setConfiguration = function (configObject) {
     this.merchantConfig = new MerchantConfig(configObject);
-    this.basePath = PaymentsHttpService.configuration.credential.getURL();
+    this.basePath = this.createService().configuration.credential.getURL();
     this.logger = Logger.getLogger(this);
 };
 
@@ -234,9 +238,9 @@ _exports.prototype.callApi = function (path, httpMethod, pathParams, queryParams
 
     // Calling service.
     if (method === 'post' || method === 'patch') {
-        var response = PaymentsHttpService.call(url, normalizedHeaders, method, payload);
+        var response = this.createService().call(url, normalizedHeaders, method, payload);
     } else {
-        var response = PaymentsHttpService.call(url, normalizedHeaders, method);
+        var response = this.createService().call(url, normalizedHeaders, method);
     }
 
     if (response.ok) {

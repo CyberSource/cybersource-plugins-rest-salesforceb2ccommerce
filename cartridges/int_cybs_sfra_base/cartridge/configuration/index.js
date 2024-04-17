@@ -23,7 +23,7 @@ var LogfileMaxSize = '5242880'; // 10 MB In Bytes
  * Send this value in all requests that are sent through the partner solution. CyberSource assigns the ID to the partner.
  * Note When you see a partner ID of 999 in reports, the partner ID that was submitted is incorrect.
  */
-var SolutionId = 'J3P4XU2P';
+var SolutionId = 'QBZT2URS';
 
 var CruiseDDCEndPoint = {
     Stage: 'https://centinelapistag.cardinalcommerce.com/V1/Cruise/Collect',
@@ -76,6 +76,7 @@ function getConfig(config) {
         tokenizationPaymentInstrumentAllowedInInterval: config.tokenizationPaymentInstrumentAllowedInInterval || customPreferences.Tokenization.Preferences.PaymentInstrumentAllowedInInterval.getValue(),
         tokenizationResetIntervalInHours: config.tokenizationResetIntervalInHours || customPreferences.Tokenization.Preferences.ResetIntervalInHours.getValue(),
         tokenizationLimitSavedCardEnabled: config.tokenizationLimitSavedCardEnabled || customPreferences.Tokenization.Preferences.LimitSavedCardEnabled.getValue(),
+        networkTokenizationEnabled: config.networkTokenizationEnabled || customPreferences.Tokenization.Preferences.NetworkTokenUpdates.getValue(),
 
         // Tax configuration
         taxServiceEnabled: config.taxServiceEnabled || customPreferences.TaxConfiguration.Preferences.TaxCalculationEnabled.getValue(),
