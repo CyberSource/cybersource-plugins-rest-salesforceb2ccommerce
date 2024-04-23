@@ -125,10 +125,6 @@ function getConfig(config) {
 
         // PayerAuthentication
         payerAuthenticationEnabled: config.payerAuthenticationEnabled || customPreferences.PayerAuthentication.Preferences.EnablePayerAuthentication.getValue(),
-        payerAuthenticationCruiseAPIKey: config.payerAuthenticationCruiseAPIKey || customPreferences.PayerAuthentication.Preferences.CruiseAPIKey.getValue(),
-        payerAuthenticationCruiseAPIIdentifier: config.payerAuthenticationCruiseAPIIdentifier || customPreferences.PayerAuthentication.Preferences.CruiseAPIIdentifier.getValue(),
-        payerAuthenticationCruiseOrgUnitID: config.payerAuthenticationCruiseOrgUnitID || customPreferences.PayerAuthentication.Preferences.CruiseOrgUnitID.getValue(),
-        payerAuthenticationCruiseEndPoint: config.payerAuthenticationCruiseEndPoint || customPreferences.PayerAuthentication.Preferences.CruiseEndPoint.getValue(),
 
         // GooglePay
         googlePayEnabled: config.googlePayEnabled || customPreferences.GooglePay.Preferences.EnableGooglePay.getValue(),

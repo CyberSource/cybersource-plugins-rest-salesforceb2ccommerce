@@ -122,7 +122,7 @@ function httpAuthorizeWithToken(cardData, customerEmail, referenceInformationCod
         }
     }  
     if (order.paymentInstruments[0].paymentMethod === 'CREDIT_CARD') {
-        if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_CreditCardTransactionType').value === 'sale' ){
+        if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_CardTransactionType').value === 'sale' ){
             request.processingInformation.capture = true;
         }
     }   
