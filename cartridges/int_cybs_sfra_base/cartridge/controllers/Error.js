@@ -40,6 +40,7 @@ if (configObject.cartridgeEnabled) {
                     }
                 }
                 messages.push();
+                res.setContentType('application/json;charset=utf-8');
                 if (req.httpHeaders.get('x-requested-with') === 'XMLHttpRequest') {
                     res.json({
                         errorObj: customError,

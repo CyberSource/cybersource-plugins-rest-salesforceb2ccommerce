@@ -21,7 +21,7 @@ if (configObject.cartridgeEnabled) {
 
         var getDeviceFingerprint = false;
 
-        if (configObject.deviceFingerprintEnabled) {
+         if (configObject.deviceFingerprintEnabled && configObject.fmeDmEnabled) {
             // eslint-disable-next-line no-undef
             if (empty(session.privacy.deviceFingerprintTime)) {
                 // eslint-disable-next-line no-undef
@@ -41,24 +41,19 @@ if (configObject.cartridgeEnabled) {
         var SecureRandom = require('dw/crypto/SecureRandom');
         SecureRandom = new SecureRandom();
         Cipher = new Cipher();
-        // eslint-disable-next-line no-undef
-        if (!session.privacy.key || !session.privacy.iv) {
-            var key = SecureRandom.nextBytes(32);
-            var iv = SecureRandom.nextBytes(16);
-            // eslint-disable-next-line no-undef
-            key = dw.crypto.Encoding.toBase64(key);
-            // eslint-disable-next-line no-undef
-            iv = dw.crypto.Encoding.toBase64(iv);
-            // eslint-disable-next-line no-undef
-            session.privacy.key = key;
-            // eslint-disable-next-line no-undef
-            session.privacy.iv = iv;
-        }
-        // eslint-disable-next-line no-undef
-        var encryptedSessionID = Cipher.encrypt(sessionID, session.privacy.key, 'AES/CBC/PKCS5Padding', session.privacy.iv, 0);
+        var key = SecureRandom.nextBytes(32);
+        var iv = SecureRandom.nextBytes(16);
+        key = dw.crypto.Encoding.toBase64(key);
+        iv = dw.crypto.Encoding.toBase64(iv);
+        session.privacy.key = key;
+        session.privacy.iv = iv;
 
-        var url = location + '/fp/tags.js?org_id=' + orgID + '&session_id=' + merchID + encryptedSessionID;
+        // eslint-disable-next-line no-undef
+        var encryptedSessionID = Cipher.encrypt(key, session.privacy.key, 'AES/CBC/PKCS5Padding', session.privacy.iv, 0);
 
+        var dfpSessionId = encryptedSessionID.replace(/[+/]/g, 'SF');
+        var url = location + '/fp/tags.js?org_id=' + orgID + '&session_id=' + merchID + dfpSessionId;
+        session.privacy.dfID = dfpSessionId;
         res.cacheExpiration(0);
         res.render('common/deviceFingerprint', {
             url: url,

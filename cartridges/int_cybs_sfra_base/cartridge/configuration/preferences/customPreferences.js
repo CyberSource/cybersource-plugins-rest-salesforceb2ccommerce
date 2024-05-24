@@ -331,17 +331,6 @@ module.exports = {
                 }
             },
             /** @type {CustomPreference} */
-            NetworkTokenUpdates: {
-                id: 'Cybersource_NetworkToken',
-                display_name: 'Network Token Updates',
-                description: 'Subscribe to Network Token life cycle updates',
-                type: Types.boolean,
-                default: false,
-                flags: {
-                    mandatory: false
-                }
-            },
-            /** @type {CustomPreference} */
             LimitSavedCardEnabled: {
                 id: 'Cybersource_LimitSavedCardEnabled',
                 display_name: 'Enable limiting Saved Card',
@@ -359,6 +348,17 @@ module.exports = {
                 description: 'Number of Cards that can be added in a defined interval on My Account page',
                 type: Types.int,
                 default: 20,
+                flags: {
+                    mandatory: false
+                }
+            },
+             /** @type {CustomPreference} */
+             NetworkTokenUpdates: {
+                id: 'Cybersource_NetworkToken',
+                display_name: 'Network Token Updates',
+                description: 'Subscribe to Network Token life cycle updates',
+                type: Types.boolean,
+                default: false,
                 flags: {
                     mandatory: false
                 }
@@ -491,17 +491,6 @@ module.exports = {
                     mandatory: false
                 }
             },
-            /** @type {CustomPreference} */
-            EnableSCA: {
-                id: 'Cybersource_IsSCAEnabled',
-                display_name: 'Enable SCA',
-                description: 'Enable or Disable Strong Customer Authentication',
-                type: Types.boolean,
-                default: false,
-                flags: {
-                    mandatory: false
-                }
-            }
         }
     },
     /* Google Pay Custom Preference */

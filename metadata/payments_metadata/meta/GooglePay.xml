@@ -64,7 +64,7 @@
         </custom-attribute-definitions>
         <group-definitions>
             <attribute-group group-id="Cybersource_GooglePay">
-                <display-name xml:lang="x-default"></display-name>
+                <display-name xml:lang="x-default">Google Pay Configuration</display-name>
                 <attribute attribute-id="Cybersource_EnableGooglePay"/>
                 <attribute attribute-id="Cybersource_GooglePayTransactionType"/>
                 <attribute attribute-id="Cybersource_EnableGooglePayOnMiniCart"/>

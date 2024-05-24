@@ -28,7 +28,7 @@ $('button[value="submit-payment"]').on('click', function () {
 function openModal(url) {
     var iframe = $(
         `<div class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-body">
-        <iframe src='${url}' 
+        <iframe src='${decodeURIComponent(url)}' 
             style="border: none; height:85vh; display: block;" 
             height="100%" width="100%" 
             marginheight="0" marginwidth="0" frameBorder="0" scrolling="no"
@@ -59,7 +59,7 @@ function handlePlaceOrder() {
                     defer.reject(data);
                 }
             } else if (data.createDeviceDataCollection) {
-                openModal(data.redirectUrl);
+                openModal(encodeURIComponent(data.redirectUrl));
                 defer.resolve();
             } else {
                 var continueUrl = data.continueUrl;

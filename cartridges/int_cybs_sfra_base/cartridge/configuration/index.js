@@ -136,6 +136,7 @@ function getConfig(config) {
         // DecisionManager
         visaSRCEnabled: config.vscCheckoutEnabled || customPreferences.ClicktoPay.Preferences.ClicktoPayEnabled.getValue(),
         visaSRCKey: config.visaSRCKey || customPreferences.ClicktoPay.Preferences.ClicktoPayKey.getValue(),
-        VisaSRCProduction: config.VisaSRCProduction || customPreferences.ClicktoPay.Preferences.ClicktoPayProduction.getValue()    };
+        VisaSRCProduction: config.VisaSRCProduction || customPreferences.ClicktoPay.Preferences.ClicktoPayProduction.getValue()
+    };
 }
 module.exports = getConfig();

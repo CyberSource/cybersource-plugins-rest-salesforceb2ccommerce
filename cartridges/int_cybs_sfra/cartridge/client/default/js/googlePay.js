@@ -202,7 +202,7 @@ function processPayment(paymentData) {
             $('*[name=' + attr + ']', parentSelector)
                 .addClass('is-invalid')
                 .siblings('.invalid-feedback')
-                .html(fieldErrors[attr]);
+                .text(fieldErrors[attr]);
         });
     }
 
