@@ -373,15 +373,11 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
     request.consumerAuthenticationInformation = consumerAuthenticationInformation;
    
     var result = '';
-    //var reqest_data = JSON.stringify(request);
-    // console.log("payerauth request",JSON.stringify(request));
     instance.createPayment(request, function (data, error, response) { // eslint-disable-line no-unused-vars
         if (!error) {
             result = data;
         } else {
             try {
-                //   console.log("payerauth response",JSON.stringify(response));
-
                 var parsedData = JSON.parse(data);
                 var reasonCodeObject = parsedData.errorInformation.details.filter(function (e) { return e.field === 'reasonCode'; }).pop();
                 result = {
