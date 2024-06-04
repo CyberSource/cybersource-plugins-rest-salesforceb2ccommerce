@@ -307,26 +307,58 @@
                 <type>string</type>
                 <externally-managed-flag>false</externally-managed-flag>
             </attribute-definition>
-            <attribute-definition attribute-id="Cybersource_ClickToPayProduction">
+            <attribute-definition attribute-id="Cybersource_GooglePayTransactionType">
+                <display-name xml:lang="x-default">Google Pay Transaction Type</display-name>
+                <type>enum-of-string</type>
+                <mandatory-flag>true</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <value-definitions>
+                    <value-definition default="true">
+                        <display xml:lang="x-default">Auth</display>
+                        <value>auth</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Sale</display>
+                        <value>sale</value>
+                    </value-definition>
+                </value-definitions>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_ClicktoPayProduction">
                 <display-name xml:lang="x-default">True for production</display-name>
                 <description xml:lang="x-default"></description>
                 <type>boolean</type>
                 <externally-managed-flag>false</externally-managed-flag>
                 <default-value>false</default-value>
             </attribute-definition>
-            <attribute-definition attribute-id="Cybersource_ClickToPayEnabled">
-                <display-name xml:lang="x-default">Enable Click to pay</display-name>
+            <attribute-definition attribute-id="Cybersource_ClicktoPayEnabled">
+                <display-name xml:lang="x-default">Enable Click to Pay</display-name>
                 <description xml:lang="x-default"></description>
                 <type>boolean</type>
                 <externally-managed-flag>false</externally-managed-flag>
                 <default-value>false</default-value>
             </attribute-definition>
-            <attribute-definition attribute-id="Cybersource_ClickToPayKey">
+            <attribute-definition attribute-id="Cybersource_ClicktoPayKey">
                 <display-name xml:lang="x-default">Click to Pay Key</display-name>
                 <description xml:lang="x-default"></description>
                 <type>string</type>
                 <externally-managed-flag>false</externally-managed-flag>
                 <default-value>false</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_ClicktoPayTransactionType">
+                <display-name xml:lang="x-default">Click to Pay Transaction Type</display-name>
+                <type>enum-of-string</type>
+                <mandatory-flag>true</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <value-definitions>
+                    <value-definition default="true">
+                        <display xml:lang="x-default">Auth</display>
+                        <value>auth</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Sale</display>
+                        <value>sale</value>
+                    </value-definition>
+                </value-definitions>
             </attribute-definition>
         </custom-attribute-definitions>
         <group-definitions>
@@ -393,18 +425,20 @@
                 <attribute attribute-id="Cybersource_IsSCAEnabled"/>
             </attribute-group>
             <attribute-group group-id="Cybersource_GooglePay">
-                <display-name xml:lang="x-default"></display-name>
+                <display-name xml:lang="x-default">Google Pay Configuration</display-name>
                 <attribute attribute-id="Cybersource_EnableGooglePay"/>
                 <attribute attribute-id="Cybersource_GooglePayEnvironment"/>
                 <attribute attribute-id="Cybersource_EnableGooglePayOnMiniCart"/>
                 <attribute attribute-id="Cybersource_EnableGooglePayOnCart"/>
                 <attribute attribute-id="Cybersource_GooglePayMerchantId"/>
+                <attribute attribute-id="Cybersource_GooglePayTransactionType"/>
             </attribute-group>
-            <attribute-group group-id="Cybersource_ClickToPay">
-                <display-name xml:lang="x-default"></display-name>
-                <attribute attribute-id="Cybersource_ClickToPayProduction"/>
-                <attribute attribute-id="Cybersource_ClickToPayEnabled"/>
-                <attribute attribute-id="Cybersource_ClickToPayKey"/>
+            <attribute-group group-id="Cybersource_ClicktoPay">
+                <display-name xml:lang="x-default">Click to Pay Configuration</display-name>
+                <attribute attribute-id="Cybersource_ClicktoPayProduction"/>
+                <attribute attribute-id="Cybersource_ClicktoPayEnabled"/>
+                <attribute attribute-id="Cybersource_ClicktoPayKey"/> 
+                <attribute attribute-id="Cybersource_ClicktoPayTransactionType"/>
             </attribute-group>
         </group-definitions>
     </type-extension>

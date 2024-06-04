@@ -212,14 +212,11 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
         // eslint-disable-next-line no-undef
         session.privacy.iv = iv;
     }
-    Cipher = new Cipher();
-    // eslint-disable-next-line no-undef
-    var encryptedSessionID = Cipher.encrypt(session.sessionID, session.privacy.key, 'AES/CBC/PKCS5Padding', session.privacy.iv, 0);
 
     var deviceSessionId = new cybersourceRestApi.Ptsv2paymentsDeviceInformation();
-    deviceSessionId.fingerprintSessionId = encryptedSessionID;
+    deviceSessionId.fingerprintSessionId = session.privacy.dfID;
 
-    if (configObject.deviceFingerprintEnabled) {
+    if (configObject.deviceFingerprintEnabled && configObject.fmeDmEnabled) {
         request.deviceInformation = deviceSessionId;
     }
 
@@ -331,17 +328,13 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
     var paymentInformation = new cybersourceRestApi.Ptsv2paymentsPaymentInformation();
     var request = new cybersourceRestApi.CreatePaymentRequest();
  
-        Cipher = new Cipher();
-        // eslint-disable-next-line no-undef
-        var encryptedSessionID = Cipher.encrypt(session.sessionID, session.privacy.key, 'AES/CBC/PKCS5Padding', session.privacy.iv, 0);
+    var deviceSessionId = new cybersourceRestApi.Ptsv2paymentsDeviceInformation();
+    deviceSessionId.fingerprintSessionId = session.privacy.dfID;
 
-        var deviceSessionId = new cybersourceRestApi.Ptsv2paymentsDeviceInformation();
-        deviceSessionId.fingerprintSessionId = encryptedSessionID;
+    if (configObject.deviceFingerprintEnabled && configObject.fmeDmEnabled) {
+        request.deviceInformation = deviceSessionId;
+    }
 
-        if (configObject.deviceFingerprintEnabled) {
-            request.deviceInformation = deviceSessionId;
-        }
-    
     if (cardData.token != null) {
         /* eslint-disable block-scoped-var */
         var customer = new cybersourceRestApi.Ptsv2paymentsPaymentInformationCustomer();

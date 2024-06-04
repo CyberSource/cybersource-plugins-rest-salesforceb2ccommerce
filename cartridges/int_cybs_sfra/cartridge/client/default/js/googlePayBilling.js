@@ -16,6 +16,7 @@ var googlePayEnvironment = $('#googlePayEnvironment').val();
 var allowedCardNetworks = ['AMEX', 'DISCOVER', 'JCB', 'MASTERCARD', 'VISA'];
 
 var allowedCardAuthMethods = ['PAN_ONLY', 'CRYPTOGRAM_3DS'];
+var DOMPurify = require('dompurify');
 
 var tokenizationSpecification = {
     type: 'PAYMENT_GATEWAY',
@@ -225,8 +226,9 @@ $('.minicart').off('mouseenter focusin touchstart').on('mouseenter focusin touch
         $('.minicart .popover').addClass('show');
         $('.minicart .popover').spinner().start();
         $.get(url, function (data) {
+            var sanitizeData = DOMPurify.sanitize(data, {ADD_TAGS: ['isapplepay']});
             $('.minicart .popover').empty();
-            $('.minicart .popover').append(data);
+            $('.minicart .popover').append(sanitizeData);
 
             var isGooglePayEnabled = $('#isGooglePayEnabledOnMiniCart').length > 0 && $('#isGooglePayEnabledOnMiniCart').val() === 'true';
 

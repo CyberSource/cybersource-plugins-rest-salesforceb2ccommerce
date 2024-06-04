@@ -1,5 +1,9 @@
 ## <ins>Release Notes
 
+**Version 24.2.1 (May 2024)**
+• Checkmarx issues fixed. 
+• Device fingerprint issue fixed.
+
 **Version 24.2.0 (April 2024)**
 
 **New Features**

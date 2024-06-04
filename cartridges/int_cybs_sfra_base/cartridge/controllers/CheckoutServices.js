@@ -32,7 +32,7 @@ if (configObject.payerAuthenticationEnabled && configObject.cartridgeEnabled && 
             var COHelpers = require('*/cartridge/scripts/checkout/checkoutHelpers');
             var validationHelpers = require('*/cartridge/scripts/helpers/basketValidationHelpers');
             var addressHelpers = require('*/cartridge/scripts/helpers/addressHelpers');
-
+            res.setHttpHeader("Content-Security-Policy", "script-src 'self'");
             // eslint-disable-next-line no-shadow
             var currentBasket = BasketMgr.getCurrentBasket();
             if (!currentBasket) {

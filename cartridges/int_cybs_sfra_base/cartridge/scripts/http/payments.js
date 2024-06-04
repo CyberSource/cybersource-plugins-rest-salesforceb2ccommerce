@@ -31,27 +31,8 @@ function httpAuthorizeWithToken(cardData, customerEmail, referenceInformationCod
     var clientReferenceInformation = new cybersourceRestApi.Ptsv2paymentsClientReferenceInformation();
     clientReferenceInformation.code = referenceInformationCode;
 
-    Cipher = new Cipher();
-    
-    var SecureRandom = require('dw/crypto/SecureRandom');
-    SecureRandom = new SecureRandom();
-    // eslint-disable-next-line no-undef
-    if (!session.privacy.key || !session.privacy.iv) {
-        var key = SecureRandom.nextBytes(32);
-        var iv = SecureRandom.nextBytes(16);
-        // eslint-disable-next-line no-undef
-        key = dw.crypto.Encoding.toBase64(key);
-        // eslint-disable-next-line no-undef
-        iv = dw.crypto.Encoding.toBase64(iv);
-        // eslint-disable-next-line no-undef
-        session.privacy.key = key;
-        // eslint-disable-next-line no-undef
-        session.privacy.iv = iv;
-    }
-    var encryptedSessionID = Cipher.encrypt(session.sessionID, session.privacy.key, 'AES/CBC/PKCS5Padding', session.privacy.iv, 0);
-
     var deviceSessionId = new cybersourceRestApi.Ptsv2paymentsDeviceInformation();
-    deviceSessionId.fingerprintSessionId = encryptedSessionID;
+    deviceSessionId.fingerprintSessionId = session.privacy.dfID;
     // eslint-disable-next-line no-undef
     deviceSessionId.ipAddress = session.privacy.ipAddress;
 
@@ -110,19 +91,19 @@ function httpAuthorizeWithToken(cardData, customerEmail, referenceInformationCod
     request.processingInformation = processingInformation;
     request.orderInformation = orderInformation;
 
-    if (configObject.deviceFingerprintEnabled) {
+    if (configObject.deviceFingerprintEnabled && configObject.fmeDmEnabled) {
         request.deviceInformation = deviceSessionId;
     }
 
     var OrderMgr = require('dw/order/OrderMgr');
     var order = OrderMgr.getOrder(referenceInformationCode);
     if (order.paymentInstruments[0].paymentMethod === 'DW_GOOGLE_PAY') {
-        if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_GooglePayTransactionType').value === 'sale' ){
+        if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_GooglePayTransactionType').value === 'sale' ) {
             request.processingInformation.capture = true;
         }
     }  
     if (order.paymentInstruments[0].paymentMethod === 'CREDIT_CARD') {
-        if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_CardTransactionType').value === 'sale' ){
+        if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_CardTransactionType').value === 'sale' ) {
             request.processingInformation.capture = true;
         }
     }   
@@ -202,18 +183,15 @@ function httpZeroDollarAuth(
     var clientReferenceInformation = new cybersourceRestApi.Ptsv2paymentsClientReferenceInformation();
     clientReferenceInformation.code = referenceInformationCode;
 
-    Cipher = new Cipher();
-    var encryptedSessionID = Cipher.encrypt(session.sessionID, session.privacy.key, 'AES/CBC/PKCS5Padding', session.privacy.iv, 0);
-
     var deviceSessionId = new cybersourceRestApi.Ptsv2paymentsDeviceInformation();
-    deviceSessionId.fingerprintSessionId = encryptedSessionID;
+    deviceSessionId.fingerprintSessionId = session.privacy.dfID;
 
 
    var scaEnabled = dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_IsSCAEnabled');
 
-   if(scaEnabled === true){
-       session.custom.scaTokenFlag = true;
-   }
+    if (scaEnabled === true) {
+        session.custom.scaTokenFlag = true;
+    }
 
     var processingInformation = new cybersourceRestApi.Ptsv2paymentsProcessingInformation();
     processingInformation.commerceIndicator = 'internet';
@@ -231,9 +209,9 @@ function httpZeroDollarAuth(
     }
     processingInformation.actionList.push('TOKEN_CREATE');
 
-     if (skipDMFlag || !configObject.fmeDmEnabled) {
-         processingInformation.actionList.push('DECISION_SKIP');
-     }
+    if (skipDMFlag || !configObject.fmeDmEnabled) {
+        processingInformation.actionList.push('DECISION_SKIP');
+    }
 
     var amountDetails = new cybersourceRestApi.Ptsv2paymentsOrderInformationAmountDetails();
     amountDetails.totalAmount = '0';
@@ -277,7 +255,7 @@ function httpZeroDollarAuth(
     request.processingInformation = processingInformation;
     request.orderInformation = orderInformation;
     request.paymentInformation = paymentInformation;
-    if (configObject.deviceFingerprintEnabled) {
+    if (configObject.deviceFingerprintEnabled && configObject.fmeDmEnabled) {
         request.deviceInformation = deviceSessionId;
     }
 
@@ -286,7 +264,7 @@ function httpZeroDollarAuth(
         if (!error) {
             if (configObject.networkTokenizationEnabled && data.processorInformation.paymentAccountReferenceNumber) {
                 if (CustomObjectMgr.getCustomObject("Network Tokens Webhook", merchantId) == null) {
-                    var networkTokenSubscription = require ('./networkTokenSubscription');
+                    var networkTokenSubscription = require('./networkTokenSubscription');
                     networkTokenSubscription.createNetworkTokenSubscription();
                 }
             }
@@ -430,11 +408,8 @@ function httpAuthorizeWithTransientToken(transientToken, customerEmail, referenc
     var clientReferenceInformation = new cybersourceRestApi.Ptsv2paymentsClientReferenceInformation();
     clientReferenceInformation.code = referenceInformationCode;
 
-    Cipher = new Cipher();
-    var encryptedSessionID = Cipher.encrypt(session.sessionID, session.privacy.key, 'AES/CBC/PKCS5Padding', session.privacy.iv, 0);
-
     var deviceSessionId = new cybersourceRestApi.Ptsv2paymentsDeviceInformation();
-    deviceSessionId.fingerprintSessionId = encryptedSessionID;
+    deviceSessionId.fingerprintSessionId = session.privacy.dfID;
 
     var processingInformation = new cybersourceRestApi.Ptsv2paymentsProcessingInformation();
     processingInformation.commerceIndicator = 'internet';
@@ -472,7 +447,7 @@ function httpAuthorizeWithTransientToken(transientToken, customerEmail, referenc
     request.processingInformation = processingInformation;
     request.orderInformation = orderInformation;
     request.tokenInformation = paymentTokenInformation;
-    if (configObject.deviceFingerprintEnabled) {
+    if (configObject.deviceFingerprintEnabled && configObject.fmeDmEnabled) {
         request.deviceInformation = deviceSessionId;
     }
 
@@ -598,12 +573,8 @@ function httpAuthorizeWithVisaSrc(encPaymentData, callID, customerEmail, referen
 
     var clientReferenceInformation = new cybersourceRestApi.Ptsv2paymentsClientReferenceInformation();
     clientReferenceInformation.code = referenceInformationCode;
-
-    Cipher = new Cipher();
-    var encryptedSessionID = Cipher.encrypt(session.sessionID, session.privacy.key, 'AES/CBC/PKCS5Padding', session.privacy.iv, 0);
-
     var deviceSessionId = new cybersourceRestApi.Ptsv2paymentsDeviceInformation();
-    deviceSessionId.fingerprintSessionId = encryptedSessionID;
+    deviceSessionId.fingerprintSessionId = session.privacy.dfID;
 
     var processingInformation = new cybersourceRestApi.Ptsv2paymentsProcessingInformation();
     processingInformation.commerceIndicator = 'internet';
@@ -659,14 +630,14 @@ function httpAuthorizeWithVisaSrc(encPaymentData, callID, customerEmail, referen
     requestBody.processingInformation = processingInformation;
     requestBody.orderInformation = orderInformation;
 
-    if (configObject.deviceFingerprintEnabled) {
+    if (configObject.deviceFingerprintEnabled && configObject.fmeDmEnabled) {
         requestBody.deviceInformation = deviceSessionId;
     }
 
-    if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_ClicktoPayTransactionType').value === 'sale' ) {
+    if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_ClicktoPayTransactionType').value === 'sale' ){
         requestBody.processingInformation.capture = true;
-    }
-
+    }   
+    
     var fluidData = new cybersourceRestApi.Ptsv2paymentsPaymentInformationFluidData();
     fluidData.value = encPaymentData;
     fluidData.key = configObject.visaSRCKey;

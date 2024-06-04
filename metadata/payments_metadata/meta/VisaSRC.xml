@@ -42,7 +42,7 @@
         </custom-attribute-definitions>
         <group-definitions>
             <attribute-group group-id="Cybersource_ClicktoPay">
-                <display-name xml:lang="x-default"></display-name>
+                <display-name xml:lang="x-default">Click to Pay Configuration</display-name>
                 <attribute attribute-id="Cybersource_ClicktoPayEnabled"/>
                 <attribute attribute-id="Cybersource_ClicktoPayTransactionType"/>
                 <attribute attribute-id="Cybersource_ClicktoPayKey"/>
