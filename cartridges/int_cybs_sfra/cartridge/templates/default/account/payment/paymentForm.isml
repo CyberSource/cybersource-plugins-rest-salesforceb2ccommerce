@@ -69,9 +69,10 @@
                         </isif> >${month.label}</option>
                 </isloop>
                 </select>
-                <div class="invalid-feedback">
-                    <isprint value="${pdict.paymentForm.expirationMonth.error}" encoding="htmlcontent" />
-                </div>
+               
+                   <span class="invalid-feedback" id="expirationMonthMissingMessage">${Resource.msg('payment.card.month.missing', 'forms', null)}</span>
+                   <span class="invalid-feedback" id="expiredCardMessage">${Resource.msg('error.message.creditexpiration.expired', 'forms', null)}</span>
+                
             </div>
         </div>
 
@@ -89,7 +90,9 @@
                     <option id="${year}" value="${year}" <isif condition="${year == pdict.paymentForm.expirationYear.value}">selected</isif> >${year}</option>
                 </isloop>
                 </select>
-                <div class="invalid-feedback"></div>
+                
+                <span class="invalid-feedback" id="expirationYearMissingMessage">${Resource.msg('payment.card.year.missing', 'forms', null)}</span>
+               
             </div>
         </div>
     </div>
@@ -139,7 +142,7 @@
             <!-- Last Name -->
             <div class="col-6">
                 <div class="form-group
-                        ${pdict.paymentForm.billToAddressFieldslastName.mandatory === true ? 'required' : ''}">
+                        ${pdict.paymentForm.billToAddressFields.lastName.mandatory === true ? 'required' : ''}">
                     <label class="form-control-label" for="lastName">
                         <isprint value="${pdict.paymentForm.billToAddressFields.lastName.label}" encoding="htmlcontent" />
                     </label>

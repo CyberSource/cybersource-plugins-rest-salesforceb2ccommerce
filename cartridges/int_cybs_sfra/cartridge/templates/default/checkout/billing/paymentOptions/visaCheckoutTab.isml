@@ -1,5 +1,5 @@
-<li class="nav-item visasrc-tab-wrapper" data-method-id="${paymentOption.ID}">
-	<a class="nav-link visasrc-tab" data-toggle="tab" href="#visasrc-content" role="tab">
-		${Resource.msg('msg.click.to.pay', 'visaSRC', null)}
-	</a>
-</li>
+	<li class="nav-item visasrc-tab-wrapper" data-method-id="${paymentOption.ID}">
+		<a class="nav-link visasrc-tab" data-toggle="tab" href="#visasrc-content" role="tab" id="visaCheckoutPaymentOptionLink">
+			${Resource.msg('msg.click.to.pay', 'visaSRC', null)}
+		</a>
+	</li>

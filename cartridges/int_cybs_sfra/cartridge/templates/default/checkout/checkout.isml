@@ -112,7 +112,7 @@
 							<button class="btn btn-primary btn-block submit-shipping" type="submit" name="submit" value="submit-shipping" <isif condition="${pdict.order.usingMultiShipping && !pdict.order.shippable}">disabled</isif>> ${Resource.msg('button.next.payment', 'checkout', null)}
 							</button>
 
-							<button class="btn btn-primary btn-block submit-payment" type="submit" name="submit" value="submit-payment">
+							<button class="btn btn-primary btn-block submit-payment" type="submit" name="submit" value="submit-payment" id='placeOrderButton'>
 								${Resource.msg('button.next.place.order', 'checkout', null)}
 							</button>
 

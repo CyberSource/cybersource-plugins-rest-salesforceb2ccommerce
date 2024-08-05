@@ -83,6 +83,17 @@ module.exports = {
                 flags: {
                     mandatory: false
                 }
+            },
+            /** @type {CustomPreference} */
+            CommerceIndicator: {
+                id: 'Cybersource_CommerceIndicator' ,
+                display_name: 'Commerce Indicator',
+                description: '',
+                type: Types.EnumOfString,
+                default: 'internet',
+                flags: {
+                    mandatory: false
+                }
             }
         }
     },

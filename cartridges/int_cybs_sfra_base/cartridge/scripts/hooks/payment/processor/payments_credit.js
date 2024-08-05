@@ -281,7 +281,7 @@ function Authorize(orderNumber, paymentInstrument, paymentProcessor) {
             paymentInstrument.paymentTransaction.setPaymentProcessor(paymentProcessor);
             paymentInstrument.paymentTransaction.custom.requestId = result.id;
             paymentInstrument.paymentTransaction.custom.reconciliationId = result.reconciliationId;
-            if (card.gPayToken === null) {
+            if (!empty(card.gPayToken)) {
                 paymentInstrument.paymentTransaction.custom.paymentDetails = paymentInstrument.creditCardHolder + ', ' + paymentInstrument.maskedCreditCardNumber + ', '
                     + paymentInstrument.creditCardType + ', ' + paymentInstrument.creditCardExpirationMonth + '/' + paymentInstrument.creditCardExpirationYear;
             } else {

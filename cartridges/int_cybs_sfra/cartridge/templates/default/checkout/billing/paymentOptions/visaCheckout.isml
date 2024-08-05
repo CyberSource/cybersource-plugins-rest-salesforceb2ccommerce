@@ -40,7 +40,9 @@
 
 
         <isif condition="${!VisaSRCProduction}">
-            <img alt="Visa SRC" class="v-button" role="button" src="${visaSRCEndpoints.Stage.image}" />
+           <div style="text-align: center;">
+                <img alt="Visa SRC" class="v-button" role="button" src="${visaSRCEndpoints.Stage.image}" />
+            </div>
             <script type="text/javascript" src="${visaSRCEndpoints.Stage.sdk}"></script>
         </isif>
 
