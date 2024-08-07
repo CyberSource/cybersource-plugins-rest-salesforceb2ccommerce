@@ -14,10 +14,10 @@
 In the Business Manager, go to **Merchant Tools > Ordering > Payment Methods** and select **CREDIT_CARD**. And in **CREDIT_CARD details**, double check if **Payment Processor** = **"PAYMENTS_CREDIT"**
 
  Cybersource Cartridge supports the following ways of processing Credit Card
- a. Flex Microform 0.11
+ a. Microform 0.11 [link](https://developer.cybersource.com/docs/cybs/en-us/digital-accept-flex-api/developer/ctv/rest/flex-api/microform-integ-v011.html)
  b. Direct Cybersource Payment API
 
- #### <ins>a. To Setup Flex Microform 0.11
+ #### <ins>a. To Setup Microform 0.11
 
 Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: Upload metadata" or import **"metadata/payment_metadata/meta/FlexMicroform.xml"** in Business Manager (**Administration > Site Development > Import & Export**)
 
@@ -42,7 +42,8 @@ Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: 
  #### <ins>Payer Authentication (3D Secure)
 
 **Prerequisite**
- Please contact your Cybersource Representative to sign up and receive your Payer Authentication credentials.
+ If you wish to process card payments with Payer Authentication, please ensure your Cybersource account
+ has been enabled for it. Please contact your Cybersource representative if you are unsure.
 
  Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: Upload metadata" or import **"metadata/payment_metadata/meta/PayerAuthentication.xml"** in Business Manager (**Administration > Site Development > Import & Export**)
 
@@ -52,15 +53,12 @@ Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: 
  Field | Description
  ------------ | -------------
  Enable Payer Authentication | Enable or Disable Payer Authentication service
- Cruise Org Unit Id | GUID to identify the merchant organization within Payer Authentication systems
- Cruise API Key | A shared secret value between the merchant and Payer Authentication systems. This value should never be exposed to the public
- Cruise API Identifier | GUID used to identify the specific API Key
- Cruise End Point | Environment details of Cruise API
 
  #### <ins> Enforce Strong Consumer Authentication
 When Payer Authentication is enabled, if a transaction gets declined with the reason as Strong Customer Authentication required, then another request will be sent from cartridge automatically for the same order and the customer will be 3DS challenged.
 
-In case merchants would like the cardholder to be 3DS Challenged when saving a card IsSCAEnabled setting can be updated to enable it for credit cards.
+In case merchants would like the cardholder to be 3DS Challenged when saving a card, IsSCAEnabled
+setting can be updated to enable it for credit cards.
 
 Note: The scaEnabled setting is applicable only if Payer Authentication is enabled.
 

@@ -136,7 +136,8 @@ TTL (Time To Live) | Time, in milliseconds between generating a new fingerprint 
 
 ### **6. Capture Service**
 
-A single function is available to make capture requests.
+A single function is available to make capture requests. Please note that these functions are not available
+to use in the Salesforce B2C Commerce UI without customisation.
 
     httpCapturePayment(requestID, merchantRefCode, purchaseTotal, currency)
 

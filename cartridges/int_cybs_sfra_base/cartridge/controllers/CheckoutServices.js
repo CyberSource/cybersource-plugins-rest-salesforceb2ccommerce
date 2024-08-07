@@ -13,7 +13,7 @@ var paymentMethod = currentBasket && currentBasket.paymentInstrument && currentB
 var isVisaSRC = paymentMethod && paymentMethod === 'CLICK_TO_PAY';
 
 // eslint-disable-next-line no-undef
-if ((configObject.payerAuthenticationEnabled && configObject.CommerceIndicator.value !== 'MOTO') && configObject.cartridgeEnabled && empty(session.privacy.encryptedDataGP)
+if (configObject.payerAuthenticationEnabled && configObject.cartridgeEnabled && empty(session.privacy.encryptedDataGP)
     && !isVisaSRC
 ) {
     // eslint-disable-next-line consistent-return
