@@ -1,5 +1,9 @@
 ## <ins>Release Notes
 
+**Version 24.3.0 (August 2024)**
+• Upgraded the cartridge to support SFRA v7.0.
+• Added Commerce Indicator MOTO.
+
 **Version 24.2.1 (May 2024)**
 • Checkmarx issues fixed. 
 • Device fingerprint issue fixed.

@@ -104,5 +104,19 @@ $('#checkout-main').on('click', '.next-step-button button', function (event) {
         });
     }
 });
-
+$('#applePayPaymentOptionLink').on('click', function (event) {
+    $('#placeOrderButton').hide();
+});
+ 
+$('#gPaypaymentOptionLink').on('click', function (event) {
+    $('#placeOrderButton').hide();
+});
+ 
+$('#visaCheckoutPaymentOptionLink').on('click', function (event) {
+    $('#placeOrderButton').hide();
+});
+ 
+$('#creditCardPaymentOptionLink').on('click', function (event) {
+    $('#placeOrderButton').show();
+});
 module.exports = base;

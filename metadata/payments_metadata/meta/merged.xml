@@ -49,6 +49,22 @@
                     </value-definition>
                 </value-definitions>
             </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_CommerceIndicator">
+                <display-name xml:lang="x-default">Commerce Indicator</display-name>
+                <type>enum-of-string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <value-definitions>
+                    <value-definition default="true">
+                        <display xml:lang="x-default">internet</display>
+                        <value>internet</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">moto</display>
+                        <value>MOTO</value>
+                    </value-definition>
+                </value-definitions>
+            </attribute-definition>
             <attribute-definition attribute-id="Cybersource_DAVEnabled">
                 <display-name xml:lang="x-default">Enable Delivery Address Verification Services</display-name>
                 <description xml:lang="x-default">Enable or Disable Delivery Address Verification for Cybersource Cartridge</description>
@@ -370,6 +386,7 @@
                 <attribute attribute-id="Cybersource_MerchantKeySecret"/>
                 <attribute attribute-id="Cybersource_DeveloperId"/>
                 <attribute attribute-id="Cybersource_CardTransactionType"/>
+                <attribute attribute-id="Cybersource_CommerceIndicator"/>
             </attribute-group>
             <attribute-group group-id="Cybersource_DeliveryAddressVerification">
                 <display-name xml:lang="x-default">Delivery Address Verification Configuration</display-name>

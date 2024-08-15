@@ -3,7 +3,7 @@
       --------------------------------------------------------------
 </iscomment>
 <li class="nav-item googlepay-tab-wrapper" data-method-id="${paymentOption.ID}">
-	<a class="nav-link google-tab" data-toggle="tab" href="#googlepay-content" role="tab">
+	<a class="nav-link google-tab" data-toggle="tab" href="#googlepay-content" role="tab" id="gPaypaymentOptionLink">
 		${paymentOption.name}
 	</a>
 </li>

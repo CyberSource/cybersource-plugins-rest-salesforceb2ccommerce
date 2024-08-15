@@ -23,7 +23,7 @@ var LogfileMaxSize = '5242880'; // 10 MB In Bytes
  * Send this value in all requests that are sent through the partner solution. CyberSource assigns the ID to the partner.
  * Note When you see a partner ID of 999 in reports, the partner ID that was submitted is incorrect.
  */
-var SolutionId = 'QBZT2URS';
+var SolutionId = '2TLC4V9R';
 
 var CruiseDDCEndPoint = {
     Stage: 'https://centinelapistag.cardinalcommerce.com/V1/Cruise/Collect',
@@ -67,6 +67,7 @@ function getConfig(config) {
         merchantKeyId: config.merchantKeyId || customPreferences.Core.Preferences.MerchantKeyId.getValue(),
         merchantsecretKey: config.merchantSecretKey || customPreferences.Core.Preferences.MerchantKeySecret.getValue(),
         developerId: config.developerId || customPreferences.Core.Preferences.DeveloperId.getValue(),
+        CommerceIndicator: config.CommerceIndicator || customPreferences.Core.Preferences.CommerceIndicator.getValue(),
 
         // Delivery address verification
         davEnabled: config.davEnabled || customPreferences.DeliveryAddressVerification.Preferences.DAVEnabled.getValue(),
@@ -98,13 +99,6 @@ function getConfig(config) {
         taxShipFromCountryCode: config.taxShipFromCountryCode || customPreferences.TaxConfiguration.Preferences.ShipFromCountryCode.getValue(),
         calculateTaxOnRoute: [{
             route: 'CheckoutShippingServices-SubmitShipping'
-        },
-        {
-            route: 'CheckoutServices-SubmitPayment'
-        },
-        {
-            route: 'CheckoutServices-PlaceOrder',
-            recalculate: true
         }
         ],
         taxCookieId: '_taxvalue',

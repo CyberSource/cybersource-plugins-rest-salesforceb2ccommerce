@@ -37,7 +37,7 @@ function httpAuthorizeWithToken(cardData, customerEmail, referenceInformationCod
     deviceSessionId.ipAddress = session.privacy.ipAddress;
 
     var processingInformation = new cybersourceRestApi.Ptsv2paymentsProcessingInformation();
-    processingInformation.commerceIndicator = 'internet';
+    processingInformation.commerceIndicator = configObject.CommerceIndicator.value;
     processingInformation.actionList = [];
     if (!configObject.fmeDmEnabled) {
         processingInformation.actionList.push('DECISION_SKIP');
@@ -194,7 +194,7 @@ function httpZeroDollarAuth(
     }
 
     var processingInformation = new cybersourceRestApi.Ptsv2paymentsProcessingInformation();
-    processingInformation.commerceIndicator = 'internet';
+    processingInformation.commerceIndicator = configObject.CommerceIndicator.value ;
     processingInformation.actionList = [];
     if (session.getCustomer().getProfile().custom.customerID != null) {
         processingInformation.actionTokenTypes = [
@@ -310,7 +310,7 @@ function httpZeroDollarAuthWithTransientToken(
 
 
     var processingInformation = new cybersourceRestApi.Ptsv2paymentsProcessingInformation();
-    processingInformation.commerceIndicator = 'internet';
+    processingInformation.commerceIndicator = configObject.CommerceIndicator.value;
     processingInformation.actionList = [];
 
     if (session.getCustomer().getProfile().custom.customerID != null) {
@@ -412,7 +412,7 @@ function httpAuthorizeWithTransientToken(transientToken, customerEmail, referenc
     deviceSessionId.fingerprintSessionId = session.privacy.dfID;
 
     var processingInformation = new cybersourceRestApi.Ptsv2paymentsProcessingInformation();
-    processingInformation.commerceIndicator = 'internet';
+    processingInformation.commerceIndicator = configObject.CommerceIndicator.value;
     processingInformation.actionList = [];
     if (!configObject.fmeDmEnabled) {
         processingInformation.actionList.push('DECISION_SKIP');
@@ -577,7 +577,7 @@ function httpAuthorizeWithVisaSrc(encPaymentData, callID, customerEmail, referen
     deviceSessionId.fingerprintSessionId = session.privacy.dfID;
 
     var processingInformation = new cybersourceRestApi.Ptsv2paymentsProcessingInformation();
-    processingInformation.commerceIndicator = 'internet';
+    processingInformation.commerceIndicator = configObject.CommerceIndicator.value;
     processingInformation.visaCheckoutId = callID;
     processingInformation.paymentSolution = 'visacheckout';
     processingInformation.actionList = [];

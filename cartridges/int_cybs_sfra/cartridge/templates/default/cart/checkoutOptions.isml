@@ -7,6 +7,6 @@
 				<iselse>
 				<input type="hidden" id="carttotal" value="${pdict.totals.grandTotal}" />
 			</isif>
-			<isinclude template="checkout/billing/paymentOptions/googleButton" />
+			
 	</div>
 </div>

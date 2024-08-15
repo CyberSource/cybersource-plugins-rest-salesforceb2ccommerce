@@ -13,5 +13,9 @@
 		   		 <isapplepay class="apple-pay-cart btn btn-block"></isapplepay>
 		   	</div>
 	   	</isif>
+		<div class="col-12">
+		  <isinclude template="checkout/billing/paymentOptions/googleButton" /> 
+		</div>
+
    	</div>
 </div>

@@ -61,6 +61,17 @@ exports.authorizeOrderPayment = function (order, response) {
                 email: response.payment.shippingContact.emailAddress,
                 phoneNumber: response.payment.shippingContact.phoneNumber
             },
+            shipTo: {
+                firstName: response.payment.shippingContact.givenName,
+                lastName: response.payment.shippingContact.familyName,
+                address1: response.payment.shippingContact.addressLines[0],
+                locality: response.payment.shippingContact.locality,
+                administrativeArea: response.payment.shippingContact.administrativeArea,
+                postalCode: response.payment.shippingContact.postalCode,
+                country: response.payment.shippingContact.countryCode,
+                email: response.payment.shippingContact.emailAddress,
+                phoneNumber: response.payment.shippingContact.phoneNumber
+            },
             lineItems: mapper.MapOrderLineItems(order.allLineItems, true)
         }
     };
