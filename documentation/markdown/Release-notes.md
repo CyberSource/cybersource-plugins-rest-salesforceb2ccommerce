@@ -1,5 +1,9 @@
 ## <ins>Release Notes
 
+**Version 24.4.0 (September 2024)**
+• Added DMPA support. 
+• Upgraded to jQuery v3.7.0.
+
 **Version 24.3.0 (August 2024)**
 • Upgraded the cartridge to support SFRA v7.0.
 • Added Commerce Indicator MOTO.
