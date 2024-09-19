@@ -32,16 +32,19 @@ base.handleCreditCardNumber = function (cardFieldSelector, cardTypeSelector) {
         }
     });
 
-    var cleave = new Cleave("#securityCode", {
+    var cleaveSecurityCode = new Cleave('#securityCode', {
         numericOnly: true,
         delimiter: '',
         numeral: true,
     });
-    var cleave = new Cleave("#saved-payment-security-code", {
-        numericOnly: true,
-        delimiter: '',
-        numeral: true,
-    });
+ 
+    if($('#saved-payment-security-code').length){
+        var cleaveSavedPaymentSecurityCode = new Cleave('#saved-payment-security-code', {
+            numericOnly: true,
+            delimiter: '',
+            numeral: true,
+        });
+    }
 
     $(cardFieldSelector).data('cleave', cleave);
 };
