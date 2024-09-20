@@ -72,6 +72,11 @@ IsSCAEnabled  |  Enable Strong Customer Authentication
 
 Set the value for IsSCAEnabled to yes to use Strong Customer Authentication feature.
 
+#### <ins> Decision Manager with Payer Authentication
+Decision Manager plus Payer Authentication allows pre-authentication rules to be configured before authentication takes place, providing EMV®3 3DS authentication and risk review from authentication to authorization. 
+
+Note: Enable Decision Manager and Payer Authentication in custom preferences.
+
 ---
 
 #### 2. Apple Pay
