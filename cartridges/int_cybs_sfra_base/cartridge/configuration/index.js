@@ -23,7 +23,7 @@ var LogfileMaxSize = '5242880'; // 10 MB In Bytes
  * Send this value in all requests that are sent through the partner solution. CyberSource assigns the ID to the partner.
  * Note When you see a partner ID of 999 in reports, the partner ID that was submitted is incorrect.
  */
-var SolutionId = '2TLC4V9R';
+var SolutionId = '6EIFFEUD';
 
 var CruiseDDCEndPoint = {
     Stage: 'https://centinelapistag.cardinalcommerce.com/V1/Cruise/Collect',

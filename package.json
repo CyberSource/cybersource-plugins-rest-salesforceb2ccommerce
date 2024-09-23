@@ -42,7 +42,7 @@
     "cleave.js": "^1.5.3",
     "copy-webpack-plugin": "^11.0.0",
     "dompurify": "^3.1.6",
-    "jquery": "^3.5.1",
+    "jquery": "^3.7.1",
     "link": "^2.1.0",
     "mini-css-extract-plugin": "^2.7.6",
     "request-promise": "^4.2.6",

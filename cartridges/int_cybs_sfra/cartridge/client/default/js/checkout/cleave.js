@@ -32,6 +32,20 @@ base.handleCreditCardNumber = function (cardFieldSelector, cardTypeSelector) {
         }
     });
 
+    var cleaveSecurityCode = new Cleave('#securityCode', {
+        numericOnly: true,
+        delimiter: '',
+        numeral: true,
+    });
+ 
+    if($('#saved-payment-security-code').length){
+        var cleaveSavedPaymentSecurityCode = new Cleave('#saved-payment-security-code', {
+            numericOnly: true,
+            delimiter: '',
+            numeral: true,
+        });
+    }
+
     $(cardFieldSelector).data('cleave', cleave);
 };
 
@@ -41,7 +55,7 @@ base.serializeData = function (form) {
     serializedArray.forEach(function (item) {
         if (item.name.indexOf('cardNumber') > -1) {
             if (!$('#flexTokenResponse').val()) {
-        item.value = $('#cardNumber').data('cleave').getRawValue(); // eslint-disable-line
+                item.value = $('#cardNumber').data('cleave').getRawValue(); // eslint-disable-line
             }
         }
     });

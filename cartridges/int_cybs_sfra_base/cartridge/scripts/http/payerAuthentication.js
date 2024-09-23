@@ -268,6 +268,11 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
             throw new Error(data);
         }
     });
+    if (result.riskInformation != null) {
+        if (result.riskInformation.profile.action === 'PAYERAUTH_INVOKE' || result.riskInformation.profile.action === 'PAYERAUTH_EXTERNAL') {
+            session.privacy.requestId = result.id;
+        }
+    }
     setPaymentProcessorDetails(result);
     return result;
 }
@@ -287,6 +292,8 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
 
     var clientReferenceInformation = new cybersourceRestApi.Ptsv2paymentsClientReferenceInformation();
     clientReferenceInformation.code = referenceInformationCode;
+    clientReferenceInformation.pausedRequestId = session.privacy.requestId;
+    session.privacy.requestId = '';
 
     var processingInformation = new cybersourceRestApi.Ptsv2paymentsProcessingInformation();
     processingInformation.commerceIndicator = 'internet';
