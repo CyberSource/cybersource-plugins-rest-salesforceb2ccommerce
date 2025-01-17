@@ -9,7 +9,7 @@
 * **JavaScript Controllers Friendly:** **YES**
 
 ### Contact ###
-* <SFCC@cybersource.com>
+* <globalpartnersolutionscs@visa.com>
 
 ----
 
