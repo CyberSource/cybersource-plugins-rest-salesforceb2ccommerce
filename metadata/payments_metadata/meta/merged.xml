@@ -233,6 +233,44 @@
                 <externally-managed-flag>false</externally-managed-flag>
                 <default-value>true</default-value>
             </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_AllowedCardNetworks">
+                <display-name xml:lang="x-default">allowedCardNetworks</display-name>
+                <description xml:lang="x-default">Configure card types for Cybersource Flex Microform</description>
+                <type>enum-of-string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <select-multiple-flag>true</select-multiple-flag>
+                <value-definitions>
+                    <value-definition default="true">
+                        <display xml:lang="x-default">VISA</display>
+                        <value>VISA</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">MAESTRO</display>
+                        <value>MAESTRO</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">MASTERCARD</display>
+                        <value>MASTERCARD</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">AMEX</display>
+                        <value>AMEX</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">DISCOVER</display>
+                        <value>DISCOVER</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">DINERSCLUB</display>
+                        <value>DINERSCLUB</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">JCB</display>
+                        <value>JCB</value>
+                    </value-definition>
+                </value-definitions>
+            </attribute-definition>
             <attribute-definition attribute-id="Cybersource_DecisionManager">
                 <display-name xml:lang="x-default">Enable Decision Manager Services</display-name>
                 <description xml:lang="x-default">Enable or Disable Decision Manager for Cybersource Cartridge</description>
@@ -423,6 +461,7 @@
             <attribute-group group-id="Cybersource_FlexMicroform">
                 <display-name xml:lang="x-default">Flex Microform Configuration</display-name>
                 <attribute attribute-id="Cybersource_FlexMicroform"/>
+                <attribute attribute-id="Cybersource_AllowedCardNetworks"/>
             </attribute-group>
             <attribute-group group-id="Cybersource_DecisionManager">
                 <display-name xml:lang="x-default">Decision Manager Configuration</display-name>

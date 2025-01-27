@@ -95,7 +95,7 @@
       var returnType = FlexV1KeysPost200Response;
 
       return this.apiClient.callApi(
-        '/flex/v1/keys', 'POST',
+        '/microform/v2/sessions', 'POST',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );

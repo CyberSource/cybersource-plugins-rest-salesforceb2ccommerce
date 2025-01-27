@@ -193,6 +193,7 @@ _exports.prototype.callApi = function (path, httpMethod, pathParams, queryParams
     var merchantKeyId = this.merchantConfig.getMerchantKeyID();
     var merchantSecretKey = this.merchantConfig.getMerchantsecretKey();
     var payload = "";
+    var Constants = require('../apiClient/constants');
 
     var url = this.buildUrl(path, pathParams, queryParams);
 
@@ -210,7 +211,8 @@ _exports.prototype.callApi = function (path, httpMethod, pathParams, queryParams
         if (!bodyParam.clientReferenceInformation) {
             bodyParam.clientReferenceInformation = {};
         }
-
+        bodyParam.clientReferenceInformation.applicationName = Constants.APPLICATION_NAME;
+        bodyParam.clientReferenceInformation.applicationVersion = Constants.APPLICATION_VERSION;
         bodyParam.clientReferenceInformation.partner = {
             solutionId: this.merchantConfig.getSolutionId(),
             developerId: this.merchantConfig.getDeveloperId()
@@ -245,7 +247,11 @@ _exports.prototype.callApi = function (path, httpMethod, pathParams, queryParams
 
     if (response.ok) {
         var responseObj = response.object;
-        callback(JSON.parse(responseObj), false, response);
+        if(path === '/microform/v2/sessions'){
+            callback(responseObj, false, response);
+        }else{
+            callback(JSON.parse(responseObj), false, response);
+        }
     } else {
         callback(response.errorMessage, response.error, response);
     }
