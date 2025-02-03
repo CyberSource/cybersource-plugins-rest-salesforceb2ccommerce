@@ -175,11 +175,11 @@
 
       var authNames = [];
       var contentTypes = ['application/json;charset=utf-8'];
-      var accepts = ['application/hal+json;charset=utf-8'];
+      var accepts = ['application/json'];
       var returnType = KmsV2KeysAsymGet200Response;
 
       return this.apiClient.callApi(
-        '/kms/v2/keys-asym/{keyId}', 'GET',
+        '/flex/v2/public-keys/{keyId}', 'GET',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );

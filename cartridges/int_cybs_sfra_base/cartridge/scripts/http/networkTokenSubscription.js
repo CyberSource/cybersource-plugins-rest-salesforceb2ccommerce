@@ -109,14 +109,41 @@ function createWebhookSubscription(callback) {
     );
 }
 
+function deleteSusbscriprion(id, callback){
+    var postBody = null;
+
+    var pathParams = {
+        'webhookId' : id
+    };
+    var queryParams = {};
+    var headerParams = {};
+    var formParams = {};
+
+    var authNames = [];
+    var contentTypes = ['application/json;charset=utf-8'];
+    var accepts = ['application/json;charset=utf-8'];
+    var returnType = {};
+    apiClient.instance.callApi(
+        '/notification-subscriptions/v1/webhooks/{webhookId}' , 'DELETE',
+        pathParams, queryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, callback
+    );
+}
 function createNetworkTokenSubscription() {
     retrieveAllCreatedWebhooks(function (data, error, response) {
-        if (data.webhookId) {
-            Logger.error('Subscription already exists');
+        if (data[0].webhookId) {
+            var obj = CustomObjectMgr.getCustomObject("Network Tokens Webhook", merchantId);
+                if (obj == null) {
+                    deleteSusbscriprion(data[0].webhookId, function (data, error, responseData) {
+                        if(responseData.status === 'OK'){
+                            createNetworkTokenSubscription();
+                        }
+                    });
+                } 
         }
         if (error) {
             data = JSON.parse(data);
-            if (data.statusCode === 404 && data.errorDescription === 'Record Not Found') {
+            if (data.statusCode === 404) {
                 var key = '';
                 createWebhookSecurityKey(function (data, error, response) {
                     if (!error) {
@@ -136,7 +163,10 @@ function createNetworkTokenSubscription() {
                     }
                 });
                 Transaction.wrap(function () {
-                    var obj = CustomObjectMgr.createCustomObject('Network Tokens Webhook', merchantId);
+                    var obj = CustomObjectMgr.getCustomObject("Network Tokens Webhook", merchantId);
+                    if (obj == null) {
+                        obj = CustomObjectMgr.createCustomObject('Network Tokens Webhook', merchantId);
+                    }
                     obj.custom.SecurityKey = key;
                     obj.custom.SubscriptionId = webhookId;
                 });

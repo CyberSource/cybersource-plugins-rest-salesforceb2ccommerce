@@ -17,7 +17,7 @@ In the Business Manager, go to **Merchant Tools > Ordering > Payment Methods** a
  a. Microform 0.11 [link](https://developer.cybersource.com/docs/cybs/en-us/digital-accept-flex-api/developer/ctv/rest/flex-api/microform-integ-v011.html)
  b. Direct Cybersource Payment API
 
- #### <ins>a. To Setup Microform 0.11
+ #### <ins>a. To Setup Microform v2
 
 Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: Upload metadata" or import **"metadata/payment_metadata/meta/FlexMicroform.xml"** in Business Manager (**Administration > Site Development > Import & Export**)
 
@@ -36,7 +36,8 @@ Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: 
  Field | Description | Value to Set
  ------------ | ------------- | -------
  Enable Secure Acceptance - Flex Microform | Enable or Disable Cybersource Flex Microform Service | **No**
-
+ AllowedCardNetworks  | Configure card types for Cybersource Flex Microform  | VISA MASTER DISCOVER 
+DINERSCLUB JCB MAESTRO AMEX
 ---
 
  #### <ins>Payer Authentication (3D Secure)

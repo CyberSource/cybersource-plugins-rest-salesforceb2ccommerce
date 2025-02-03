@@ -5,6 +5,7 @@ var configObject = require('../../configuration/index');
 var MerchantConfig = require('~/cartridge/apiClient/merchantConfig');
 var merchantId = new MerchantConfig(configObject).getMerchantID();
 var CustomObjectMgr = require('dw/object/CustomObjectMgr');
+var Constants = require('*/cartridge/apiClient/constants');
 
 /**
  * @param {*} cardData *
@@ -263,10 +264,8 @@ function httpZeroDollarAuth(
     instance.createPayment(request, function (data, error, response) { // eslint-disable-line no-unused-vars
         if (!error) {
             if (configObject.networkTokenizationEnabled && data.processorInformation.paymentAccountReferenceNumber) {
-                if (CustomObjectMgr.getCustomObject("Network Tokens Webhook", merchantId) == null) {
                     var networkTokenSubscription = require('./networkTokenSubscription');
                     networkTokenSubscription.createNetworkTokenSubscription();
-                }
             }
             if (data.status === 'AUTHORIZED' || data.status === 'AUTHORIZED_PENDING_REVIEW') {
                 result = data;
@@ -371,10 +370,8 @@ function httpZeroDollarAuthWithTransientToken(
     instance.createPayment(request, function (data, error, response) { // eslint-disable-line no-unused-vars
         if (!error) {
             if (configObject.networkTokenizationEnabled && data.processorInformation.paymentAccountReferenceNumber) {
-                if (CustomObjectMgr.getCustomObject("Network Tokens Webhook", merchantId) == null) {
                     var networkTokenSubscription = require ('./networkTokenSubscription');
                     networkTokenSubscription.createNetworkTokenSubscription();
-                }
             }
             if (data.status === 'AUTHORIZED' || data.status === 'AUTHORIZED_PENDING_REVIEW') {
                 result = data;
@@ -471,18 +468,31 @@ function httpAuthorizeWithTransientToken(transientToken, customerEmail, referenc
 }
 
 /**
- * @param {*} args *
  * @returns {*} *
  */
-function createFlexKey(args) { // eslint-disable-line no-unused-vars
+function createFlexKey() { // eslint-disable-line no-unused-vars
     var configObject = require('../../configuration/index');
 
     var cybersourceRestApi = require('../../apiClient/index');
 
     var keyGenerationApi = new cybersourceRestApi.KeyGenerationApi(configObject);
+    var allowedCNetworks = dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_AllowedCardNetworks');
+    var list =[];
+    if(empty(allowedCNetworks)){
+        list.push('VISA');
+    }else{
+        for (let i = 0; allowedCNetworks[i]!= null ; i++) {
+            list.push(allowedCNetworks[i].value);  
+        }
+   }
+       
     var publicKeyRequest = {
-        encryptionType: 'RsaOaep256',
-        targetOrigin: 'https://' + request.httpHost
+        'encryptionType': Constants.ENCRYPTION_TYPE,
+        'targetOrigins':[
+            Constants.PROXY_PREFIX + '://' + request.httpHost
+        ],
+        'allowedCardNetworks': list,
+        'clientVersion':  Constants.CLIENT_VERSION
     };
     var opts = {};
     opts.format = 'JWT';
@@ -496,6 +506,60 @@ function createFlexKey(args) { // eslint-disable-line no-unused-vars
         }
     });
     return response;
+}
+
+// function to decode capture context and validate capture context using the public key
+function jwtDecode(jwt){
+    var captureContext = jwt;
+    var Encoding = require('dw/crypto/Encoding');
+    var Signature = require('dw/crypto/Signature');
+    var Bytes = require('dw/util/Bytes');
+
+    var apiSig = new Signature();
+    var encodedHeader = captureContext.split('.')[0];
+    var encodedPayload = captureContext.split('.')[1];
+    var jwtSignature = captureContext.split('.')[2];
+
+    var kid = JSON.parse(Encoding.fromBase64(encodedHeader)).kid ;
+    var alg = JSON.parse(Encoding.fromBase64(encodedHeader)).alg;    
+    var decodedPayload = Encoding.fromBase64(encodedPayload).toString();
+    var parsedPayload = JSON.parse(decodedPayload);
+    var decodedJwt = null ;
+    
+    // generate public key using the kid from capture context
+    var pKid = getPublicKey(kid);
+
+    // Create public key using modulus and exponent value to validate capture context
+    var pkey = require('../http/publicKey');
+
+    if(!empty(pKid.n) && !empty(pKid.e)){
+        var RSApublickey = pkey.getRSAPublicKey(pKid.n, pKid.e);
+        var JWTAlgoToSFCCMapping = {
+            RS256 : "SHA256withRSA",
+            RS512 : "SHA512withRSA",
+            RS384 : "SHA384withRSA",
+        };
+        // validate capture context using the generated public key
+        var jwtSignatureInBytes = new Encoding.fromBase64(jwtSignature);
+        var contentToVerify = encodedHeader + '.' + encodedPayload;
+        contentToVerify = new Bytes(contentToVerify);
+        var isValid = apiSig.verifyBytesSignature(jwtSignatureInBytes, contentToVerify , new Bytes(RSApublickey) ,JWTAlgoToSFCCMapping[alg]) ; 
+        if(isValid){
+            decodedJwt = parsedPayload;
+        }
+    }
+    return decodedJwt;
+}
+
+
+function getPublicKey(kid){
+    var cybersourceRestApi = require('../../apiClient/index');
+    var instance = new cybersourceRestApi.AsymmetricKeyManagementApi(configObject);
+    var jwk = '';
+    instance.getP12KeyDetails(kid, function (data, error, response) {
+        jwk = data;
+    })
+    return jwk;
 }
 
 /**
@@ -666,5 +730,6 @@ module.exports = {
     httpZeroDollarAuth: httpZeroDollarAuth,
     httpZeroDollarAuthWithTransientToken: httpZeroDollarAuthWithTransientToken,
     updateCustomerPaymentInstrument: updateCustomerPaymentInstrument,
-    httpAuthorizeWithVisaSrc: httpAuthorizeWithVisaSrc
+    httpAuthorizeWithVisaSrc: httpAuthorizeWithVisaSrc,
+    jwtDecode : jwtDecode
 };

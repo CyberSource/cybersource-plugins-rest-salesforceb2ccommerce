@@ -3,7 +3,7 @@
 'use strict';
 
 $(document).ready(function () {
-    var captureContext = JSON.parse($('#flexTokenResponse').val()).keyId;
+    var captureContext = $('#flexTokenResponse').val();
     var flex = new Flex(captureContext); // eslint-disable-line no-undef
     var customStyles = {
         input: {
@@ -25,7 +25,7 @@ $(document).ready(function () {
             color: '#a94442'
         }
     };
-    var microform = flex.microform({
+    var microform = flex.microform("card",{
         styles: customStyles
     });
     var number = microform.createField('number');
@@ -107,7 +107,7 @@ $(document).ready(function () {
             var decodedJwt = parseJwt(response);
             document.getElementById('cardNumber').valid = true;
             $('#flex-response').val(response);
-            $('#cardNumber').val(decodedJwt.data.number);
+            $('#cardNumber').val(decodedJwt.content.paymentInformation.card.number.maskedValue);
 
             if ($('.submit-payment').length === 1) {
                 $('.submit-payment').trigger('click');
@@ -137,7 +137,7 @@ $(document).ready(function () {
                 case 'discover':
                     correctCardType = 'Discover';
                     break;
-                case 'diners-club':
+                case 'dinersclub':
                     correctCardType = 'DinersClub';
                     break;
                 case 'maestro':

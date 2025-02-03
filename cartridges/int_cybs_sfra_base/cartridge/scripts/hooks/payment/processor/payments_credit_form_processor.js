@@ -31,7 +31,7 @@ function processForm(req, paymentForm, viewFormData) {
             case 'discover':
                 correctCardType = 'Discover';
                 break;
-            case 'diners-club':
+            case 'dinersclub':
                 correctCardType = 'DinersClub';
                 break;
             case 'maestro':
