@@ -386,7 +386,10 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
         } else {
             try {
                 var parsedData = JSON.parse(data);
-                var reasonCodeObject = parsedData.errorInformation.details.filter(function (e) { return e.field === 'reasonCode'; }).pop();
+                var reasonCodeObject = parsedData;
+                if(parsedData.errorInformation != null){
+                    reasonCodeObject = parsedData.errorInformation.details.filter(function (e) { return e.field === 'reasonCode'; }).pop();
+                }
                 result = {
                     status: reasonCodeObject.reason
                 };

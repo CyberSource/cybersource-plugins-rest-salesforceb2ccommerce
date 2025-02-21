@@ -439,7 +439,7 @@ server.post('handlingConsumerAuthResponse', server.middleware.https, function (r
     }
    
     // eslint-disable-next-line
-    else if (authenticateResponse.errorInformation.reason === 'CUSTOMER_AUTHENTICATION_REQUIRED' && session.custom.Flag3ds === false) {
+    else if ((authenticateResponse.errorInformation ? authenticateResponse.errorInformation.reason === 'CUSTOMER_AUTHENTICATION_REQUIRED' : false)  && session.custom.Flag3ds === false) {
         session.custom.Flag3ds = true;
         // eslint-disable-next-line no-shadow
         res.render('payerAuthentication/scaRedirect', {
