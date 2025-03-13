@@ -31,7 +31,7 @@ module.exports = {
   SANDBOX_RUN_ENV: "cybersource.environment.sandbox",
   PRODUCTION_RUN_ENV: "cybersource.environment.production",
   APPLICATION_NAME: "Salesforce B2C(REST)",
-  APPLICATION_VERSION: "25.1.0",
+  APPLICATION_VERSION: "25.2.0",
 
   /* Digest Constants*/
   SIGNATURE_ALGORITHAM: "SHA-256=",

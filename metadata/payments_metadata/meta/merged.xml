@@ -269,6 +269,22 @@
                         <display xml:lang="x-default">JCB</display>
                         <value>JCB</value>
                     </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">CUP</display>
+                        <value>CUP</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">CARTESBANCAIRES</display>
+                        <value>CARTESBANCAIRES</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">JCREW</display>
+                        <value>JCREW</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">ELO</display>
+                        <value>ELO</value>
+                    </value-definition>
                 </value-definitions>
             </attribute-definition>
             <attribute-definition attribute-id="Cybersource_DecisionManager">
@@ -414,6 +430,25 @@
                     </value-definition>
                 </value-definitions>
             </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_MLEEnabled">
+                <display-name xml:lang="x-default">Enable Message-Level Encryption</display-name>
+                <description xml:lang="x-default">Enable or Disable Message-Level Encryption.</description>
+                <type>boolean</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>false</default-value>
+            </attribute-definition>
+             <attribute-definition attribute-id="Cybersource_CertificateSerialNo">
+                <display-name xml:lang="x-default">Certificate Serial Number</display-name>
+                <description xml:lang="x-default">Serial Number of "CyberSource_SJC_US" certificate extracted from p12 file.</description>
+                <type>string</type>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_CertificateAlias">
+                <display-name xml:lang="x-default">Alias of the Certificate</display-name>
+                <description xml:lang="x-default">Alias of the "CyberSource_SJC_US" Certificate imported in "Private Keys and Certificates".</description>
+                <type>string</type>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
         </custom-attribute-definitions>
         <group-definitions>
             <attribute-group group-id="Cybersource_Core">
@@ -495,6 +530,12 @@
                 <attribute attribute-id="Cybersource_ClicktoPayEnabled"/>
                 <attribute attribute-id="Cybersource_ClicktoPayKey"/> 
                 <attribute attribute-id="Cybersource_ClicktoPayTransactionType"/>
+            </attribute-group>
+            <attribute-group group-id="Cybersource_MLE">
+                <display-name xml:lang="x-default">Message-Level Encryption Configuration</display-name>
+                <attribute attribute-id="Cybersource_MLEEnabled"/>
+                <attribute attribute-id="Cybersource_CertificateSerialNo"/>
+                <attribute attribute-id="Cybersource_CertificateAlias"/> 
             </attribute-group>
         </group-definitions>
     </type-extension>

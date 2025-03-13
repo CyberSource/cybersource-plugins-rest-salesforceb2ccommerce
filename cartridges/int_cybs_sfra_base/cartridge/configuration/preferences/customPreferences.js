@@ -602,5 +602,46 @@ module.exports = {
                 }
             }
         }
+    },
+
+ /* MLE Custom Preference */
+ MLE: {
+    id: 'Cybersource_MLE',
+    display_name: 'Message-Level Encryption Configration',
+    Preferences: {
+        /** @type {CustomPreference} */
+        EnableMLE: {
+            id: 'Cybersource_MLEEnabled',
+            display_name: 'Enable Message-Level Encryption',
+            description: 'Enable or Disable Message-Level Encryption.',
+            type: Types.boolean,
+            default: false,
+            flags: {
+                mandatory: false
+            }
+        },
+        /** @type {CustomPreference} */
+        MLECertificateSerialNumber: {
+            id: 'Cybersource_CertificateSerialNo',
+            display_name: 'Certificate Serial Number',
+            description: 'Serial Number of "CyberSource_SJC_US" certificate extracted from p12 file.',
+            type: Types.string,
+            default: undefined,
+            flags: {
+                mandatory: false
+            }
+        },
+         /** @type {CustomPreference} */
+         MLECertificateAlias: {
+            id: 'Cybersource_CertificateAlias',
+            display_name: 'Alias of the Certificate',
+            description: '',
+            type: Types.string,
+            default: undefined,
+            flags: {
+                mandatory: false
+            }
+        }
     }
+},   
 };

@@ -86,11 +86,12 @@
       var contentTypes = ['application/json;charset=utf-8'];
       var accepts = ['application/hal+json;charset=utf-8'];
       var returnType = RiskV1AuthenticationsPost201Response;
+      var isMLESupportedByCybsForApi = true;
 
       return this.apiClient.callApi(
         '/risk/v1/authentications', 'POST',
         pathParams, queryParams, headerParams, formParams, postBody,
-        authNames, contentTypes, accepts, returnType, callback
+        authNames, contentTypes, accepts, returnType, callback, isMLESupportedByCybsForApi
       );
     }
 
@@ -131,11 +132,12 @@
       var contentTypes = ['application/json;charset=utf-8'];
       var accepts = ['application/hal+json;charset=utf-8'];
       var returnType = RiskV1AuthenticationSetupsPost201Response;
+      var isMLESupportedByCybsForApi = true;
 
       return this.apiClient.callApi(
         '/risk/v1/authentication-setups', 'POST',
         pathParams, queryParams, headerParams, formParams, postBody,
-        authNames, contentTypes, accepts, returnType, callback
+        authNames, contentTypes, accepts, returnType, callback, isMLESupportedByCybsForApi
       );
     }
 
@@ -176,11 +178,12 @@
       var contentTypes = ['application/json;charset=utf-8'];
       var accepts = ['application/hal+json;charset=utf-8'];
       var returnType = RiskV1AuthenticationResultsPost201Response;
+      var isMLESupportedByCybsForApi = true;
 
       return this.apiClient.callApi(
         '/risk/v1/authentication-results', 'POST',
         pathParams, queryParams, headerParams, formParams, postBody,
-        authNames, contentTypes, accepts, returnType, callback
+        authNames, contentTypes, accepts, returnType, callback, isMLESupportedByCybsForApi
       );
     }
   };

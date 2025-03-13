@@ -86,11 +86,12 @@
       var contentTypes = ['application/json;charset=utf-8'];
       var accepts = ['application/hal+json;charset=utf-8'];
       var returnType = PtsV2PaymentsPost201Response;
+      var isMLESupportedByCybsForApi = true;
 
       return this.apiClient.callApi(
         '/pts/v2/payments', 'POST',
         pathParams, queryParams, headerParams, formParams, postBody,
-        authNames, contentTypes, accepts, returnType, callback
+        authNames, contentTypes, accepts, returnType, callback, isMLESupportedByCybsForApi
       );
     }
 
@@ -138,11 +139,12 @@
       var contentTypes = ['application/json;charset=utf-8'];
       var accepts = ['application/hal+json;charset=utf-8'];
       var returnType = PtsV2IncrementalAuthorizationPatch201Response;
+      var isMLESupportedByCybsForApi = true;
 
       return this.apiClient.callApi(
         '/pts/v2/payments/{id}', 'PATCH',
         pathParams, queryParams, headerParams, formParams, postBody,
-        authNames, contentTypes, accepts, returnType, callback
+        authNames, contentTypes, accepts, returnType, callback, isMLESupportedByCybsForApi
       );
     }
   };

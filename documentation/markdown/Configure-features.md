@@ -16,7 +16,7 @@ Reset Interval (in Hours) | Number of hours that saved card attempts are counted
 
 **NOTE:** If you want to utilize **"save card to account"** feature through "Payment flow/Checkout flow", make sure to set **"Enable tokenization Services"** to **"Yes"**
 
-### **1.1 Network Tokens**
+### **2. Network Tokens**
 
 A Network Token is a card scheme generated token, that represents customer card information for secure transactions that references a customer’s actual PAN.
 
@@ -36,7 +36,7 @@ Step 3: Go to Merchant Tools > Custom objects > Custom Object Editor and check i
 
 A custom object of this type would be created only if the Network Tokens webhook is subscribed.
 
-### **2. Delivery Address Verification**
+### **3. Delivery Address Verification**
 
 Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: Upload metadata" or import **"metadata/payment_metadata/meta/DeliveryAddressVerification.xml"** in Business Manager (**Administration > Site Development > Import & Export**)
 
@@ -48,7 +48,7 @@ Enable Delivery Address Verification Services | Enableor Disable Delivery Addres
 
 
 
-### **3. Tax Calculation**
+### **4. Tax Calculation**
 
 Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: Upload metadata" or import **"metadata/payment_metadata/meta/TaxConfiguration.xml"** in Business Manager (**Administration > Site Development > Import & Export**)
 
@@ -76,7 +76,7 @@ Ship From Country Code | Ship From Country Code
 
 
 
-### **4. Fraud Management Solutions**
+### **5. Fraud Management Solutions**
 
 Refer to this [link](https://www.cybersource.com/en-us/solutions/fraud-and-risk-management/decision-manager.html) to learn about Cybersource's Decision Manager and Fraud Management Essentials. Both services use the same cartridge settings and fields, to access the service a retailer has signed up for with Cybersource. . 
 
@@ -116,7 +116,7 @@ Step 3.3: Go to **Merchant Tools > Site Preferences > Custom Preferences > cyber
 
 
 
-### **5. Device FingerPrint**
+### **6. Device FingerPrint**
 
 Device FingerPrint is a powerful feature of Decision Manager and Fraud Management Essentials It is always recommended to send a Device Fingerprint when using a Cybersource fraud management service. 
 
@@ -134,7 +134,7 @@ TTL (Time To Live) | Time, in milliseconds between generating a new fingerprint 
 
 
 
-### **6. Capture Service**
+### **7. Capture Service**
 
 A single function is available to make capture requests. Please note that these functions are not available
 to use in the Salesforce B2C Commerce UI without customisation.
@@ -159,7 +159,7 @@ currency | Currency code (ex. ‘USD’)
 
 
 
-### **6. Auth Reversal Service**
+### **8. Auth Reversal Service**
 
 A single function is available to make auth reversal requests.
 
@@ -183,7 +183,7 @@ currency | Currency code (ex. ‘USD’)
 
 
 
-### **7. Advanced Customization**
+### **9. Advanced Customization**
 
 The Cybersource SFRA cartridge has built-in custom hooks that can be utilized to customize request data being sent to each Service.  This can be utilized to send additional custom data that the core cartridge cannot account for.  For example, if you want to include Merchant Defined Data in your Credit Card Authorization Requests, you can use these hooks to achieve this.  
 
@@ -211,6 +211,24 @@ Capture | Credit Card Capture
 
 <div style="text-align: right;font-size: 20px" ><a href="Test-golive.md">Next Step: Test and Go Live</a></div> 
 
+
+### **10. Message-Level Encryption (MLE)**
+
+Refer to this [link](https://developer.cybersource.com/docs/cybs/en-us/platform/developer/all/rest/rest-getting-started/restgs-jwt-message-intro/restgs-mle-intro.html) to learn about Cybersource’s MLE feature.
+
+#### Step 1: Upload Cybersource metadata in Business Manager
+If not, follow “4.2: Upload metadata” or import **metadata/payment_metadata/meta/MLE.xml** in Business Manager (Administration > Site Development > Import & Export).
+
+#### Step 2: Configure Cybersource MLE
+Go to **Merchant Tools > Site Preferences > Custom Preferences > Cybersource_MLE** and set values for the following parameters according to the **documentation -> Cybersource for Salesforce B2C Commerce REST-Message-Level Encryption Guide**.
+
+#### Field Description
+
+Field Name | Description
+------------ | -------------
+Enable Message-Level Encryption | Enable or Disable Message-Level Encryption.
+Alias of the Certificate | Alias of the "CyberSource_SJC_US" Certificate imported in "Private Keys and Certificates".
+Certificate Serial Number | Serial Number of "CyberSource_SJC_US" certificate extracted from p12 file.
 
 
 ---
