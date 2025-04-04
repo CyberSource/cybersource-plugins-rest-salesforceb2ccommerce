@@ -23,7 +23,7 @@ var LogfileMaxSize = '5242880'; // 10 MB In Bytes
  * Send this value in all requests that are sent through the partner solution. CyberSource assigns the ID to the partner.
  * Note When you see a partner ID of 999 in reports, the partner ID that was submitted is incorrect.
  */
-var SolutionId = 'FTN2UOLO';
+var SolutionId = 'GTIWK1VH';
 
 var CruiseDDCEndPoint = {
     Stage: 'https://centinelapistag.cardinalcommerce.com/V1/Cruise/Collect',
@@ -127,10 +127,15 @@ function getConfig(config) {
         googlePayEnvironment: config.googlePayEnvironment || customPreferences.GooglePay.Preferences.GooglePayEnvironment.getValue(),
         enableGooglePayOnCart: config.enableGooglePayOnCart || customPreferences.GooglePay.Preferences.EnableGooglePayOnCart.getValue(),
 
-        // DecisionManager
+        // Click to pay
         visaSRCEnabled: config.vscCheckoutEnabled || customPreferences.ClicktoPay.Preferences.ClicktoPayEnabled.getValue(),
         visaSRCKey: config.visaSRCKey || customPreferences.ClicktoPay.Preferences.ClicktoPayKey.getValue(),
-        VisaSRCProduction: config.VisaSRCProduction || customPreferences.ClicktoPay.Preferences.ClicktoPayProduction.getValue()
+        VisaSRCProduction: config.VisaSRCProduction || customPreferences.ClicktoPay.Preferences.ClicktoPayProduction.getValue(),
+
+        //MLE
+        mleEnabled: config.mleEnabled || customPreferences.MLE.Preferences.EnableMLE.getValue(),
+        mleCertificateSerialNumber: config.mleCertificateSerialNumber || customPreferences.MLE.Preferences.MLECertificateSerialNumber.getValue(),
+        mleCertificateAlias: config.mleCertificateAlias || customPreferences.MLE.Preferences.MLECertificateAlias.getValue()
     };
 }
 module.exports = getConfig();

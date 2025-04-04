@@ -45,6 +45,22 @@
                         <display xml:lang="x-default">JCB</display>
                         <value>JCB</value>
                     </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">CUP</display>
+                        <value>CUP</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">CARTESBANCAIRES</display>
+                        <value>CARTESBANCAIRES</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">JCREW</display>
+                        <value>JCREW</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">ELO</display>
+                        <value>ELO</value>
+                    </value-definition>
                 </value-definitions>
             </attribute-definition>
         </custom-attribute-definitions>

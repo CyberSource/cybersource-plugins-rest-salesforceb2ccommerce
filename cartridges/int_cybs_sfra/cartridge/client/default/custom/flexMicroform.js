@@ -3,7 +3,7 @@
 'use strict';
 
 $(document).ready(function () {
-    var captureContext = $('#flexTokenResponse').val();
+    var captureContext = JSON.parse($('#flexTokenResponse').val()).keyId;
     var flex = new Flex(captureContext); // eslint-disable-line no-undef
     var customStyles = {
         input: {
@@ -25,7 +25,7 @@ $(document).ready(function () {
             color: '#a94442'
         }
     };
-    var microform = flex.microform("card",{
+    var microform = flex.microform({
         styles: customStyles
     });
     var number = microform.createField('number');
@@ -107,7 +107,7 @@ $(document).ready(function () {
             var decodedJwt = parseJwt(response);
             document.getElementById('cardNumber').valid = true;
             $('#flex-response').val(response);
-            $('#cardNumber').val(decodedJwt.content.paymentInformation.card.number.maskedValue);
+            $('#cardNumber').val(decodedJwt.data.number);
 
             if ($('.submit-payment').length === 1) {
                 $('.submit-payment').trigger('click');
@@ -137,7 +137,7 @@ $(document).ready(function () {
                 case 'discover':
                     correctCardType = 'Discover';
                     break;
-                case 'dinersclub':
+                case 'diners-club':
                     correctCardType = 'DinersClub';
                     break;
                 case 'maestro':
@@ -145,6 +145,18 @@ $(document).ready(function () {
                     break;
                 case 'jcb':
                     correctCardType = 'JCB';
+                    break;
+                case "cartesbancaires":
+                    correctCardType = "CartesBancaires";
+                    break;
+                case "elo":
+                    correctCardType = "Elo";
+                    break;
+                case "cup":
+                    correctCardType = "China UnionPay";
+                    break;
+                case "jcrew":
+                    correctCardType = "JCrew";
                     break;
             }
             $('#cardType').val(correctCardType);

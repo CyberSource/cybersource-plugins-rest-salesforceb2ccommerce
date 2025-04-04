@@ -93,11 +93,12 @@
       var contentTypes = ['application/json;charset=utf-8'];
       var accepts = ['application/hal+json;charset=utf-8'];
       var returnType = PtsV2PaymentsCapturesPost201Response;
+      var isMLESupportedByCybsForApi = true;
 
       return this.apiClient.callApi(
         '/pts/v2/payments/{id}/captures', 'POST',
         pathParams, queryParams, headerParams, formParams, postBody,
-        authNames, contentTypes, accepts, returnType, callback
+        authNames, contentTypes, accepts, returnType, callback, isMLESupportedByCybsForApi
       );
     }
   };

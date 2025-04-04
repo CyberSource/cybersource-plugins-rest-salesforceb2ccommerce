@@ -3,40 +3,40 @@ var Bytes = require('dw/util/Bytes');
 var Encoding = require('dw/crypto/Encoding');
 var Mac = require('dw/crypto/Mac');
 var MessageDigest = require('dw/crypto/MessageDigest');
-
+var configObject = require('*/cartridge/configuration/index');
 var MerchantConfig = require('./merchantConfig');
 var Logger = require('./logger');
 
-var _exports = function () {}
+var _exports = function () { }
 
-_exports.prototype.createService = function (){
- var PaymentsHttpService = dw.svc.LocalServiceRegistry.createService("PaymentHttpService", {
-    createRequest: function (svc, url, headers, method, requestBody) {
-        var keys = Object.keys(headers);
-        var StringHeaders = "";
-        for (var i = 0; i < keys.length; i++) {
-            var key = keys[i];
-            svc.addHeader(key, headers[key]);
-            StringHeaders += key + ":" + headers[key] + "\n";
-        }
-        svc.URL = url;
-        svc.setRequestMethod(method.toUpperCase());
-        if (method.toUpperCase() === 'POST' || method.toUpperCase() === 'PATCH') {
-            if (typeof requestBody === 'string') {
-                return requestBody;
+_exports.prototype.createService = function () {
+    var PaymentsHttpService = dw.svc.LocalServiceRegistry.createService("PaymentHttpService", {
+        createRequest: function (svc, url, headers, method, requestBody) {
+            var keys = Object.keys(headers);
+            var StringHeaders = "";
+            for (var i = 0; i < keys.length; i++) {
+                var key = keys[i];
+                svc.addHeader(key, headers[key]);
+                StringHeaders += key + ":" + headers[key] + "\n";
             }
-            return JSON.stringify(requestBody);
+            svc.URL = url;
+            svc.setRequestMethod(method.toUpperCase());
+            if (method.toUpperCase() === 'POST' || method.toUpperCase() === 'PATCH') {
+                if (typeof requestBody === 'string') {
+                    return requestBody;
+                }
+                return JSON.stringify(requestBody);
+            }
+        },
+        parseResponse: function (svc, client) {
+            return client.text;
+        },
+        filterLogMessage: function (msg) {
+            //  No need to filter logs.  No sensitive information.
+            return msg;
         }
-    },
-    parseResponse: function (svc, client) {
-        return client.text;
-    },
-    filterLogMessage: function (msg) {
-        //  No need to filter logs.  No sensitive information.
-        return msg;
-    }
-});
- return PaymentsHttpService;
+    });
+    return PaymentsHttpService;
 };
 
 _exports.prototype.setConfiguration = function (configObject) {
@@ -183,7 +183,7 @@ _exports.prototype.normalizeParams = function (params) {
     return newParams;
 }
 
-_exports.prototype.callApi = function (path, httpMethod, pathParams, queryParams, headerParams, formParams, bodyParam, authNames, contentTypes, accepts, returnType, callback) {
+_exports.prototype.callApi = function (path, httpMethod, pathParams, queryParams, headerParams, formParams, bodyParam, authNames, contentTypes, accepts, returnType, callback, isMLESupportedByCybsForApi) {
     var requestHost = this.basePath.substr(
         this.basePath.indexOf("//") + 2
     );
@@ -219,6 +219,13 @@ _exports.prototype.callApi = function (path, httpMethod, pathParams, queryParams
         }
         payload = JSON.stringify(bodyParam);
 
+        var isMLEEnabled = configObject.mleEnabled;
+
+        if (isMLEEnabled && isMLESupportedByCybsForApi == true) {
+            var encryptPayload = require('*/cartridge/scripts/mleEncrypt/jweEncrypt.js');
+            payload = encryptPayload.getJWE(payload);
+
+        }
         var signature = this.getHttpSignature(resource, method, merchantKeyId, requestHost, merchantId, merchantSecretKey, payload);
         var digest = this.generateDigest(payload);
         digest = "SHA-256=" + digest;
@@ -247,9 +254,9 @@ _exports.prototype.callApi = function (path, httpMethod, pathParams, queryParams
 
     if (response.ok) {
         var responseObj = response.object;
-        if(path === '/microform/v2/sessions'){
+        if (path === '/microform/v2/sessions') {
             callback(responseObj, false, response);
-        }else{
+        } else {
             callback(JSON.parse(responseObj), false, response);
         }
     } else {
