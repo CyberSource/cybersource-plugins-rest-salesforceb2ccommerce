@@ -12,10 +12,13 @@ var currentBasket = BasketMgr.getCurrentBasket();
 var paymentMethod = currentBasket && currentBasket.paymentInstrument && currentBasket.paymentInstrument.paymentMethod;
 var isVisaSRC = paymentMethod && paymentMethod === 'CLICK_TO_PAY';
 
+var isGPay_PayerAuthEnabled = false;
+if(!empty(session.privacy.encryptedDataGP) && session.custom.isGpayCardHolderAuthenticated == false && configObject.payerAuthenticationEnabled) {
+    isGPay_PayerAuthEnabled = true;
+}
 // eslint-disable-next-line no-undef
-if (configObject.payerAuthenticationEnabled && configObject.cartridgeEnabled && empty(session.privacy.encryptedDataGP)
-    && !isVisaSRC
-) {
+if (((configObject.payerAuthenticationEnabled && empty(session.privacy.encryptedDataGP)) || isGPay_PayerAuthEnabled) && configObject.cartridgeEnabled && !isVisaSRC) {
+  
     // eslint-disable-next-line consistent-return
     server.prepend('PlaceOrder', server.middleware.https, function (req, res, next) {
 
@@ -193,9 +196,9 @@ if (configObject.payerAuthenticationEnabled && configObject.cartridgeEnabled && 
             jwttoken: billingForm.creditCardFields.flexresponse.value,
             securityCode: billingForm.creditCardFields.securityCode.value,
             fluidData: paymentInstrument.custom.fluidData,
+            googlePayFluidData: session.privacy.encryptedDataGP,
             callId: paymentInstrument.custom.callID
         };
-
 
         var setupResponse = payerAuthentication.paSetup(billingForm, session.privacy.orderID, card);
         var accessToken = setupResponse.consumerAuthenticationInformation.accessToken;
@@ -299,6 +302,7 @@ server.post('getResponse', server.middleware.https, function (req, res, next) {
             jwttoken: billingForm.creditCardFields.flexresponse.value,
             securityCode: billingForm.creditCardFields.securityCode.value,
             fluidData: paymentInstrument.custom.fluidData,
+            googlePayFluidData: session.privacy.encryptedDataGP,
             callId: paymentInstrument.custom.callID
         };
     }
@@ -342,6 +346,8 @@ server.post('getResponse', server.middleware.https, function (req, res, next) {
             session.privacy.orderID = '';
             // eslint-disable-next-line no-undef
             session.privacy.orderToken = '';
+            delete session.privacy.encryptedDataGP;
+            delete session.custom.isGpayCardHolderAuthenticated;
         }
         // eslint-disable-next-line
         else if (enrollResponse.errorInformation.reason === 'CUSTOMER_AUTHENTICATION_REQUIRED' && session.custom.Flag3ds === false) {
@@ -362,6 +368,8 @@ server.post('getResponse', server.middleware.https, function (req, res, next) {
             session.privacy.orderID = '';
             // eslint-disable-next-line no-undef
             session.privacy.orderToken = '';
+            delete session.privacy.encryptedDataGP;
+            delete session.custom.isGpayCardHolderAuthenticated;
         }
 
         res.render('payerAuthentication/checkoutRedirect', {
@@ -411,6 +419,7 @@ server.post('handlingConsumerAuthResponse', server.middleware.https, function (r
             jwttoken: billingForm.creditCardFields.flexresponse.value,
             securityCode: billingForm.creditCardFields.securityCode.value,
             fluidData: paymentInstrument.custom.fluidData,
+            googlePayFluidData: session.privacy.encryptedDataGP,
             callId: paymentInstrument.custom.callID
         };
     }
@@ -436,6 +445,8 @@ server.post('handlingConsumerAuthResponse', server.middleware.https, function (r
         session.privacy.orderID = '';
         // eslint-disable-next-line no-undef
         session.privacy.orderToken = '';
+        delete session.privacy.encryptedDataGP;
+        delete session.custom.isGpayCardHolderAuthenticated;
     }
    
     // eslint-disable-next-line
@@ -458,6 +469,8 @@ server.post('handlingConsumerAuthResponse', server.middleware.https, function (r
         session.privacy.orderID = '';
         // eslint-disable-next-line no-undef
         session.privacy.orderToken = '';
+        delete session.privacy.encryptedDataGP;
+        delete session.custom.isGpayCardHolderAuthenticated;
     }
     res.render('payerAuthentication/checkoutRedirect', {
         redirect: redirect,
@@ -469,6 +482,7 @@ server.post('handlingConsumerAuthResponse', server.middleware.https, function (r
     return next();
 });
 
+// for Gpay on checkout page
 server.post('SubmitPaymentGP', function (req, res, next) {
     var COHelpers = require('*/cartridge/scripts/checkout/checkoutHelpers');
     var Encoding = require('dw/crypto/Encoding');
@@ -493,6 +507,7 @@ server.post('SubmitPaymentGP', function (req, res, next) {
     // eslint-disable-next-line no-undef
     var paymentData = JSON.parse(request.httpParameterMap.googletoken);
     var GPtoken = paymentData.paymentMethodData.tokenizationData.token;
+    session.custom.isGpayCardHolderAuthenticated = paymentData.paymentMethodData.info.assuranceDetails.cardHolderAuthenticated;
     // eslint-disable-next-line no-undef
     session.privacy.encryptedDataGP = Encoding.toBase64(new dw.util.Bytes(GPtoken));
 
@@ -689,6 +704,7 @@ function shippingUpdate(cart, shippingdetails) {
     }
 }
 
+//for Gapy on cart and minicart
 // eslint-disable-next-line consistent-return
 server.post('GetGooglePayToken', function (req, res, next) {
     var Encoding = require('dw/crypto/Encoding');
@@ -720,6 +736,7 @@ server.post('GetGooglePayToken', function (req, res, next) {
                 ShippingHelper.selectShippingMethod(cart.defaultShipment, null);
             });
             var GPtoken = response.paymentMethodData.tokenizationData.token;
+            session.custom.isGpayCardHolderAuthenticated = response.paymentMethodData.info.assuranceDetails.cardHolderAuthenticated;
             // eslint-disable-next-line no-undef
             session.privacy.encryptedDataGP = Encoding.toBase64(new dw.util.Bytes(GPtoken));
         } else {

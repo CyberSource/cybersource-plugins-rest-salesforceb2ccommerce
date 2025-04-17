@@ -30,7 +30,8 @@ var baseCardPaymentMethod = {
     type: 'CARD',
     parameters: {
         allowedAuthMethods: allowedCardAuthMethods,
-        allowedCardNetworks: allowedCardNetworks
+        allowedCardNetworks: allowedCardNetworks,
+        assuranceDetailsRequired: true
     }
 };
 
@@ -153,7 +154,7 @@ function getGoogleTransactionInfo() {
         currencyCode: 'USD',
         totalPriceStatus: 'FINAL',
         totalPrice: $('body').find('.row.grand-total').find('.grand-total-sum').text()
-            .replace('$', '')
+            .replace('$', '').replace(',', '')
     };
 }
 /**
