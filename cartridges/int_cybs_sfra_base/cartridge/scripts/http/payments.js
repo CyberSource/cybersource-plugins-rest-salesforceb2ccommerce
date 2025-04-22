@@ -174,7 +174,6 @@ function httpZeroDollarAuth(
     customerEmail, referenceInformationCode, billingAddress, currency, skipDMFlag
 ) {
     var configObject = require('../../configuration/index');
-    session.custom.scaTokenFlag = false;
     var padNumber = require('../util/pad');
     var cybersourceRestApi = require('../../apiClient/index');
 
@@ -293,7 +292,6 @@ function httpZeroDollarAuthWithTransientToken(
     customerEmail, referenceInformationCode, billingAddress, currency
 ) {
     var configObject = require('../../configuration/index');
-    session.custom.scaTokenFlag = false;
     var cybersourceRestApi = require('../../apiClient/index');
     var errors = require('~/cartridge/scripts/util/errors');
     var instance = new cybersourceRestApi.PaymentsApi(configObject);
@@ -492,7 +490,10 @@ function createFlexKey() { // eslint-disable-line no-unused-vars
             Constants.PROXY_PREFIX + '://' + request.httpHost
         ],
         'allowedCardNetworks': list,
-        'clientVersion':  Constants.CLIENT_VERSION
+        'clientVersion':  Constants.CLIENT_VERSION,
+        'transientTokenResponseOptions':{
+            'includeCardPrefix':false
+        }
     };
     var opts = {};
     opts.format = 'JWT';

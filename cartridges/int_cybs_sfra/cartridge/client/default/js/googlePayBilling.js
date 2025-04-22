@@ -31,6 +31,7 @@ var baseCardPaymentMethod = {
     parameters: {
         allowedAuthMethods: allowedCardAuthMethods,
         allowedCardNetworks: allowedCardNetworks,
+        assuranceDetailsRequired: true,
         billingAddressRequired: true,
         billingAddressParameters: {
             format: 'FULL',
@@ -53,7 +54,7 @@ function getGoogleTransactionInfo() {
         countryCode: 'US',
         currencyCode: 'USD',
         totalPriceStatus: 'FINAL',
-        totalPrice: $('.checkout-continue').find('#carttotal').val() != null ? $('.checkout-continue').find('#carttotal').val().replace('$', '') : ''
+        totalPrice: $('.checkout-continue').find('#carttotal').val() != null ? $('.checkout-continue').find('#carttotal').val().replace('$', '').replace(',', '') : ''
     };
 }
 

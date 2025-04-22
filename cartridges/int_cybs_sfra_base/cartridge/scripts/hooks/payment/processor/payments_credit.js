@@ -264,7 +264,8 @@ function Authorize(orderNumber, paymentInstrument, paymentProcessor) {
         gPayToken: session.privacy.encryptedDataGP
     };
     // eslint-disable-next-line no-undef
-    session.privacy.encryptedDataGP = '';
+    delete session.privacy.encryptedDataGP;
+    delete session.custom.isGpayCardHolderAuthenticated;    
     var customerEmail = order.customerEmail;
     var currencyCode = order.currencyCode.toUpperCase();
     try {

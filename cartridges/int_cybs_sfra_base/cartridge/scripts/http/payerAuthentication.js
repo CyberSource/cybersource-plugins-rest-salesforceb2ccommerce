@@ -79,6 +79,11 @@ function paSetup(billingDetails, referenceInformationCode, cardData) {
         fluidData.value = cardData.fluidData;
         fluidData.key = configObject.visaSRCKey;
         paymentInformation.fluidData = fluidData;
+    } else if (cardData.googlePayFluidData != null) {
+        processingInformation.paymentSolution = '012';  //googlepay
+        var fluidData = new cybersourceRestApi.Ptsv2paymentsPaymentInformationFluidData();
+        fluidData.value = cardData.googlePayFluidData;
+        paymentInformation.fluidData = fluidData;
     } else {
         card = new cybersourceRestApi.Ptsv2paymentsPaymentInformationCard();
         card.expirationMonth = billingDetails.creditCardFields.expirationMonth.value;
@@ -153,14 +158,15 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
 
     var billTo = new cybersourceRestApi.Ptsv2paymentsOrderInformationBillTo();
     billTo.email = order.getCustomerEmail();
-    billTo.country = billingDetails.addressFields.country.htmlValue;
-    billTo.firstName = billingDetails.addressFields.firstName.htmlValue;
-    billTo.lastName = billingDetails.addressFields.lastName.htmlValue;
-    billTo.phoneNumber = billingDetails.contactInfoFields.phone.htmlValue;
-    billTo.address1 = billingDetails.addressFields.address1.htmlValue;
-    billTo.postalCode = billingDetails.addressFields.postalCode.htmlValue;
-    billTo.administrativeArea = billingDetails.addressFields.states && billingDetails.addressFields.states.stateCode.htmlValue;
-    billTo.locality = billingDetails.addressFields.city.htmlValue;
+    billTo.country = order.billingAddress.countryCode.toString().toUpperCase();
+    billTo.firstName = order.billingAddress.firstName;
+    billTo.lastName = order.billingAddress.lastName;
+    billTo.phoneNumber = order.billingAddress.phone;
+    billTo.address1 = order.billingAddress.address1;
+    billTo.address2 = order.billingAddress.address2;
+    billTo.postalCode = order.billingAddress.postalCode;
+    billTo.administrativeArea = order.billingAddress.stateCode;
+    billTo.locality = order.billingAddress.city;
 
     var shipTo = new cybersourceRestApi.Ptsv2paymentsOrderInformationShipTo();
     shipTo.email = order.getCustomerEmail();
@@ -242,6 +248,11 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
         fluidData.value = cardData.fluidData;
         fluidData.key = configObject.visaSRCKey;
         paymentInformation.fluidData = fluidData;
+    } else if (cardData.googlePayFluidData != null) {
+        processingInformation.paymentSolution = '012';  //googlepay
+        var fluidData = new cybersourceRestApi.Ptsv2paymentsPaymentInformationFluidData();
+        fluidData.value = cardData.googlePayFluidData;
+        paymentInformation.fluidData = fluidData;
     } else {
         card = new cybersourceRestApi.Ptsv2paymentsPaymentInformationCard();
         card.expirationMonth = billingDetails.creditCardFields.expirationMonth.value;
@@ -315,15 +326,15 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
 
     var billTo = new cybersourceRestApi.Ptsv2paymentsOrderInformationBillTo();
     billTo.email = order.getCustomerEmail();
-    billTo.country = billingDetails.addressFields.country.htmlValue;
-    billTo.firstName = billingDetails.addressFields.firstName.htmlValue;
-    billTo.lastName = billingDetails.addressFields.lastName.htmlValue;
-    billTo.phoneNumber = billingDetails.contactInfoFields.phone.htmlValue;
-    billTo.address1 = billingDetails.addressFields.address1.htmlValue;
-    billTo.postalCode = billingDetails.addressFields.postalCode.htmlValue;
-    billTo.administrativeArea = billingDetails.addressFields.states
-        && billingDetails.addressFields.states.stateCode.htmlValue;
-    billTo.locality = billingDetails.addressFields.city.htmlValue;
+    billTo.country = order.billingAddress.countryCode.toString().toUpperCase();
+    billTo.firstName = order.billingAddress.firstName;
+    billTo.lastName = order.billingAddress.lastName;
+    billTo.phoneNumber = order.billingAddress.phone;
+    billTo.address1 = order.billingAddress.address1;
+    billTo.address2 = order.billingAddress.address2;
+    billTo.postalCode = order.billingAddress.postalCode;
+    billTo.administrativeArea = order.billingAddress.stateCode;
+    billTo.locality = order.billingAddress.city;
 
     var orderInformation = new cybersourceRestApi.Ptsv2paymentsOrderInformation();
     orderInformation.amountDetails = amountDetails;
@@ -362,6 +373,11 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
         var fluidData = new cybersourceRestApi.Ptsv2paymentsPaymentInformationFluidData();
         fluidData.value = cardData.fluidData;
         fluidData.key = configObject.visaSRCKey;
+        paymentInformation.fluidData = fluidData;
+    } else if (cardData.googlePayFluidData != null) {
+        processingInformation.paymentSolution = '012';  //googlepay
+        var fluidData = new cybersourceRestApi.Ptsv2paymentsPaymentInformationFluidData();
+        fluidData.value = cardData.googlePayFluidData;
         paymentInformation.fluidData = fluidData;
     } else {
         var card = new cybersourceRestApi.Ptsv2paymentsPaymentInformationCard(); // eslint-disable-line no-redeclare
