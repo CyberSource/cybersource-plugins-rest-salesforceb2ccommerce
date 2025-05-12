@@ -205,6 +205,8 @@ Note: Enable Decision Manager and Payer Authentication in custom preferences.
    #### <ins>Step 3: Request Production Access
    1. If you want to use Google Pay in **LIVE Environment**,then navigate to this link https://pay.google.com/business/console/ in order to get Google Pay merchant Id.
 
+   Note: Please refer to Payer Authentication (3D Secure) section to configure Payer Authentication for Google Pay.
+
 ---
 
    #### 4. Click to Pay

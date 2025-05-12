@@ -485,7 +485,6 @@ function createFlexKey() { // eslint-disable-line no-unused-vars
    }
        
     var publicKeyRequest = {
-        'encryptionType': Constants.ENCRYPTION_TYPE,
         'targetOrigins':[
             Constants.PROXY_PREFIX + '://' + request.httpHost
         ],
