@@ -31,6 +31,7 @@ var baseCardPaymentMethod = {
     parameters: {
         allowedAuthMethods: allowedCardAuthMethods,
         allowedCardNetworks: allowedCardNetworks,
+        assuranceDetailsRequired: true,
         billingAddressRequired: true,
         billingAddressParameters: {
             format: 'FULL',
@@ -45,15 +46,29 @@ var cardPaymentMethod = {
 };
 var paymentsClient = null;
 
+// Function to format money based on input
+function formatInputMoney(input) {
+    var standardNumber = input;
+    if (input.indexOf(",") > input.indexOf(".") || (input.indexOf(",") !== -1 && input.indexOf(".") === -1)) {
+        standardNumber = parseFloat(input.replace(".", "").replace(",", ".").replace(/[^0-9.]/g, ''));
+    } else {
+        standardNumber = parseFloat(input.replace(/[^0-9.]/g, ''));
+    }
+    return standardNumber;
+}
+
 /**
  * @returns {*} *
  */
 function getGoogleTransactionInfo() {
+    var totalPrice = '';
+    var totalPriceRaw = $('.checkout-continue').find('#carttotal').val() != null ? $('.checkout-continue').find('#carttotal').val().replace('$', '') : '';
+    totalPrice = formatInputMoney(totalPriceRaw);
     return {
-        countryCode: 'US',
-        currencyCode: 'USD',
+        countryCode: window.googlepayval.countryCode,
+        currencyCode: window.googlepayval.currencyCode,
         totalPriceStatus: 'FINAL',
-        totalPrice: $('.checkout-continue').find('#carttotal').val() != null ? $('.checkout-continue').find('#carttotal').val().replace('$', '') : ''
+        totalPrice: totalPrice.toString()
     };
 }
 
@@ -112,7 +127,7 @@ function prefetchGooglePaymentData() {
     var paymentDataRequest = getGooglePaymentDataRequest();
     paymentDataRequest.transactionInfo = {
         totalPriceStatus: 'NOT_CURRENTLY_KNOWN',
-        currencyCode: 'USD'
+        currencyCode: window.googlepayval.currencyCode
     };
     // eslint-disable-next-line no-shadow
     var paymentsClient = getGooglePaymentsClient();

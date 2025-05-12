@@ -1,5 +1,11 @@
 ## <ins>Release Notes
 
+**Version 25.3.0 (May 2025)**
+• Added Payer Authentication support for Google Pay.
+• Added multi currency support for Google Pay
+• Handled session variables in SCA flow.
+• Removed encryption type from Microform v2 request.
+
 **Version 25.2.0 (March 2025)**
 • Added Message-Level Encryption (MLE) feature.  
 • Added support for additional card types in flex microform. 

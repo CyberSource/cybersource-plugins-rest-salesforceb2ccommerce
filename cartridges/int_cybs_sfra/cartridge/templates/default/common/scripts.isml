@@ -14,6 +14,7 @@
 <isset name="merchantIDPref" value="${require('*/cartridge/configuration/index').merchantID}" scope="page" />
 <isset name="googlePayEnabled" value="${require('*/cartridge/configuration/index').googlePayEnabled}" scope="page" />
 <isset name="googlePayEnvironmentPref" value="${require('*/cartridge/configuration/index').googlePayEnvironment}" scope="page" />
+<isset name="countryCode" value="${require('dw/util/Locale').getLocale(request.getLocale()).getCountry()}" scope="page" />
 
 <input type="hidden" name="googlePayMerchantID" id="googlePayMerchantID" value="${googlePayMerchantIdPref}"/>
 <input type="hidden" name="googlePaygatewayMerchantId" id="googlePaygatewayMerchantId" value="${merchantIDPref}"/>
@@ -26,13 +27,12 @@
 
 	 var   googlePayVariables = {
                         currencyCode: "${session.getCurrency().getCurrencyCode()}",
+                        countryCode: "${countryCode}",
                         totalPriceStatus: 'FINAL',
                         sessionCallBack : "${dw.web.URLUtils.url('CheckoutServices-SubmitPaymentGP')}",
                         submitURL : "${dw.web.URLUtils.https('Checkout-Begin', 'stage', 'placeOrder')}"
                     }
 
-  
-                   
  window.googlepayval = googlePayVariables;
 
 </script>

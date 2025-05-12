@@ -2,6 +2,7 @@
 <isinclude template="/components/modules" sf-toolkit="off" />
 <isset name="enableGooglePayOnMiniCart" value="${require('*/cartridge/configuration/index').enableGooglePayOnMiniCart}" scope="page" />
 <isset name="enableGooglePayOnCart" value="${require('*/cartridge/configuration/index').enableGooglePayOnCart}" scope="page" />
+<isset name="countryCode" value="${require('dw/util/Locale').getLocale(request.getLocale()).getCountry()}" scope="page" />
 
 <!DOCTYPE html>
 <html lang="${require('dw/util/Locale').getLocale(request.getLocale()).getLanguage()}">
@@ -41,11 +42,11 @@
 		<script>
 	 var googlePayVariables = {
 		currencyCode: "${session.getCurrency().getCurrencyCode()}",
+		countryCode: "${countryCode}",
 		totalPriceStatus: 'FINAL',
 		sessionCallBack : "${dw.web.URLUtils.url('CheckoutServices-GetGooglePayToken')}",
 		returnURL : "${dw.web.URLUtils.https('Checkout-Begin', 'stage', 'placeOrder')}",
 		cartURL : "${dw.web.URLUtils.https('Checkout-Begin', 'stage', 'payment','payerAuthError', Resource.msg('message.payerAuthError', 'error', null))}"
-		//"${dw.web.URLUtils.https('Cart-Show')}",
 	 	}
 	 window.googlepayval = googlePayVariables;
 	</script>
