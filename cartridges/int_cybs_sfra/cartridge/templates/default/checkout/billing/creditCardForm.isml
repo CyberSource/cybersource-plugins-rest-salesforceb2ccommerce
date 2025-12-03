@@ -1,21 +1,32 @@
 <isset name="creditFields" value="${pdict.forms.billingForm.creditCardFields}" scope="page" />
-
+ 
+<isset name="isUCEnabled" value="${require('*/cartridge/configuration/index').unifiedCheckoutEnabled}" scope="page" />
 <isset name="isFlexEnabled" value="${require('*/cartridge/configuration/index').flexMicroformEnabled}" scope="page" />
- <isset name="isCartridgeEnabled" value="${require('*/cartridge/configuration/index').cartridgeEnabled}" scope="page" />
- <isset name="isTokenizationEnabled" value="${require('*/cartridge/configuration/index').tokenizationEnabled}" scope="page" />
-<isif condition="${isFlexEnabled && isCartridgeEnabled}">
-    <script src="${URLUtils.staticURL('/custom/lib/jquery/jquery-3.7.1.min.js')}" type="text/javascript"></script>
-    <script src="${URLUtils.staticURL('/custom/flexMicroform.js')}" type="text/javascript"></script>
-    <isinclude url="${URLUtils.url('SecureAcceptance-CreateFlexToken')}"></isinclude>
+<isset name="isCartridgeEnabled" value="${require('*/cartridge/configuration/index').cartridgeEnabled}" scope="page" />
+<isset name="isTokenizationEnabled" value="${require('*/cartridge/configuration/index').tokenizationEnabled}" scope="page" />
+ 
+<isif condition="${isUCEnabled && isCartridgeEnabled}">
+    <iscomment>Load Unified Checkout when UC is enabled</iscomment>
+    <script src="${URLUtils.staticURL('/custom/lib/jquery/jquery-3.7.1.min.js')}"></script>
+    <script src="${URLUtils.staticURL('/custom/unifiedCheckout.js')}"></script>
+    <isinclude url="${URLUtils.url('SecureAcceptance-CreateUCToken')}" />
+   
+    <iscomment>Include Unified Checkout template</iscomment>
+    <isinclude template="unifiedCheckout" />    
+<iselse/>
+    <isif condition="${isFlexEnabled && isCartridgeEnabled}">
+        <script src="${URLUtils.staticURL('/custom/lib/jquery/jquery-3.7.1.min.js')}" type="text/javascript"></script>
+        <script src="${URLUtils.staticURL('/custom/flexMicroform.js')}" type="text/javascript"></script>
+        <isinclude url="${URLUtils.url('SecureAcceptance-CreateFlexToken')}"></isinclude>
+    </isif>
 </isif>
-
 <iscomment>
     <script src="${URLUtils.staticURL('/default/js/checkout/flexMicroform.js')}"></script>
 </iscomment>
 <!--- Hidden input for credit card type --->
 <input type="hidden" class="form-control" id="cardType" name="${creditFields.cardType.htmlName}" value="">
 
-<div class="row" ${isFlexEnabled && isCartridgeEnabled ? "style='display: none'" : ''}>
+<div class="row" ${(isUCEnabled || isFlexEnabled) && isCartridgeEnabled ? "style='display: none'" : ''}>
     <div class="col-12">
         <div class="form-group
             <isif condition=${creditFields.cardNumber.mandatory === true}>required</isif>
@@ -34,7 +45,7 @@
     </div>
 </div>
 
-<div class="row">
+<div class="row" ${isUCEnabled ? "style='display: none'" : ''}>
     <div class="col-6">
         <div class="form-group
             <isif condition=${creditFields.expirationMonth.mandatory === true}>required</isif>
@@ -91,7 +102,7 @@
     </div>
 </div>
 
-<div class="row" ${isFlexEnabled && isCartridgeEnabled  ? "style='display: none'" : ''}>
+<div class="row" ${(isUCEnabled || isFlexEnabled) && isCartridgeEnabled  ? "style='display: none'" : ''}>
     <div class="col-sm-6">
         <div class="form-group
             <isif condition=${creditFields.securityCode.mandatory === true}>required</isif>
@@ -115,7 +126,7 @@
     </div>
 </div>
 
-<div class="row">
+<div class="row" ${isUCEnabled ? "style='display: none'" : ''}>
     <div class="col">
         <isif condition="${pdict.customer.registeredUser && isTokenizationEnabled}">
             <div class="save-credit-card custom-control custom-checkbox ">
@@ -128,6 +139,4 @@
         </isif>
     </div>
 </div>
-
-
-<isset name="creditFields" value="${pdict.forms.billingForm.creditCardFields}" scope="page" />
+ 

@@ -79,32 +79,61 @@ function isAddressFormEqualToAvsStandard(billTo, AvsStandard) {
  */
 function savePaymentInstrumentToWallet(billingData, currentBasket, customer) {
     var wallet = customer.getProfile().getWallet();
+    var server = require('server');
+    var billingForm = server.forms.getForm('billing');
 
-    return Transaction.wrap(function () {
-        var storedPaymentInstrument = wallet.createPaymentInstrument(PaymentInstrument.METHOD_CREDIT_CARD);
+    var transientToken = billingForm.creditCardFields.ucpaymenttoken.value;
+    if (transientToken) {
+        var payments = require("~/cartridge/scripts/http/payments");
+        var paymentDetails = payments.getPaymentDetails(transientToken);
+    }
 
-        storedPaymentInstrument.setCreditCardHolder(
-            currentBasket.billingAddress.fullName
-        );
-        storedPaymentInstrument.setCreditCardNumber(
-            billingData.paymentInformation.cardNumber.value
-        );
-        storedPaymentInstrument.setCreditCardType(
-            billingData.paymentInformation.cardType.value
-        );
-        storedPaymentInstrument.setCreditCardExpirationMonth(
-            billingData.paymentInformation.expirationMonth.value
-        );
-        storedPaymentInstrument.setCreditCardExpirationYear(
-            billingData.paymentInformation.expirationYear.value
-        );
+    var token = currentBasket.paymentInstruments[0].creditCardToken;
 
-        var token = currentBasket.paymentInstruments[0].creditCardToken;
+    // Determine payment method - check if UC token exists
+    var isUCPayment = !empty(transientToken);
+    var isFlexPayment = !isUCPayment && billingData.paymentInformation;
+    if (isUCPayment) {
+        return Transaction.wrap(function () {
+            var paymentInstrument = wallet.createPaymentInstrument(PaymentInstrument.METHOD_CREDIT_CARD);
+            paymentInstrument.setCreditCardHolder(paymentDetails.orderInformation.billTo.firstName + " " + paymentDetails.orderInformation.billTo.lastName);
+            paymentInstrument.setCreditCardNumber(billingData.paymentInformation.cardNumber.value);
+            paymentInstrument.setCreditCardType(billingData.paymentInformation.cardType.value);
+            paymentInstrument.setCreditCardExpirationMonth(
+                parseInt(billingData.paymentInformation.expirationMonth.value, 10)
+            );
+            paymentInstrument.setCreditCardExpirationYear(
+                parseInt(billingData.paymentInformation.expirationYear.value, 10)
+            );
+            paymentInstrument.setCreditCardToken(token);
+            return paymentInstrument;
+        });
 
-        storedPaymentInstrument.setCreditCardToken(token);
+    } else if (isFlexPayment) {
+        return Transaction.wrap(function () {
+            var storedPaymentInstrument = wallet.createPaymentInstrument(PaymentInstrument.METHOD_CREDIT_CARD);
 
-        return storedPaymentInstrument;
-    });
+            storedPaymentInstrument.setCreditCardHolder(
+                currentBasket.billingAddress.fullName
+            );
+            storedPaymentInstrument.setCreditCardNumber(
+                billingData.paymentInformation.cardNumber.value
+            );
+            storedPaymentInstrument.setCreditCardType(
+                billingData.paymentInformation.cardType.value
+            );
+            storedPaymentInstrument.setCreditCardExpirationMonth(
+                billingData.paymentInformation.expirationMonth.value
+            );
+            storedPaymentInstrument.setCreditCardExpirationYear(
+                billingData.paymentInformation.expirationYear.value
+            );
+
+            storedPaymentInstrument.setCreditCardToken(token);
+
+            return storedPaymentInstrument;
+        });
+    }
 }
 /**
  * Attempts to place the order
@@ -114,6 +143,18 @@ function savePaymentInstrumentToWallet(billingData, currentBasket, customer) {
  */
 function placeOrder(order, fraudDetectionStatus) {
     var result = { error: false };
+    Transaction.wrap(function () {
+        // Clean up UCToken from all payment instruments
+        var paymentInstruments = order.getPaymentInstruments();
+        if (paymentInstruments && paymentInstruments.length > 0) {
+            for (var i = 0; i < paymentInstruments.length; i++) {
+                var paymentInstrument = paymentInstruments[i];
+                if (paymentInstrument && paymentInstrument.custom && paymentInstrument.custom.UCToken) {
+                    paymentInstrument.custom.UCToken = null;
+                }
+            }
+        }
+    });
     try {
         Transaction.begin();
         if (fraudDetectionStatus.status === 'review') {

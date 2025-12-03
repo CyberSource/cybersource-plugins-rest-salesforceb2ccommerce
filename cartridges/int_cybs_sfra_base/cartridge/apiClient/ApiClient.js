@@ -187,44 +187,48 @@ _exports.prototype.callApi = function (path, httpMethod, pathParams, queryParams
     var requestHost = this.basePath.substr(
         this.basePath.indexOf("//") + 2
     );
-
+ 
     var method = httpMethod.toLowerCase();
     var merchantId = this.merchantConfig.getMerchantID();
     var merchantKeyId = this.merchantConfig.getMerchantKeyID();
     var merchantSecretKey = this.merchantConfig.getMerchantsecretKey();
     var payload = "";
     var Constants = require('../apiClient/constants');
-
+ 
     var url = this.buildUrl(path, pathParams, queryParams);
-
+ 
     var resource = url.substr(this.basePath.length);
     var contentType = contentTypes.join(';');
     var acceptType = accepts.join(';');
-
+ 
     var date = new Date(Date.now()).toUTCString();
     if (method === 'post' || method === 'patch') {
         if (typeof bodyParam === 'string') {
             bodyParam = JSON.parse(bodyParam);
         }
-
+ 
         // adding solution id to all post calls
         if (!bodyParam.clientReferenceInformation) {
             bodyParam.clientReferenceInformation = {};
         }
+        if(path === '/up/v1/capture-contexts'){
+            bodyParam.clientReferenceInformation.code = '102';
+        }else{
         bodyParam.clientReferenceInformation.applicationName = Constants.APPLICATION_NAME;
         bodyParam.clientReferenceInformation.applicationVersion = Constants.APPLICATION_VERSION;
         bodyParam.clientReferenceInformation.partner = {
             solutionId: this.merchantConfig.getSolutionId(),
             developerId: this.merchantConfig.getDeveloperId()
         }
+        }
         payload = JSON.stringify(bodyParam);
-
+ 
         var isMLEEnabled = configObject.mleEnabled;
-
+ 
         if (isMLEEnabled && isMLESupportedByCybsForApi == true) {
             var encryptPayload = require('*/cartridge/scripts/mleEncrypt/jweEncrypt.js');
             payload = encryptPayload.getJWE(payload);
-
+ 
         }
         var signature = this.getHttpSignature(resource, method, merchantKeyId, requestHost, merchantId, merchantSecretKey, payload);
         var digest = this.generateDigest(payload);
@@ -233,7 +237,7 @@ _exports.prototype.callApi = function (path, httpMethod, pathParams, queryParams
     } else {
         var signature = this.getHttpSignature(resource, method, merchantKeyId, requestHost, merchantId, merchantSecretKey);
     }
-
+ 
     headerParams['v-c-merchant-id'] = merchantId;
     headerParams['date'] = date;
     headerParams['host'] = requestHost;
@@ -241,20 +245,20 @@ _exports.prototype.callApi = function (path, httpMethod, pathParams, queryParams
     headerParams['User-Agent'] = "Mozilla/5.0";
     headerParams['Content-Type'] = contentType;
     headerParams['Accept'] = acceptType;
-
+ 
     // Set header parameters
     var normalizedHeaders = this.normalizeParams(headerParams);
-
+ 
     // Calling service.
     if (method === 'post' || method === 'patch') {
         var response = this.createService().call(url, normalizedHeaders, method, payload);
     } else {
         var response = this.createService().call(url, normalizedHeaders, method);
     }
-
+ 
     if (response.ok) {
         var responseObj = response.object;
-        if (path === '/microform/v2/sessions') {
+        if (path === '/microform/v2/sessions' || path === '/up/v1/capture-contexts') {
             callback(responseObj, false, response);
         } else {
             callback(JSON.parse(responseObj), false, response);

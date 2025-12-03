@@ -7,6 +7,7 @@ var PaymentInstrument = require('dw/order/PaymentInstrument');
 var Resource = require('dw/web/Resource');
 var Transaction = require('dw/system/Transaction');
 var OrderMgr = require('dw/order/OrderMgr');
+var Logger = require('dw/system/Logger');
 var server = require('server');
 var collections = require('*/cartridge/scripts/util/collections');
 var payments = require('../../../http/payments');
@@ -122,23 +123,26 @@ function createToken(
  * Verifies that entered credit card information is a valid card. If the information is valid a
  * credit card payment instrument is created
  * @param {dw.order.Basket} basket Current users's basket
- * @param {Object} paymentInformation - the payment information arguments.length
+ * @param {Object} paymentInformation - the payment information
  * @return {Object} returns an error object
  */
 function Handle(basket, paymentInformation) {
     var configObject = require('~/cartridge/configuration/index.js');
+    var Logger = require('dw/system/Logger');
+    var logger = Logger.getLogger('Cybersource', 'PaymentProcessor');
+
     var currentBasket = basket;
     var cardErrors = {};
+    var serverErrors = [];
     var cardNumber = paymentInformation.cardNumber.value;
-    var cardSecurityCode = configObject.flexMicroformEnabled ? '' : paymentInformation.securityCode.value;
+    var cardSecurityCode = (configObject.flexMicroformEnabled || configObject.unifiedCheckoutEnabled) ? '' : paymentInformation.securityCode.value;
     var expirationMonth = paymentInformation.expirationMonth.value;
     var expirationYear = paymentInformation.expirationYear.value;
     var email = basket.customerEmail;
     var cardType = paymentInformation.cardType.value;
 
-    var serverErrors = [];
-
-    if (!configObject.flexMicroformEnabled) {
+    // Fallback to base implementation for traditional payment processing
+    if (!configObject.flexMicroformEnabled && !configObject.unifiedCheckoutEnabled) {
         var baseResult = baseBasicCreditHook.Handle(basket, paymentInformation);
         if (baseResult.error) {
             return baseResult;
@@ -146,6 +150,9 @@ function Handle(basket, paymentInformation) {
     }
     try {
         Transaction.wrap(function () {
+            var paymentForm = server.forms.getForm('billing');
+
+            // Clear existing payment instruments
             currentBasket.removeAllPaymentInstruments();
 
             var paymentInstruments = currentBasket.getPaymentInstruments(
@@ -166,10 +173,62 @@ function Handle(basket, paymentInformation) {
             paymentInstrument.setCreditCardExpirationMonth(expirationMonth);
             paymentInstrument.setCreditCardExpirationYear(expirationYear);
 
-            var paymentForm = server.forms.getForm('billing');
-            if (basket.customer.registered && paymentForm.creditCardFields.saveCard.checked && configObject.tokenizationEnabled) {
+            if (configObject.unifiedCheckoutEnabled) {
+                paymentInstrument.custom.UCToken = paymentForm.creditCardFields.ucpaymenttoken.value;
+            }
+            // Handle tokenization for registered users who choose to save card
+
+            if (basket.customer.registered && configObject.tokenizationEnabled && paymentForm.creditCardFields.saveCard.checked) {
                 var token;
-                if (!configObject.flexMicroformEnabled) {
+                var tokenManagement = require('~/cartridge/scripts/http/tokenManagement.js');
+                var billingForm = server.forms.getForm('billing');
+                //var token1 = billingForm.creditCardFields.ucpaymenttoken.value;
+                if (require('*/cartridge/configuration/index').unifiedCheckoutEnabled && paymentForm.creditCardFields.ucpaymenttoken.value) {
+                    // UC Microform token processing
+                    logger.info('Processing UC payment token for basket: {0}', basket.UUID);
+
+                    if (paymentInformation.creditCardToken != null) {
+                        token = paymentInformation.creditCardToken;
+                    } else {
+                        var ucResponse = tokenManagement.httpUCCreateToken(
+                            paymentForm.creditCardFields.ucpaymenttoken.value,
+                            email,
+                            basket.billingAddress,
+                            basket.UUID
+                        );
+
+                        if (ucResponse.success) {
+                            // Store session information for UC tokens
+                            if (ucResponse.result.customer && ucResponse.result.customer.id) {
+                                // eslint-disable-next-line no-undef
+                                session.privacy.tokenInformation = [
+                                    ucResponse.result.instrumentIdentifier.id,
+                                    ucResponse.result.paymentInstrument.id,
+                                    'false',
+                                    ucResponse.result.customer.id,
+                                    'UC'
+                                ].join('-');
+                            } else {
+                                // eslint-disable-next-line no-undef
+                                session.privacy.tokenInformation = [
+                                    ucResponse.result.instrumentIdentifier.id,
+                                    ucResponse.result.paymentInstrument.id,
+                                    'false',
+                                    'UC'
+                                ].join('-');
+                            }
+
+                            token = mapper.serializeTokenInformation(ucResponse.result);
+                            logger.info('UC token created and serialized for basket: {0}', basket.UUID);
+                        } else {
+                            logger.error('UC token creation failed: {0}', ucResponse.error);
+                            throw new Error('UC tokenization failed: ' + ucResponse.error);
+                        }
+                    }
+
+                    paymentInstrument.setCreditCardToken(token);
+                } else if (!configObject.flexMicroformEnabled) {
+                    // Traditional tokenization
                     token = paymentInformation.creditCardToken
                         ? paymentInformation.creditCardToken
                         : createToken(
@@ -185,35 +244,36 @@ function Handle(basket, paymentInformation) {
                         );
                     paymentInstrument.setCreditCardToken(token);
                 } else {
-                    var tokenManagement = require('~/cartridge/scripts/http/tokenManagement.js');
+                    // Flex Microform token processing
 
                     if (paymentInformation.creditCardToken != null) {
                         token = paymentInformation.creditCardToken;
                     } else {
-                        var info = tokenManagement.httpFlexCreateToken(paymentForm.creditCardFields.flexresponse.value, email, basket.billingAddress, basket.UUID);
-                        if (info.customer != null && info.customer.id != null) {
+                        var flexInfo = tokenManagement.httpFlexCreateToken(paymentForm.creditCardFields.flexresponse.value, email, basket.billingAddress, basket.UUID);
+                        if (flexInfo.customer != null && flexInfo.customer.id != null) {
                             // eslint-disable-next-line no-undef
                             session.privacy.tokenInformation = [
-                                info.instrumentIdentifier.id,
-                                info.paymentInstrument.id,
+                                flexInfo.instrumentIdentifier.id,
+                                flexInfo.paymentInstrument.id,
                                 false,
-                                info.customer.id
+                                flexInfo.customer.id
                             ].join('-');
                         } else {
                             // eslint-disable-next-line no-undef
                             session.privacy.tokenInformation = [
-                                info.instrumentIdentifier.id,
-                                info.paymentInstrument.id,
+                                flexInfo.instrumentIdentifier.id,
+                                flexInfo.paymentInstrument.id,
                                 false
                             ].join('-');
                         }
-                        token = mapper.serializeTokenInformation(info);
+                        token = mapper.serializeTokenInformation(flexInfo);
                     }
                     paymentInstrument.setCreditCardToken(
                         token
                     );
                 }
             }
+            // }
         });
         return {
             fieldErrors: cardErrors,
@@ -221,6 +281,7 @@ function Handle(basket, paymentInformation) {
             error: false
         };
     } catch (e) {
+        logger.error('Payment processing error for basket {0}: {1}', basket.UUID, e.message);
         serverErrors.push(
             Resource.msg('error.payment.not.valid', 'checkout', null)
         );
@@ -255,17 +316,17 @@ function Authorize(orderNumber, paymentInstrument, paymentProcessor) {
     var card = {
         token: paymentInstrument.creditCardToken,
         jwttoken: paymentForm.creditCardFields.flexresponse.value,
+        ucJwtToken: paymentInstrument.custom.UCToken,
         creditcardnumber: paymentInstrument.creditCardNumber,
         securityCode: paymentForm.creditCardFields.securityCode.htmlValue,
         expirationMonth: paymentInstrument.creditCardExpirationMonth,
         expirationYear: paymentInstrument.creditCardExpirationYear,
-        cardType: paymentInstrument.creditCardType.toLowerCase(),
+        cardType: paymentInstrument.creditCardType ? paymentInstrument.creditCardType.toLowerCase() : null,
         // eslint-disable-next-line no-undef
-        gPayToken: session.privacy.encryptedDataGP
+        gPayToken: paymentInstrument.custom.GooglePayEncryptedData,
+
     };
     // eslint-disable-next-line no-undef
-    delete session.privacy.encryptedDataGP;
-    delete session.custom.isGpayCardHolderAuthenticated;    
     var customerEmail = order.customerEmail;
     var currencyCode = order.currencyCode.toUpperCase();
     try {
@@ -280,31 +341,60 @@ function Authorize(orderNumber, paymentInstrument, paymentProcessor) {
             session.privacy.orderStatus = result.status;
             paymentInstrument.paymentTransaction.setTransactionID(result.id);
             paymentInstrument.paymentTransaction.setPaymentProcessor(paymentProcessor);
-            paymentInstrument.paymentTransaction.custom.requestId = result.id;
-            paymentInstrument.paymentTransaction.custom.reconciliationId = result.reconciliationId;
             if (!empty(card.gPayToken)) {
-                paymentInstrument.paymentTransaction.custom.paymentDetails = paymentInstrument.creditCardHolder + ', ' + paymentInstrument.maskedCreditCardNumber + ', '
+                paymentInstrument.paymentTransaction.custom.paymentDetails = paymentInstrument.maskedCreditCardNumber + ', '
                     + paymentInstrument.creditCardType + ', ' + paymentInstrument.creditCardExpirationMonth + '/' + paymentInstrument.creditCardExpirationYear;
+            } else if (paymentInstrument.custom.UCToken !== null && paymentInstrument.paymentMethod === 'DW_GOOGLE_PAY') {
             } else {
                 paymentInstrument.paymentTransaction.custom.paymentDetails = paymentInstrument.creditCardNumber + ', ' + paymentInstrument.creditCardType;
             }
+
+            delete paymentInstrument.custom.UCToken;
         });
     } catch (e) {
         error = true;
         var errorData = {};
+
+        // Extract CyberSource response data from declined payment error
+        var cybersourceResponseData = null;
+
         if (typeof e === 'object' && e !== null) {
-            if ('message' in e) {
-                errorData.message = e.message;
+            // Primary check: CARD_NOT_AUTHORIZED_ERROR with messageText (JSON string)
+            if (e.type === 'CARD_NOT_AUTHORIZED_ERROR' && e.messageText) {
+                try {
+                    cybersourceResponseData = JSON.parse(e.messageText);
+                    // Set transaction details if we found CyberSource response data
+                    if (cybersourceResponseData && cybersourceResponseData.id) {
+                        Transaction.wrap(function () {
+                            // Set transaction ID and processor even for declined payments
+                            session.privacy.orderId = orderNumber;
+                            // eslint-disable-next-line no-undef
+                            session.privacy.orderStatus = cybersourceResponseData.status;
+                            paymentInstrument.paymentTransaction.setTransactionID(cybersourceResponseData.id);
+                            paymentInstrument.paymentTransaction.setPaymentProcessor(paymentProcessor);
+                            if (!empty(card.gPayToken)) {
+                                paymentInstrument.paymentTransaction.custom.paymentDetails = paymentInstrument.creditCardHolder + ', ' + paymentInstrument.maskedCreditCardNumber + ', '
+                                    + paymentInstrument.creditCardType + ', ' + paymentInstrument.creditCardExpirationMonth + '/' + paymentInstrument.creditCardExpirationYear;
+                            } else if (paymentInstrument.custom.UCToken !== null && paymentInstrument.paymentMethod === 'DW_GOOGLE_PAY') {
+                            } else {
+                                paymentInstrument.paymentTransaction.custom.paymentDetails = paymentInstrument.creditCardNumber + ', ' + paymentInstrument.creditCardType;
+                            }
+
+                            delete paymentInstrument.custom.UCToken;
+                        });
+                    }
+                    errorData.message = cybersourceResponseData.errorInformation.message; // Store original for debugging
+                } catch (parseError) {
+                    // If parsing fails, store the raw messageText for debugging
+                    errorData.message = e.messageText;
+                }
             }
-            if ('details' in e) {
-                errorData.details = e.details;
-            }
+
         }
         serverErrors.push(
             Resource.msg('error.technical', 'checkout', null)
         );
-        // eslint-disable-next-line no-undef
-        session.privacy.AuthorizeErrors = JSON.stringify(errorData);
+        Logger.getLogger('Cybersource', 'PaymentAuthorization').error('Authorization error for order {0}: {1}', orderNumber, JSON.stringify(errorData));
     }
     return {
         fieldErrors: fieldErrors,

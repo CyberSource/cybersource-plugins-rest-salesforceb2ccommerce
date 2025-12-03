@@ -1,0 +1,10 @@
+<iscomment>
+     Unified Checkout Tab - Simple text-only tab
+    ---------------------------------------------------------------
+</iscomment>
+<isset name="unifiedCheckoutLabel" value="${require('*/cartridge/configuration/index').unifiedCheckoutLabel}" scope="page" />
+<li class="nav-item" data-method-id="UNIFIED_CHECKOUT">
+     <a class="nav-link unifiedCheckout-tab active" data-toggle="tab" href="#credit-card-content" role="tab" id="unifiedCheckoutPaymentOptionLink">
+          ${unifiedCheckoutLabel}
+     </a>
+</li>

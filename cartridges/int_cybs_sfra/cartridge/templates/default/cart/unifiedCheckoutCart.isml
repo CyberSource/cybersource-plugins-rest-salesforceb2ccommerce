@@ -1,0 +1,17 @@
+<iscontent type="text/html" charset="UTF-8" compact="true"/>
+ 
+<isset name="isUCEnabled" value="${require('*/cartridge/configuration/index').unifiedCheckoutEnabled}" scope="page" />
+<isset name="isCartridgeEnabled" value="${require('*/cartridge/configuration/index').cartridgeEnabled}" scope="page" />
+ <input type="hidden" id="minicart-submit-payment-url" value="${URLUtils.url('CheckoutServices-SubmitPayment')}" />
+ <input type="hidden" id="submit-payment-gp-url" value="${URLUtils.https('CheckoutServices-SubmitPaymentGP')}" />
+ <input type="hidden" id="minicart-place-order-url" value="${URLUtils.https('Checkout-Begin', 'stage', 'placeOrder')}" />
+<isset name="isPaymentsPresent" value="${!empty(require('*/cartridge/configuration/index').digitalPaymentMethods)}" scope="page" />
+<isif condition="${isUCEnabled && isCartridgeEnabled && isPaymentsPresent}">
+    <iscomment>Load Unified Checkout when UC is enabled - same as checkout</iscomment>
+    <script src="${URLUtils.staticURL('/custom/lib/jquery/jquery-3.7.1.min.js')}"></script>
+    
+    <isinclude url="${URLUtils.url('SecureAcceptance-CreateUCTokenMiniCart')}" />
+   
+    <iscomment>Include Unified Checkout template</iscomment>
+    <isinclude template="unifiedCheckout" />
+</isif>

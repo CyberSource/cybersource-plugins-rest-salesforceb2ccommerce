@@ -8,79 +8,8 @@
                 <mandatory-flag>false</mandatory-flag>
                 <externally-managed-flag>false</externally-managed-flag>
             </attribute-definition>
-            <attribute-definition attribute-id="reconciliationId">
-                <display-name xml:lang="x-default">Reconciliation ID</display-name>
-                <type>string</type>
-                <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>false</externally-managed-flag>
-                <min-length>0</min-length>
-            </attribute-definition>
-            <attribute-definition attribute-id="requestId">
-                <display-name xml:lang="x-default">Request ID</display-name>
-                <type>string</type>
-                <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>false</externally-managed-flag>
-                <min-length>0</min-length>
-            </attribute-definition>
             <attribute-definition attribute-id="paymentDetails">
                 <display-name xml:lang="x-default">Payment Details</display-name>
-                <type>string</type>
-                <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>false</externally-managed-flag>
-                <min-length>0</min-length>
-            </attribute-definition>
-
-            <!-- VISA CHECKOUT FIELDS -->
-            <attribute-definition attribute-id="avscodeRaw">
-                <display-name xml:lang="x-default">Raw AVS Code</display-name>
-                <type>string</type>
-                <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>false</externally-managed-flag>
-                <min-length>0</min-length>
-            </attribute-definition>
-
-            <attribute-definition attribute-id="callId">
-                <display-name xml:lang="x-default">Call ID</display-name>
-                <type>string</type>
-                <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>false</externally-managed-flag>
-                <min-length>0</min-length>
-            </attribute-definition>
-
-            <attribute-definition attribute-id="riskScore">
-                <display-name xml:lang="x-default">Risk Score</display-name>
-                <type>string</type>
-                <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>false</externally-managed-flag>
-                <min-length>0</min-length>
-            </attribute-definition>
-
-            <attribute-definition attribute-id="riskScore_factorCodes">
-                <display-name xml:lang="x-default">Risk Score - Factor Code</display-name>
-                <type>string</type>
-                <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>false</externally-managed-flag>
-                <min-length>0</min-length>
-            </attribute-definition>
-
-            <attribute-definition attribute-id="riskScore_modelUsed">
-                <display-name xml:lang="x-default">Risk Score - Model Used</display-name>
-                <type>string</type>
-                <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>false</externally-managed-flag>
-                <min-length>0</min-length>
-            </attribute-definition>
-
-            <attribute-definition attribute-id="approvalCode">
-                <display-name xml:lang="x-default">Approval Code</display-name>
-                <type>string</type>
-                <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>false</externally-managed-flag>
-                <min-length>0</min-length>
-            </attribute-definition>
-            
-            <attribute-definition attribute-id="earlyDecision">
-                <display-name xml:lang="x-default">Early Decision</display-name>
                 <type>string</type>
                 <mandatory-flag>false</mandatory-flag>
                 <externally-managed-flag>false</externally-managed-flag>
@@ -91,8 +20,6 @@
             <attribute-group group-id="Custom">
                 <display-name xml:lang="x-default">Custom</display-name>
                 <attribute attribute-id="AmountPaid"/>
-                <attribute attribute-id="requestId"/>
-                <attribute attribute-id="reconciliationId"/>
                 <attribute attribute-id="paymentDetails"/>
             </attribute-group>
         </group-definitions>
@@ -141,18 +68,38 @@
                 <mandatory-flag>false</mandatory-flag>
                 <externally-managed-flag>false</externally-managed-flag>
             </attribute-definition>
-            <attribute-definition attribute-id="callID">
-                <display-name xml:lang="x-default">callID</display-name>
-                <type>text</type>
+            <attribute-definition attribute-id="UCToken">
+                <display-name xml:lang="x-default">UCToken</display-name>
+                <type>string</type>
                 <mandatory-flag>false</mandatory-flag>
                 <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+             <attribute-definition attribute-id="isGooglePaycardHolderAuthenticated">
+                <display-name xml:lang="x-default">Google Pay Card Holder Authenticated</display-name>
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="GooglePayEncryptedData">
+                <display-name xml:lang="x-default">Google Pay Encrypted Data</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
             </attribute-definition>
         </custom-attribute-definitions>
         <group-definitions>
             <attribute-group group-id="Custom">
                 <display-name xml:lang="x-default">Custom</display-name>
                 <attribute attribute-id="fluidData"/>
-                <attribute attribute-id="callID"/>
+            </attribute-group>
+            <attribute-group group-id="UnifiedCheckout">
+                <attribute attribute-id="UCToken"/>
+            </attribute-group>
+            <attribute-group group-id="GooglePay">
+                <attribute attribute-id="isGooglePaycardHolderAuthenticated"/>
+                <attribute attribute-id="GooglePayEncryptedData"/>
             </attribute-group>
         </group-definitions>
     </type-extension>

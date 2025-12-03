@@ -69,4 +69,26 @@
 		</div>
 		<isinclude template="cart/checkoutOptions" />
 	</div>
+		
+	<iscomment>Unified Checkout Widget for MiniCart</iscomment>
+	<isset name="isUCEnabled" value="${require('*/cartridge/configuration/index').unifiedCheckoutEnabled}" scope="page" />
+	<isset name="isMinicartEnabled" value="${require('*/cartridge/configuration/index').minicartEnabled}" scope="page" />
+	<isset name="isCartridgeEnabled" value="${require('*/cartridge/configuration/index').cartridgeEnabled}" scope="page" />
+	
+	<isset name="isPaymentsPresent" value="${!empty(require('*/cartridge/configuration/index').digitalPaymentMethods)}" scope="page" />
+	<isif condition="${isUCEnabled && isMinicartEnabled && isCartridgeEnabled && isPaymentsPresent}">
+		<isscript>
+			var CSRFProtection = require('dw/web/CSRFProtection');
+		</isscript>
+		<div class="minicart-spacer">
+			<iscomment>UC scripts loaded globally via page.isml, will be initialized by MutationObserver</iscomment>
+			<iscomment>Hidden form for minicart payment submission</iscomment>
+			<form id="minicart-payment-form" method="POST" action="${URLUtils.url('CybersourceMinicart-SubmitPayment')}">
+				<input type="hidden" name="${CSRFProtection.getTokenName()}" value="${CSRFProtection.generateToken()}" />
+				<input type="hidden" name="dwfrm_billing_paymentMethod" id="minicart-payment-method" value="" />
+				<input type="hidden" name="dwfrm_billing_creditCardFields_ucpaymenttoken" id="minicart-payment-token" value="" />
+			</form>
+			<isinclude url="${URLUtils.url('SecureAcceptance-CreateUCTokenMiniCart')}" />
+		</div>
+	</isif>
 </div>

@@ -7,9 +7,10 @@
         var assets = require('*/cartridge/scripts/assets.js');
         assets.addJs('/js/checkout.js');
 				assets.addJs('/js/googlePay.js');
+				assets.addJs('/js/paymentFormToggle.js');
         assets.addCss('/css/checkout/checkout.css');
     </isscript>
-
+	
 	<isif condition="${pdict.reportingURLs && pdict.reportingURLs.length}">
 		<isinclude template="reporting/reportingUrls" />
 	</isif>
@@ -112,9 +113,9 @@
 							<button class="btn btn-primary btn-block submit-shipping" type="submit" name="submit" value="submit-shipping" <isif condition="${pdict.order.usingMultiShipping && !pdict.order.shippable}">disabled</isif>> ${Resource.msg('button.next.payment', 'checkout', null)}
 							</button>
 
-							<button class="btn btn-primary btn-block submit-payment" type="submit" name="submit" value="submit-payment" id='placeOrderButton'>
-								${Resource.msg('button.next.place.order', 'checkout', null)}
-							</button>
+								<button class="btn btn-primary btn-block submit-payment" type="submit" name="submit" value="submit-payment" id='placeOrderButton'>
+									${Resource.msg('button.next.place.order', 'checkout', null)}
+								</button>
 
 							<button class="btn btn-primary btn-block place-order" data-action="${URLUtils.url('CheckoutServices-PlaceOrder')}" type="submit"
 							 name="submit" value="place-order">${Resource.msg('button.place.order', 'checkout', null)}

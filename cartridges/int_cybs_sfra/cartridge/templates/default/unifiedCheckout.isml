@@ -1,0 +1,61 @@
+<iscontent type="text/html" charset="UTF-8" compact="true"/>
+<isset name="UnifiedCheckoutPaymentAcceptanceLocation" value="${require('*/cartridge/configuration/index').UnifiedCheckoutPaymentAcceptanceLocation}" scope="page" />
+<input type="hidden" id="unified-token-url" value="${URLUtils.https('SecureAcceptance-CreateUCToken')}" />
+<input type="hidden" id="minicart-token-url" value="${URLUtils.https('SecureAcceptance-CreateUCTokenMiniCart')}" />
+ 
+<div class="unified-checkout-container">
+    <div class="row">
+        <div class="col-12">
+            <div id="unified-checkout-container" class="uc-container">
+                <iscomment>Unified Checkout widget will be rendered here</iscomment>
+                <div id="buttonPaymentListContainer" class="payment-selection-container"></div>
+                <div id="embeddedPaymentContainer" class="payment-screen-container"></div>
+            </div>
+            <iscomment>Only show server-side error for critical failures when JS can't handle it</iscomment>
+            <isif condition="${pdict.UcCaptureContext == null}">
+                <noscript>
+                    <div class="alert alert-danger">${Resource.msg('uc.tokenerror','payments',null)}</div>
+                </noscript>
+                <div id="uc-server-error" class="alert alert-danger d-none">
+                    ${Resource.msg('uc.tokenerror','payments',null)}
+                </div>
+            </isif>
+        </div>
+    </div>
+</div>
+
+<isif condition="${pdict.UcCaptureContext != null}">
+    <isset name="ucCaptureContext" value="${pdict.UcCaptureContext}" scope="page" />
+    <input type="hidden" value="${ucCaptureContext}" name="ucCaptureContext" id="ucCaptureContext" />
+    <input type="hidden" value="${UnifiedCheckoutPaymentAcceptanceLocation}" name="unifiedCheckoutPaymentAcceptanceLocation" id="unifiedCheckoutPaymentAcceptanceLocation" />
+    <input type="hidden" value="${pdict.clientLibrary}" name="uc-client-library" id="uc-client-library" />
+    <input type="hidden" value="${pdict.clientLibraryIntegrity}" name="uc-client-library-integrity" id="uc-client-library-integrity" />
+</isif>
+
+<iscomment>Unified Checkout response data</iscomment>
+<div class="row" style="display: none">
+    <div class="col-12">
+        <div class="form-group">
+            <div class="uc-response-wrapper">
+                <input type="hidden" class="form-control uc-response" id="uc-response"
+                    value="" name="dwfrm_billing_creditCardFields_ucresponse" />
+                <input type="hidden" class="form-control uc-payment-token" id="uc-payment-token"
+                    value="" name="dwfrm_billing_creditCardFields_ucpaymenttoken" />
+                <input type="hidden" class="form-control uc-payment-method" id="uc-payment-method"
+                    value="" name="dwfrm_billing_creditCardFields_ucpaymentmethod" />
+
+                <input type="hidden" class="form-control cardNumber" id="cardNumber"
+                    value="" name="dwfrm_billing_creditCardFields_cardNumber" />
+                <input type="hidden" class="form-control cardType" id="cardType"
+                    value="" name="dwfrm_billing_creditCardFields_cardType" />
+                <input type="hidden" class="form-control expirationMonth" id="expirationMonth"
+                    value="" name="dwfrm_billing_creditCardFields_expirationMonth" />
+                <input type="hidden" class="form-control expirationYear" id="expirationYear"
+                    value="" name="dwfrm_billing_creditCardFields_expirationYear" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<iscomment>Unified Checkout Scripts</iscomment>
+<script src="${pdict.clientLibrary}" integrity="${pdict.clientLibraryIntegrity}" crossorigin="anonymous"></script>

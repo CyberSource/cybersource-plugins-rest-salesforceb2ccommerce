@@ -1,17 +1,28 @@
 <isset name="isCartridgeEnabled" value="${require('*/cartridge/configuration/index').cartridgeEnabled}" scope="page" />
-<isset name="isVisaSRCEnabled" value="${require('*/cartridge/configuration/index').visaSRCEnabled}" scope="page" />
 <isset name="isGooglePayEnabled" value="${require('*/cartridge/configuration/index').googlePayEnabled}" scope="page" />
+<isset name="isUCEnabled" value="${require('*/cartridge/configuration/index').unifiedCheckoutEnabled}" scope="page" />
+
+<iscomment> Show Unified Checkout tab if UC is enabled </iscomment>
+<isif condition="${isCartridgeEnabled && isUCEnabled}">
+    <isinclude template="checkout/billing/paymentOptions/unifiedCheckoutTab" />
+</isif>
+
+<iscomment> Show standalone payment method tabs (alongside UC if enabled) </iscomment>
 <isloop items="${pdict.order.billing.payment.applicablePaymentMethods}" var="paymentOption" status="loopState">
-    <isif condition="${paymentOption.ID === 'CREDIT_CARD'}">
+
+    <iscomment> Show Credit Card tab only if UC is not enabled (UC handles credit cards) </iscomment>
+    <isif condition="${paymentOption.ID === 'CREDIT_CARD' && !isUCEnabled}">
         <isinclude template="checkout/billing/paymentOptions/creditCardTab" />
     </isif>
+    
+    <iscomment> Show standalone Apple Pay tab if enabled </iscomment>
     <isif condition="${isCartridgeEnabled && paymentOption.ID === 'DW_APPLE_PAY'}">
         <isinclude template="checkout/billing/paymentOptions/applePayTab" />
     </isif>
-    <isif condition="${isCartridgeEnabled && isVisaSRCEnabled && paymentOption.ID === 'CLICK_TO_PAY'}">
-        <isinclude template="checkout/billing/paymentOptions/visaCheckoutTab" />
-    </isif>
+    
+    <iscomment> Show standalone Google Pay tab if enabled (can coexist with UC) </iscomment>
     <isif condition="${isCartridgeEnabled && isGooglePayEnabled && paymentOption.ID === 'DW_GOOGLE_PAY'}">
-            <isinclude template="checkout/billing/paymentOptions/googlePayTab" />
+        <isinclude template="checkout/billing/paymentOptions/googlePayTab" />
     </isif>
+    
 </isloop>

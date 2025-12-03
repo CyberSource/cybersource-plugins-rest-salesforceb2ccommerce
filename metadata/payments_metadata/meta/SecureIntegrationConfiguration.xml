@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xmlns="http://www.demandware.com/xml/impex/metadata/2006-10-31">
+    <type-extension type-id="SitePreferences">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="VisaAcceptance_Secure_Integration_Method">
+                <display-name xml:lang="x-default">Secure Integration Method</display-name>
+                <type>enum-of-string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <value-definitions>
+                    <value-definition>
+                        <display xml:lang="x-default">Unified Checkout</display>
+                        <value>Unified_Checkout</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Microform</display>
+                        <value>Microform</value>
+                    </value-definition>
+                </value-definitions>
+            </attribute-definition>
+            <attribute-definition attribute-id="VisaAcceptance_UnifiedCheckout_DigitalPaymentMethods">
+                <display-name xml:lang="x-default">Digital Payment Methods in UnifiedCheckout</display-name>
+                <type>enum-of-string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <select-multiple-flag>true</select-multiple-flag>
+                <value-definitions>
+                    <value-definition>
+                        <display xml:lang="x-default">GOOGLEPAY</display>
+                        <value>GOOGLEPAY</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">APPLEPAY</display>
+                        <value>APPLEPAY</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">CLICKTOPAY</display>
+                        <value>CLICKTOPAY</value>
+                    </value-definition>
+                </value-definitions>
+            </attribute-definition>
+            <attribute-definition attribute-id="VisaAcceptance_UnifiedCheckout_PaymentAcceptanceLocation">
+                <display-name xml:lang="x-default">Payment Acceptance Location for UnifiedCheckout</display-name>
+                <description xml:lang="x-default">Embedded is loaded in the Checkout page while Sidebar is loaded in the side of the screen.</description>
+                <type>enum-of-string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <value-definitions>
+                <value-definition default="true">
+                <display xml:lang="x-default">Embedded</display>
+                <value>Embedded</value>
+                </value-definition>
+                <value-definition>
+                <display xml:lang="x-default">Sidebar</display>
+                <value>Sidebar</value>
+                </value-definition>
+                </value-definitions>
+            </attribute-definition>
+            <attribute-definition attribute-id="VisaAcceptance_AllowedCardNetworks">
+                <display-name xml:lang="x-default">Allowed Card Networks</display-name>
+                <description xml:lang="x-default">Configure card types for Microform or Unified Checkout</description>
+                <type>enum-of-string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <select-multiple-flag>true</select-multiple-flag>
+                <value-definitions>
+                    <value-definition default="true">
+                        <display xml:lang="x-default">VISA</display>
+                        <value>VISA</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">MAESTRO</display>
+                        <value>MAESTRO</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">MASTERCARD</display>
+                        <value>MASTERCARD</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">AMEX</display>
+                        <value>AMEX</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">DISCOVER</display>
+                        <value>DISCOVER</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">DINERSCLUB</display>
+                        <value>DINERSCLUB</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">JCB</display>
+                        <value>JCB</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">CUP</display>
+                        <value>CUP</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">CARTESBANCAIRES</display>
+                        <value>CARTESBANCAIRES</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">JCREW</display>
+                        <value>JCREW</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">ELO</display>
+                        <value>ELO</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">EFTPOS</display>
+                        <value>EFTPOS</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">MEEZA</display>
+                        <value>MEEZA</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">CARNET</display>
+                        <value>CARNET</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">MADA</display>
+                        <value>MADA</value>
+                    </value-definition>
+                </value-definitions>
+            </attribute-definition>
+            <attribute-definition attribute-id="VisaAcceptance_UnifiedCheckout_EnableECheck">
+                <display-name xml:lang="x-default">Enable E-Check Payment for Unified Checkout</display-name>
+                <description xml:lang="x-default">Enable or Disable E-Check Payment for Unified Checkout.</description>
+                <type>boolean</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>false</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_CardTransactionType">
+                <display-name xml:lang="x-default">Transaction Type</display-name>
+                <description xml:lang="x-default">Transaction Type for Credit card and Unified Checkout</description>
+                <type>enum-of-string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <value-definitions>
+                    <value-definition default="true">
+                        <display xml:lang="x-default">Auth</display>
+                        <value>auth</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Sale</display>
+                        <value>sale</value>
+                    </value-definition>
+                </value-definitions>
+            </attribute-definition>
+            <attribute-definition attribute-id="VisaAcceptance_UnifiedCheckout_Cart_Minicart">
+                <display-name xml:lang="x-default">Enable Unified Checkout for Cart and Mini Cart</display-name>
+                <description xml:lang="x-default">Enable or Disable Unified Checkout for digital payments on Cart and Mini Cart.</description>
+                <type>boolean</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>false</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="VisaAcceptance_UnifiedCheckout_CheckoutLabel">
+                <display-name xml:lang="x-default">Checkout Label for Unified Checkout</display-name>
+                <description xml:lang="x-default">Label for Unified Checkout Tab on the payment page</description>
+                <type>string</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <regex>^.{0,60}$</regex>
+                <default-value>Secure Payments powered by Visa Acceptance Solutions</default-value>
+            </attribute-definition>
+        </custom-attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="VisaAcceptance_SecureIntegrationConfiguration">
+                <display-name xml:lang="x-default">Secure Integration Configuration</display-name>
+                <attribute attribute-id="VisaAcceptance_Secure_Integration_Method"/>
+                <attribute attribute-id="VisaAcceptance_UnifiedCheckout_PaymentAcceptanceLocation"/>
+                <attribute attribute-id="VisaAcceptance_AllowedCardNetworks"/>
+                <attribute attribute-id="VisaAcceptance_UnifiedCheckout_DigitalPaymentMethods"/>
+                <attribute attribute-id="VisaAcceptance_UnifiedCheckout_CheckoutLabel"/>
+                <attribute attribute-id="VisaAcceptance_UnifiedCheckout_EnableECheck"/>
+                <attribute attribute-id="Cybersource_CardTransactionType"/>
+                <attribute attribute-id="VisaAcceptance_UnifiedCheckout_Cart_Minicart"/>
+            </attribute-group>
+        </group-definitions>
+    </type-extension>
+</metadata>

@@ -101,12 +101,10 @@ exports.authorizeOrderPayment = function (order, response) {
         Transaction.wrap(function () {
             paymentInstrument.paymentTransaction.setTransactionID(result.id);
             paymentInstrument.paymentTransaction.setPaymentProcessor(PaymentManager.getPaymentMethod(paymentInstrument.paymentMethod).getPaymentProcessor());
-            paymentInstrument.paymentTransaction.custom.requestId = result.id;
-            paymentInstrument.paymentTransaction.custom.reconciliationId = result.reconciliationId;
             // eslint-disable-next-line no-undef
             session.privacy.orderId = order.currentOrderNo;
             session.privacy.orderStatus = result.status; // eslint-disable-line no-undef
-            paymentInstrument.paymentTransaction.custom.paymentDetails = paymentInstrument.creditCardHolder + ', ' + paymentInstrument.creditCardNumber + ', '
+            paymentInstrument.paymentTransaction.custom.paymentDetails = paymentInstrument.creditCardNumber + ', '
           + paymentInstrument.creditCardType + ', ' + paymentInstrument.creditCardExpirationMonth + '/' + paymentInstrument.creditCardExpirationYear;
         });
         return new Status(Status.OK);

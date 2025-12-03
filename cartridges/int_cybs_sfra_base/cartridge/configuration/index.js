@@ -23,22 +23,11 @@ var LogfileMaxSize = '5242880'; // 10 MB In Bytes
  * Send this value in all requests that are sent through the partner solution. CyberSource assigns the ID to the partner.
  * Note When you see a partner ID of 999 in reports, the partner ID that was submitted is incorrect.
  */
-var SolutionId = 'I1YMGX8S';
+var SolutionId = 'NDYFJ9QB';
 
 var CruiseDDCEndPoint = {
     Stage: 'https://centinelapistag.cardinalcommerce.com/V1/Cruise/Collect',
     Production: 'https://centinelapi.cardinalcommerce.com/V1/Cruise/Collect'
-};
-
-var VisaSRCEndpoints = {
-    Production: {
-        image: 'https://secure.checkout.visa.com/wallet-services-web/xo/button.png',
-        sdk: 'https://assets.secure.checkout.visa.com/checkout-widget/resources/js/integration/v1/sdk.js'
-    },
-    Stage: {
-        image: 'https://sandbox.secure.checkout.visa.com/wallet-services-web/xo/button.png',
-        sdk: 'https://sandbox-assets.secure.checkout.visa.com/checkout-widget/resources/js/integration/v1/sdk.js'
-    }
 };
 
 /**
@@ -49,6 +38,8 @@ function getConfig(config) {
     // eslint-disable-next-line no-param-reassign
     config = (config) || {};
     var customPreferences = require('./preferences/index');
+    var secureIntegrationMethod = config.secureIntegrationMethod || customPreferences.SecureIntegrationConfiguration.Preferences.SecureIntegrationMethod.getValue();
+    
     return {
         // Api Client config
         authenticationType: 'http_signature',
@@ -59,7 +50,6 @@ function getConfig(config) {
         logFileMaxSize: LogfileMaxSize,
         solutionId: SolutionId,
         cruiseDDCEndPoint: CruiseDDCEndPoint,
-        visaSRCEndpoints: VisaSRCEndpoints,
 
         // CORE
         cartridgeEnabled: config.cartridgeEnabled || customPreferences.Core.Preferences.CartridgeEnabled.getValue(),
@@ -102,9 +92,7 @@ function getConfig(config) {
         }
         ],
         taxCookieId: '_taxvalue',
-        // SA Flex microform
-        flexMicroformEnabled: config.flexMicroformEnabled || customPreferences.FlexMicroform.Preferences.FlexMicroformEnabled.getValue(),
-
+       
         // DecisionManager
         fmeDmEnabled: config.fmeDmEnabled || customPreferences.DecisionManager.Preferences.DecisionManagerEnabled.getValue(),
         fmeDmConversionDetailReportLookbackTime: config.ConversionDetailReportLookbackTime || customPreferences.DecisionManager.Preferences.ConversionDetailReportLookbackTime.getValue(),
@@ -127,15 +115,23 @@ function getConfig(config) {
         googlePayEnvironment: config.googlePayEnvironment || customPreferences.GooglePay.Preferences.GooglePayEnvironment.getValue(),
         enableGooglePayOnCart: config.enableGooglePayOnCart || customPreferences.GooglePay.Preferences.EnableGooglePayOnCart.getValue(),
 
-        // Click to pay
-        visaSRCEnabled: config.vscCheckoutEnabled || customPreferences.ClicktoPay.Preferences.ClicktoPayEnabled.getValue(),
-        visaSRCKey: config.visaSRCKey || customPreferences.ClicktoPay.Preferences.ClicktoPayKey.getValue(),
-        VisaSRCProduction: config.VisaSRCProduction || customPreferences.ClicktoPay.Preferences.ClicktoPayProduction.getValue(),
-
         //MLE
         mleEnabled: config.mleEnabled || customPreferences.MLE.Preferences.EnableMLE.getValue(),
         mleCertificateSerialNumber: config.mleCertificateSerialNumber || customPreferences.MLE.Preferences.MLECertificateSerialNumber.getValue(),
-        mleCertificateAlias: config.mleCertificateAlias || customPreferences.MLE.Preferences.MLECertificateAlias.getValue()
+        mleCertificateAlias: config.mleCertificateAlias || customPreferences.MLE.Preferences.MLECertificateAlias.getValue(),
+
+        //SecureIntegrationConfiguration
+        secureIntegrationMethod: secureIntegrationMethod,
+        UnifiedCheckoutPaymentAcceptanceLocation: config.unifiedCheckoutPaymentAcceptanceLocation || customPreferences.SecureIntegrationConfiguration.Preferences.UnifiedCheckoutPaymentAcceptanceLocation.getValue(),
+        allowedCardNetworks: config.allowedCardNetworks || customPreferences.SecureIntegrationConfiguration.Preferences.AllowedCardNetworks.getValue(),
+        digitalPaymentMethods: config.digitalPaymentMethods || customPreferences.SecureIntegrationConfiguration.Preferences.DigitalPaymentMethods.getValue(),
+        eCheckEnabledForUnifiedCheckout: config.eCheckEnabledForUnifiedCheckout || customPreferences.SecureIntegrationConfiguration.Preferences.ECheckEnabledforUnifiedCheckout.getValue(),
+        unifiedCheckoutLabel: config.unifiedCheckoutLabel || customPreferences.SecureIntegrationConfiguration.Preferences.CheckoutLabelforUnifiedCheckout.getValue(),
+        minicartEnabled: config.VisaAcceptance_UnifiedCheckout_Cart_Minicart || customPreferences.SecureIntegrationConfiguration.Preferences.VisaAcceptance_UnifiedCheckout_Cart_Minicart.getValue(),
+        cardTransactionType: config.cardTransactionType || customPreferences.SecureIntegrationConfiguration.Preferences.CardTransactionType.getValue(),
+
+        flexMicroformEnabled: secureIntegrationMethod == 'Microform',
+        unifiedCheckoutEnabled: secureIntegrationMethod == 'Unified_Checkout',
     };
 }
 module.exports = getConfig();

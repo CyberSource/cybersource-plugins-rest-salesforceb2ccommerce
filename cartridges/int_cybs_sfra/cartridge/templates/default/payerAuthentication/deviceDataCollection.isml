@@ -4,7 +4,6 @@
 		${Resource.msg('processing.payment', 'payments', null)}
 	</h2>
 	<form id="collectionForm" name="devicedata" target="paFrame" method="POST" action="${pdict.deviceDataUrl}">
-		<input type="hidden" id="bin" name="Bin" value="${pdict.cardNumber}" />
 		<input type="hidden" name="JWT" value="${pdict.jwtToken}" />
 	</form>
 	<iframe scrolling="no" id="paFrame" name="paFrame" src=""></iframe>

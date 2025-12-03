@@ -61,6 +61,12 @@ function getSelectedPaymentInstruments(selectedPaymentInstruments) {
         } else if (paymentInstrument.paymentMethod === 'DW_GOOGLE_PAY') {
             results.type = paymentInstrument.creditCardType;
             results.maskedCreditCardNumber = paymentInstrument.maskedCreditCardNumber;
+        } else if (paymentInstrument.paymentMethod === 'BANK_TRANSFER') {
+            // Bank Transfer / eCheck details
+            results.bankAccountHolder = paymentInstrument.bankAccountHolder;
+            results.bankAccountNumber = paymentInstrument.bankAccountNumber;
+            results.bankRoutingNumber = paymentInstrument.bankRoutingNumber;
+
         }
 
         return results;

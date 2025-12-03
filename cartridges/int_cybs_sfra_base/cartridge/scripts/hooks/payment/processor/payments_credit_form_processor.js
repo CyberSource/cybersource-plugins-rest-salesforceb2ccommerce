@@ -4,6 +4,7 @@
 
 var BaseCreditFormProcessor = require('app_storefront_base/cartridge/scripts/hooks/payment/processor/basic_credit_form_processor.js');
 var configObject = require('~/cartridge/configuration/index.js');
+var server = require('server');
 
 /**
  * Verifies the required information for billing form is provided.
@@ -15,6 +16,20 @@ var configObject = require('~/cartridge/configuration/index.js');
 function processForm(req, paymentForm, viewFormData) {
     var COHelpers = require('*/cartridge/scripts/checkout/checkoutHelpers');
     var array = require('*/cartridge/scripts/util/array');
+    var isCartPage = req.httpParameterMap && req.httpParameterMap.isCart && req.httpParameterMap.isCart.value === 'true';
+    var isminicart = req.httpParameterMap && req.httpParameterMap.UC && req.httpParameterMap.UC.value === 'true';
+    if (isCartPage || isminicart) {
+        // Get current basket
+        var BasketMgr = require('dw/order/BasketMgr');
+        var basket = BasketMgr.getCurrentBasket();
+        var ucPaymentHelper = require('~/cartridge/scripts/helpers/ucPaymentHelper');
+        var paymentDetails = ucPaymentHelper.processUCToken(paymentForm.creditCardFields.ucpaymenttoken.htmlValue);
+        //@ts-ignore
+        ucPaymentHelper.populateBasketAddresses(basket, paymentDetails, paymentForm);
+
+        // Update viewData from the populated form
+        viewData = ucPaymentHelper.updateViewDataFromForm(paymentForm, viewFormData);
+    }
     var viewData = viewFormData;
     if (paymentForm.creditCardFields.flexresponse.value) {
         var correctCardType = '';
@@ -51,7 +66,19 @@ function processForm(req, paymentForm, viewFormData) {
                 break;
             case "jcrew":
                 correctCardType = "JCrew";
-                break;     
+                break;
+            case 'meeza':
+                correctCardType = 'Meeza';
+                break;
+            case 'carnet':
+                correctCardType = 'Carnet';
+                break;
+            case 'mada':
+                correctCardType = 'Mada';
+                break;
+            case 'eftpos':
+                correctCardType = 'EFTPOS';
+                break;
         }
         // eslint-disable-next-line no-param-reassign
         paymentForm.creditCardFields.cardType.value = correctCardType;
@@ -91,7 +118,7 @@ function processForm(req, paymentForm, viewFormData) {
 
     if (!req.form.storedPaymentUUID) {
         // verify credit card form data
-        if (!configObject.flexMicroformEnabled) {
+        if (!configObject.flexMicroformEnabled && !configObject.unifiedCheckoutEnabled) {
             creditCardErrors = COHelpers.validateCreditCard(paymentForm);
         }
     }
@@ -136,6 +163,12 @@ function processForm(req, paymentForm, viewFormData) {
 
     if (req.form.storedPaymentUUID) {
         viewData.storedPaymentUUID = req.form.storedPaymentUUID;
+        // SFRA sometimes sends 'undefined' as a string
+        if (req.form.storedPaymentUUID === 'undefined' || !req.form.storedPaymentUUID) {
+            viewData.storedPaymentUUID = null;
+        } else {
+            viewData.storedPaymentUUID = req.form.storedPaymentUUID;
+        }
     }
 
     viewData.saveCard = paymentForm.creditCardFields.saveCard.checked;
@@ -172,10 +205,45 @@ function processForm(req, paymentForm, viewFormData) {
  * @returns {JSON} Payment Info
  */
 function savePaymentInformation(req, basket, billingData) {
+
+    var billingForm = server.forms.getForm('billing');
+    var payments = require('~/cartridge/scripts/http/payments');
+
+    // Check if UC token exists before attempting to decode
+    var saveCardUC = false;
+    var ucTokenValue = billingForm.creditCardFields.ucpaymenttoken.value;
+
+    if (ucTokenValue && ucTokenValue !== '' && ucTokenValue !== 'undefined') {
+        try {
+            var decodedToken = payments.jwtDecode(ucTokenValue);
+            if (decodedToken && decodedToken.metadata && decodedToken.metadata.consumerPreference) {
+                saveCardUC = decodedToken.metadata.consumerPreference.saveCard || false;
+            }
+        } catch (error) {
+            // Log error but don't break the flow for saved card payments
+            var Logger = require('dw/system/Logger').getLogger('cybersource', 'payments');
+            var errorMessage = (error instanceof Error) ? error.message : 'Unknown error decoding UC token';
+            Logger.error('Error decoding UC token in savePaymentInformation: {0}', errorMessage);
+            saveCardUC = false;
+        }
+    }
+
+    // Handle both Flex and UC save card scenarios
+    var shouldSaveCard = false;
+
+    if (billingData.saveCard && !configObject.unifiedCheckoutEnabled) {
+        shouldSaveCard = true;
+    }
+    // Check for UC save card
+    if (configObject.unifiedCheckoutEnabled && configObject.tokenizationEnabled && saveCardUC) {
+        billingData.saveCard = true;
+        shouldSaveCard = true;
+    }
+
     if (!billingData.storedPaymentUUID
         && req.currentCustomer.raw.authenticated
         && req.currentCustomer.raw.registered
-        && billingData.saveCard
+        && shouldSaveCard
         && (billingData.paymentMethod.value === 'CREDIT_CARD')
     ) {
         var TRLHelper = require('~/cartridge/scripts/helpers/tokenRateLimiterHelper.js');
@@ -191,7 +259,31 @@ function savePaymentInformation(req, basket, billingData) {
             var wallet = customer.profile.wallet;
             var paymentInstruments = wallet.getPaymentInstruments().toArray();
             // eslint-disable-next-line no-undef
-            var duplicateExists = TRLHelper.checkDuplicateInstrumentIdentifier(paymentInstruments, session.privacy.tokenInformation, customer);
+
+            var mapper = require('~/cartridge/scripts/util/mapper.js');
+            var token = mapper.deserializeTokenInformation(session.privacy.tokenInformation);
+            var serializedToken = mapper.serializeTokenInformation(token);
+            var duplicateExists;
+            if (saveCardUC) {
+                duplicateExists =
+                    TRLHelper.checkDuplicateInstrumentIdentifier(
+                        //@ts-ignore
+                        paymentInstruments,
+                        session.privacy.tokenInformation,
+                        customer,
+                        saveCardUC
+                    );
+            } else {
+                duplicateExists =
+                    TRLHelper.checkDuplicateInstrumentIdentifier(
+                        //@ts-ignore
+                        paymentInstruments,
+                        session.privacy.tokenInformation,
+                        customer,
+                        saveCardUC
+                    );
+            }
+            //var duplicateExists = TRLHelper.checkDuplicateInstrumentIdentifier(paymentInstruments, session.privacy.tokenInformation, customer);
             if (!duplicateExists) {
                 // eslint-disable-next-line no-shadow
                 var BaseCreditFormProcessor = require('app_storefront_base/cartridge/scripts/hooks/payment/processor/basic_credit_form_processor.js');
@@ -217,7 +309,7 @@ function savePaymentInformation(req, basket, billingData) {
 
 var overrides = {};
 if (configObject.cartridgeEnabled) {
-    if (configObject.flexMicroformEnabled) {
+    if (configObject.flexMicroformEnabled || configObject.unifiedCheckoutEnabled) {
         overrides.processForm = processForm;
     }
     overrides.savePaymentInformation = savePaymentInformation;
