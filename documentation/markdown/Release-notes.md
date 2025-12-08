@@ -1,5 +1,12 @@
 ## <ins>Release Notes
 
+**Version 25.4.0 (December 2025)** 
+
+**New Features**
+• Added support for Unified Checkout v0.25 (Card Payment, Google Pay, Click to Pay, Apple Pay and eCheck)
+ 
+• End of support for payment method Click To Pay
+
 **Version 25.3.0 (May 2025)**
 • Added Payer Authentication support for Google Pay.
 • Added multi currency support for Google Pay

@@ -5,7 +5,6 @@
 1. Credit Card
 2. Apple Pay
 3. Google Pay
-4. Click to Pay
 
 ----
 
@@ -13,32 +12,65 @@
 
 In the Business Manager, go to **Merchant Tools > Ordering > Payment Methods** and select **CREDIT_CARD**. And in **CREDIT_CARD details**, double check if **Payment Processor** = **"PAYMENTS_CREDIT"**
 
- Cybersource Cartridge supports the following ways of processing Credit Card
- a. Microform 0.11 [link](https://developer.cybersource.com/docs/cybs/en-us/digital-accept-flex-api/developer/ctv/rest/flex-api/microform-integ-v011.html)
- b. Direct Cybersource Payment API
+ Cybersource Cartridge supports the following ways of processing Credit Card\
+ a. Microform [link](https://developer.cybersource.com/docs/cybs/en-us/digital-accept-flex-api/developer/ctv/rest/flex-api/microform-integ-v2.html)\
+ b. Direct Cybersource Payment API\
+ c. Unified Checkout [link](https://developer.cybersource.com/docs/cybs/en-us/digital-accept-flex-api/developer/ctv/rest/flex-api/uc-intro.html)
 
  #### <ins>a. To Setup Microform v2
 
-Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: Upload metadata" or import **"metadata/payment_metadata/meta/FlexMicroform.xml"** in Business Manager (**Administration > Site Development > Import & Export**)
+Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: Upload metadata" or import **"metadata/payment_metadata/meta/SecureIntegrationConfiguration.xml"** in Business Manager (**Administration > Site Development > Import & Export**)
 
- Step 2: Go to **Merchant Tools > Custom Preferences > Cybersource_FlexMicroform** and set values for the parameter:
+ Step 2: Go to **Merchant Tools > Custom Preferences > Secure Integration 
+Configuration** and set values for the parameter:
 
  Field | Description | Value to Set
  ------------ | ------------- | -------
- Enable Secure Acceptance - Flex Microform | Enable or Disable Cybersource Flex Microform Service | **Yes**
+ Secure Integration Method | Type of Secure Integration Method to be used. | **Microform**
+  AllowedCardNetworks  | Configure card types for Secure Integration Method  | VISA MAESTRO MASTERCARD AMEX DISCOVER DINERS CLUB JCB CUP CARTES BANCAIRES JCREW ELO EFTPOS MEEZA CARNET MADA
+   Transaction Type  | Select Sale/Auth transaction type | Sale/Auth
 
  #### <ins>b. To Setup Direct Cybersource Payment API
 
- Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: Upload metadata" or import **"metadata/payment_metadata/meta/FlexMicroform.xml"** in Business Manager (**Administration > Site Development > Import & Export**)
+ Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: Upload metadata" or import **"metadata/payment_metadata/meta/SecureIntegrationConfiguration.xml"** in Business Manager (**Administration > Site Development > Import & Export**)
 
- Step 2: Go to **Merchant Tools > Custom Preferences > Cybersource_FlexMicroform** and set the value for following parameter:
+ Step 2: Go to **Merchant Tools > Custom Preferences > VisaAcceptance_SecureIntegrationConfiguration** and set the value for following parameter:
 
  Field | Description | Value to Set
  ------------ | ------------- | -------
- Enable Secure Acceptance - Flex Microform | Enable or Disable Cybersource Flex Microform Service | **No**
- AllowedCardNetworks  | Configure card types for Cybersource Flex Microform  | VISA MASTER DISCOVER 
-DINERSCLUB JCB MAESTRO AMEX
----
+ Secure Integration Method | Type of Secure Integration Method to be used. | **None**
+  Transaction Type  | Select Sale/Auth transaction type | Sale/Auth
+
+
+ #### <ins>c. To Setup Unified Checkout
+ **Create custom preference for Unified Checkout**
+
+ Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: Upload metadata" or import **"metadata/payment_metadata/meta/SecureIntegrationConfiguration.xml"** in Business Manager (**Administration > Site Development > Import & Export**)
+
+ Step 2: Go to **Merchant Tools > Custom Preferences > Secure Integration Configuration** and set the value for following parameter:
+
+| Field | Description | Value to Set |
+|-------|-------------|--------------|
+| Secure Integration Method | Type of Secure Integration Method to be used. Select Unified Checkout (Unified_Checkout) | Unified Checkout |
+| Payment Acceptance Location for UnifiedCheckout | Select Embedded/ Sidebar. The Embedded option appears directly on the Checkout page, whereas the Sidebar option displays alongside the main screen. | Embedded/ Sidebar |
+| AllowedCardNetworks | Configure card types for UnifiedCheckout | VISA MAESTRO MASTERCARD AMEX DISCOVER DINERS CLUB JCB CUP CARTES BANCAIRES JCREW ELO EFTPOS MEEZA CARNET MADA JAYWAN |
+| Digital Payment Methods in UnifiedCheckout | Select which Payment Method to be enabled. (If none selected, it will use Card) | • GOOGLEPAY<br>• APPLEPAY<br>• CLICKTOPAY |
+| Checkout Label for Unified Checkout | Label for Unified Checkout Tab on the payment page | |
+| Enable eCheck | Enable/Disable eCheck Payment | Yes/No |
+| Enable Unified Checkout for Cart and Mini Cart | Enable or Disable Unified Checkout for digital payments on Cart and Mini Cart. | Yes/No |
+
+Step 3: Payment Processor
+
+   1. In the Business Manager, go to **Merchant Tools > Ordering > Payment Methods** and select **CREDIT_CARD**. In **CREDIT_CARD details**, double check if **Payment Processor** = **"PAYMENTS_CREDIT"** and is enabled.
+
+  2. In the Business Manager, go to **Merchant Tools > Ordering > Payment Methods** and select **DW_GOOGLE_PAY**. And in **DW_GOOGLE_PAY details**, double check if **Payment Processor** = **"PAYMENTS_CREDIT"**
+
+  3. In the Business Manager, go to **Merchant Tools > Ordering > Payment Methods** and select **CLICK_TO_PAY**. In **CLICK_TO_PAY details**, double check if **Payment Processor** = **"PAYMENTS_CLICK_TO_PAY"**.
+
+  4. In the Business Manager, go to **Merchant Tools > Ordering > Payment Methods** and select **DW_APPLE_PAY**. In **DW_APPLE_PAY details**, double check if **Payment Processor** = **"PAYMENTS_APPLEPAY"**.
+
+  5. In the Business Manager, go to **Merchant Tools > Ordering > Payment Methods** and select **BANK_TRANSFER**. In **BANK_TRANSFER details**, double check if **Payment Processor** = **"BANK_TRANSFER"**.
+
 
  #### <ins>Payer Authentication (3D Secure)
 
@@ -172,7 +204,7 @@ Note: Enable Decision Manager and Payer Authentication in custom preferences.
       b. Click on **Register Apple Production** under Apple Production section for registering SFCC to Apple Production account.
 
    #### <ins>Step 6: Payment Processor
-   1. In the Business Manager, go to **Merchant Tools > Ordering > Payment Methods** and select **DW_APPLE_PAY**. And in **DW_APPLE_PAY details**, double check if **Payment Processor** = **"PAYMENTS_CREDIT"**
+   1. In the Business Manager, go to **Merchant Tools > Ordering > Payment Methods** and select **DW_APPLE_PAY**. And in **DW_APPLE_PAY details**, double check if **Payment Processor** = **"PAYMENTS_APPLEPAY"**
 
    #### <ins>Site Preferences:
    Step 1: Upload Cybersource metadata in Business Manager. If not follow "Step 2: Upload metadata" or import **"metadata/sfra_meta/meta/ApplePay.xml"** in Business Manager (**Administration > Site Development > Import & Export**)
@@ -206,27 +238,6 @@ Note: Enable Decision Manager and Payer Authentication in custom preferences.
    1. If you want to use Google Pay in **LIVE Environment**,then navigate to this link https://pay.google.com/business/console/ in order to get Google Pay merchant Id.
 
    Note: Please refer to Payer Authentication (3D Secure) section to configure Payer Authentication for Google Pay.
-
----
-
-   #### 4. Click to Pay
-   #### <ins>Step 1: Create custom preferences for Click to Pay
-   1. Upload Cybersource metadata in Business Manager. If not follow “Step 2: Upload metadata” or import **metadata/payment_metadata/meta/VisaSRC.xml** in Business Manager **(Administration > Site Development > Import & Export)**
-   2. Go to Merchant Tools > Site Preferences > Custom Preferences > Click to Pay and set values for the following parameters:
-
-   Field | Description
-   ------------ | -------------
-   Enable Click to Pay | Enable/Disable Enable Click to Pay on checkout page
-   Click to Pay Key | Click to Pay Key Id obtained through EBC Digital payments
-   True for production | Set to Yes for Production
-   Click to Pay Transaction Type | Select Sale/Auth transaction Type
-   
-   #### <ins>Step 2: Payment Processor
-   1. In the Business Manager, go to **Merchant Tools > Ordering > Payment Methods** and select **CLICK_TO_PAY**. And in **CLICK_TO_PAY details**, double check if **Payment Processor** = **"PAYMENTS_VISA_SRC"**
-
-   #### <ins>Notes:
-   Currently Click to Pay is only available in checkout view.
-
 
 ---
 

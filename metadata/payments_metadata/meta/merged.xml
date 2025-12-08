@@ -481,6 +481,10 @@
                         <display xml:lang="x-default">MADA</display>
                         <value>MADA</value>
                     </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">JAYWAN</display>
+                        <value>JAYWAN</value>
+                    </value-definition>
                 </value-definitions>
             </attribute-definition>
             <attribute-definition attribute-id="VisaAcceptance_UnifiedCheckout_EnableECheck">
