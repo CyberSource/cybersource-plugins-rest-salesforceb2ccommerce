@@ -1,6 +1,5 @@
 'use strict';
 
-var Cipher = require('dw/crypto/Cipher');
 var configObject = require('../../configuration/index');
 var URLUtils = require('dw/web/URLUtils');
 var cybersourceRestApi = require('../../apiClient/index');
@@ -26,10 +25,10 @@ function setPaymentProcessorDetails(result) {
         Transaction.wrap(function () {
             paymentInstrument.paymentTransaction.setTransactionID(result.id);
             paymentInstrument.paymentTransaction.setPaymentProcessor(paymentProcessor);
-            paymentInstrument.paymentTransaction.custom.requestId = result.id;
-            paymentInstrument.paymentTransaction.custom.reconciliationId = result.reconciliationId;
-            paymentInstrument.paymentTransaction.custom.paymentDetails = paymentInstrument.creditCardHolder + ', ' + paymentInstrument.maskedCreditCardNumber
-                + ', ' + paymentInstrument.creditCardType + ', ' + paymentInstrument.creditCardExpirationMonth + '/' + paymentInstrument.creditCardExpirationYear;
+            if (!empty(paymentInstrument.maskedCreditCardNumber) && paymentInstrument.maskedCreditCardNumber !== 'undefined') {
+                paymentInstrument.paymentTransaction.custom.paymentDetails = paymentInstrument.maskedCreditCardNumber
+                    + ', ' + paymentInstrument.creditCardType + ', ' + paymentInstrument.creditCardExpirationMonth + '/' + paymentInstrument.creditCardExpirationYear;
+            }
         });
     } catch (e) {
         error = true; // eslint-disable-line no-unused-vars
@@ -45,7 +44,7 @@ function setPaymentProcessorDetails(result) {
  * @param {*} cardData *
  * @returns {*} *
  */
-function paSetup(billingDetails, referenceInformationCode, cardData) {
+function paSetup(billingDetails, referenceInformationCode, cardData, order) {
     var instance = new cybersourceRestApi.PayerAuthenticationApi(configObject);
 
     var clientReferenceInformation = new cybersourceRestApi.Ptsv2paymentsClientReferenceInformation();
@@ -53,6 +52,51 @@ function paSetup(billingDetails, referenceInformationCode, cardData) {
 
     var processingInformation = new cybersourceRestApi.Ptsv2paymentsProcessingInformation();
     processingInformation.commerceIndicator = 'internet';
+
+    var total = order.totalGrossPrice.value;
+    var amountDetails = new cybersourceRestApi.Ptsv2paymentsOrderInformationAmountDetails();
+    if (typeof total !== 'undefined') {
+        amountDetails.totalAmount = total.toString();
+    } else {
+        throw new Error();
+    }
+    amountDetails.currency = order.currencyCode;
+
+    var billTo = new cybersourceRestApi.Ptsv2paymentsOrderInformationBillTo();
+    billTo.email = order.getCustomerEmail();
+    billTo.country = order.billingAddress.countryCode.toString().toUpperCase();
+    billTo.firstName = order.billingAddress.firstName;
+    billTo.lastName = order.billingAddress.lastName;
+    billTo.phoneNumber = order.billingAddress.phone;
+    billTo.address1 = order.billingAddress.address1;
+    billTo.address2 = order.billingAddress.address2;
+    billTo.postalCode = order.billingAddress.postalCode;
+    billTo.administrativeArea = order.billingAddress.stateCode;
+    billTo.locality = order.billingAddress.city;
+
+    var shippingAddress = order.shipments[0].shippingAddress;
+    var mapper = require('~/cartridge/scripts/util/mapper.js');
+    var lineItems = mapper.MapOrderLineItems(order.allLineItems, true);
+
+    var shipTo = new cybersourceRestApi.Ptsv2paymentsOrderInformationShipTo();
+    shipTo.email = order.getCustomerEmail();
+    shipTo.country = shippingAddress.countryCode.toString().toUpperCase();
+    shipTo.firstName = shippingAddress.firstName;
+    shipTo.lastName = shippingAddress.lastName;
+    shipTo.phoneNumber = shippingAddress.phone;
+    shipTo.address1 = shippingAddress.address1;
+    shipTo.postalCode = shippingAddress.postalCode;
+    shipTo.locality = shippingAddress.city;
+    shipTo.administrativeArea = shippingAddress.stateCode;
+    shipTo.address2 = shippingAddress.address2;
+    shipTo.district = shippingAddress.stateCode;
+    shipTo.buildingNumber = shippingAddress.suite;
+
+    var orderInformation = new cybersourceRestApi.Ptsv2paymentsOrderInformation();
+    orderInformation.amountDetails = amountDetails;
+    orderInformation.billTo = billTo;
+    orderInformation.shipTo = shipTo;
+    orderInformation.lineItems = lineItems;
 
     var paymentInformation = new cybersourceRestApi.Ptsv2paymentsPaymentInformation();
     var request = new cybersourceRestApi.CreatePaymentRequest();
@@ -67,18 +111,14 @@ function paSetup(billingDetails, referenceInformationCode, cardData) {
         card = new cybersourceRestApi.Ptsv2paymentsPaymentInformationCard();
         card.securityCode = cardData.securityCode;
         paymentInformation.card = card;
+    } else if (cardData.ucJwtToken) { // UC ON
+        var tokenInformation = new cybersourceRestApi.Ptsv2paymentsTokenInformation(); // eslint-disable-line no-redeclare
+        tokenInformation.transientTokenJwt = cardData.ucJwtToken;
+        request.tokenInformation = tokenInformation;
     } else if (cardData.jwttoken != null) {
         tokenInformation = new cybersourceRestApi.Ptsv2paymentsTokenInformation();
         tokenInformation.transientTokenJwt = cardData.jwttoken;
         request.tokenInformation = tokenInformation;
-    } else if (cardData.fluidData != null) {
-        processingInformation.commerceIndicator = 'internet';
-        processingInformation.visaCheckoutId = cardData.callId;
-        processingInformation.paymentSolution = 'visacheckout';
-        var fluidData = new cybersourceRestApi.Ptsv2paymentsPaymentInformationFluidData();
-        fluidData.value = cardData.fluidData;
-        fluidData.key = configObject.visaSRCKey;
-        paymentInformation.fluidData = fluidData;
     } else if (cardData.googlePayFluidData != null) {
         processingInformation.paymentSolution = '012';  //googlepay
         var fluidData = new cybersourceRestApi.Ptsv2paymentsPaymentInformationFluidData();
@@ -102,6 +142,7 @@ function paSetup(billingDetails, referenceInformationCode, cardData) {
     request.clientReferenceInformation = clientReferenceInformation;
     request.processingInformation = processingInformation;
     request.paymentInformation = paymentInformation;
+    request.orderInformation = orderInformation;
 
 
     var result = '';
@@ -140,8 +181,22 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
     processingInformation.actionList.push('CONSUMER_AUTHENTICATION');
 
     //Capture service call if Payer Authentication is enabled
-    if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_CardTransactionType').value === 'sale') {
-        processingInformation.capture = true;
+    if (cardData.ucJwtToken) {
+        if (configObject.cardTransactionType.value === 'sale') {
+            processingInformation.capture = true;
+        }
+    }
+    else {
+        if (order.paymentInstruments[0].paymentMethod === 'DW_GOOGLE_PAY') {
+            if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_GooglePayTransactionType').value === 'sale') {
+                processingInformation.capture = true;
+            }
+        }
+        if (order.paymentInstruments[0].paymentMethod === 'CREDIT_CARD') {
+            if (configObject.cardTransactionType.value === 'sale') {
+                processingInformation.capture = true;
+            }
+        }
     }
 
     if (!configObject.fmeDmEnabled) {
@@ -192,11 +247,11 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
     consumerAuthenticationInformation.referenceId = referenceId;
     consumerAuthenticationInformation.returnUrl = URLUtils.https('CheckoutServices-handlingConsumerAuthResponse').toString();
 
-    if (session.custom.Flag3ds === true || session.custom.scaTokenFlag === true) {   
+    if (session.custom.Flag3ds === true || session.custom.scaTokenFlag === true) {
         session.custom.Flag3ds = true;
         consumerAuthenticationInformation.challengeCode = '04';
     }
-   
+
     var paymentInformation = new cybersourceRestApi.Ptsv2paymentsPaymentInformation();
     var request = new cybersourceRestApi.CreatePaymentRequest();
 
@@ -236,18 +291,14 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
         card = new cybersourceRestApi.Ptsv2paymentsPaymentInformationCard();
         card.securityCode = cardData.securityCode;
         paymentInformation.card = card;
+    } else if (cardData.ucJwtToken) { // UC ON
+        var tokenInformation = new cybersourceRestApi.Ptsv2paymentsTokenInformation(); // eslint-disable-line no-redeclare
+        tokenInformation.transientTokenJwt = cardData.ucJwtToken;
+        request.tokenInformation = tokenInformation;
     } else if (cardData.jwttoken != null) {
         tokenInformation = new cybersourceRestApi.Ptsv2paymentsTokenInformation();
         tokenInformation.transientTokenJwt = cardData.jwttoken;
         request.tokenInformation = tokenInformation;
-    } else if (cardData.fluidData != null) {
-        processingInformation.commerceIndicator = 'internet';
-        processingInformation.visaCheckoutId = cardData.callId;
-        processingInformation.paymentSolution = 'visacheckout';
-        var fluidData = new cybersourceRestApi.Ptsv2paymentsPaymentInformationFluidData();
-        fluidData.value = cardData.fluidData;
-        fluidData.key = configObject.visaSRCKey;
-        paymentInformation.fluidData = fluidData;
     } else if (cardData.googlePayFluidData != null) {
         processingInformation.paymentSolution = '012';  //googlepay
         var fluidData = new cybersourceRestApi.Ptsv2paymentsPaymentInformationFluidData();
@@ -312,8 +363,22 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
     processingInformation.actionList.push('VALIDATE_CONSUMER_AUTHENTICATION');
 
     //Capture service call if Payer Authentication is enabled
-    if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_CardTransactionType').value === 'sale') {
-        processingInformation.capture = true;
+    if (cardData.ucJwtToken) {
+        if (configObject.cardTransactionType.value === 'sale') {
+            processingInformation.capture = true;
+        }
+    }
+    else {
+        if (order.paymentInstruments[0].paymentMethod === 'DW_GOOGLE_PAY') {
+            if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_GooglePayTransactionType').value === 'sale') {
+                processingInformation.capture = true;
+            }
+        }
+        if (order.paymentInstruments[0].paymentMethod === 'CREDIT_CARD') {
+            if (configObject.cardTransactionType.value === 'sale') {
+                processingInformation.capture = true;
+            }
+        }
     }
 
     if (!configObject.fmeDmEnabled) {
@@ -345,7 +410,7 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
 
     var paymentInformation = new cybersourceRestApi.Ptsv2paymentsPaymentInformation();
     var request = new cybersourceRestApi.CreatePaymentRequest();
- 
+
     var deviceSessionId = new cybersourceRestApi.Ptsv2paymentsDeviceInformation();
     deviceSessionId.fingerprintSessionId = session.privacy.dfID;
 
@@ -362,18 +427,14 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
         var card = new cybersourceRestApi.Ptsv2paymentsPaymentInformationCard();
         card.securityCode = cardData.securityCode;
         paymentInformation.card = card;
+    } else if (cardData.ucJwtToken) { // UC ON
+        var tokenInformation = new cybersourceRestApi.Ptsv2paymentsTokenInformation(); // eslint-disable-line no-redeclare
+        tokenInformation.transientTokenJwt = cardData.ucJwtToken;
+        request.tokenInformation = tokenInformation;
     } else if (cardData.jwttoken != null) {
         var tokenInformation = new cybersourceRestApi.Ptsv2paymentsTokenInformation(); // eslint-disable-line no-redeclare
         tokenInformation.transientTokenJwt = cardData.jwttoken;
         request.tokenInformation = tokenInformation;
-    } else if (cardData.fluidData != null) {
-        processingInformation.commerceIndicator = 'internet';
-        processingInformation.visaCheckoutId = cardData.callId;
-        processingInformation.paymentSolution = 'visacheckout';
-        var fluidData = new cybersourceRestApi.Ptsv2paymentsPaymentInformationFluidData();
-        fluidData.value = cardData.fluidData;
-        fluidData.key = configObject.visaSRCKey;
-        paymentInformation.fluidData = fluidData;
     } else if (cardData.googlePayFluidData != null) {
         processingInformation.paymentSolution = '012';  //googlepay
         var fluidData = new cybersourceRestApi.Ptsv2paymentsPaymentInformationFluidData();
@@ -394,7 +455,7 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
     request.paymentInformation = paymentInformation;
 
     request.consumerAuthenticationInformation = consumerAuthenticationInformation;
-   
+
     var result = '';
     instance.createPayment(request, function (data, error, response) { // eslint-disable-line no-unused-vars
         if (!error) {
@@ -403,7 +464,7 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
             try {
                 var parsedData = JSON.parse(data);
                 var reasonCodeObject = parsedData;
-                if(parsedData.errorInformation != null){
+                if (parsedData.errorInformation != null) {
                     reasonCodeObject = parsedData.errorInformation.details.filter(function (e) { return e.field === 'reasonCode'; }).pop();
                 }
                 result = {

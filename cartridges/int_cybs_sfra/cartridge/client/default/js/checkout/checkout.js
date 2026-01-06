@@ -2,6 +2,11 @@
 
 'use strict';
 
+// Capture error parameters IMMEDIATELY before base checkout modifies the URL
+var initialUrlParams = new URLSearchParams(window.location.search);
+var placeOrderError = initialUrlParams.get('PlaceOrderError');
+// var payerAuthError = initialUrlParams.get('payerAuthError');
+
 var base = require('base/checkout/checkout');
 var shippingHelpers = require('./shipping');
 var billingHelpers = require('./billing');
@@ -56,24 +61,39 @@ function handlePlaceOrder() {
                     window.location.href = data.redirectUrl;
                     defer.reject();
                 } else {
-                    defer.reject(data);
+                    if (data.redirectUrl) {
+                        window.location.href = data.redirectUrl;
+                        defer.reject();
+                    } else {
+                        defer.reject(data);
+                    }
                 }
             } else if (data.createDeviceDataCollection) {
                 openModal(encodeURIComponent(data.redirectUrl));
                 defer.resolve();
             } else {
-                var continueUrl = data.continueUrl;
-                var urlParams = {
-                    ID: data.orderID,
-                    token: data.orderToken
-                };
+                var redirect = $('<form>')
+                    .appendTo(document.body)
+                    .attr({
+                        method: 'POST',
+                        action: data.continueUrl
+                    });
 
-                continueUrl += (continueUrl.indexOf('?') !== -1 ? '&' : '?')
-                    + Object.keys(urlParams).map(function (key) {
-                        return key + '=' + encodeURIComponent(urlParams[key]);
-                    }).join('&');
+                $('<input>')
+                    .appendTo(redirect)
+                    .attr({
+                        name: 'orderID',
+                        value: data.orderID
+                    });
 
-                window.location.href = continueUrl;
+                $('<input>')
+                    .appendTo(redirect)
+                    .attr({
+                        name: 'orderToken',
+                        value: data.orderToken
+                    });
+
+                redirect.submit();
                 defer.resolve();
             }
         },
@@ -107,16 +127,38 @@ $('#checkout-main').on('click', '.next-step-button button', function (event) {
 $('#applePayPaymentOptionLink').on('click', function (event) {
     $('#placeOrderButton').hide();
 });
- 
+
 $('#gPaypaymentOptionLink').on('click', function (event) {
     $('#placeOrderButton').hide();
 });
- 
-$('#visaCheckoutPaymentOptionLink').on('click', function (event) {
-    $('#placeOrderButton').hide();
-});
- 
+
 $('#creditCardPaymentOptionLink').on('click', function (event) {
     $('#placeOrderButton').show();
 });
+
+$('#unifiedCheckoutPaymentOptionLink').on('click', function (event) {
+    $('#placeOrderButton').show();
+});
+
+// Check for PlaceOrderError on page load (using values captured at script load)
+$(document).ready(function () {
+    if (placeOrderError) {
+        $('.error-message').show();
+        $('.error-message-text').text(decodeURIComponent(placeOrderError));
+
+        // Scroll to error message
+        var errorElement = $('.error-message');
+        if (errorElement.length && errorElement.offset()) {
+            $('html, body').animate({
+                scrollTop: errorElement.offset().top - 100
+            }, 500);
+        }
+    }
+
+    // Also check for payerAuthError
+    // if (payerAuthError) {
+    //     $('.payerAuthError').show().text(decodeURIComponent(payerAuthError));
+    // }
+});
+
 module.exports = base;

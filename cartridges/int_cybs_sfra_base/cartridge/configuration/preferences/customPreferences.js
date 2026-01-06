@@ -387,18 +387,88 @@ module.exports = {
             }
         }
     },
+//Cybersource_Secure_Integration_Method
 
-    FlexMicroform: {
-        id: 'Cybersource_FlexMicroform',
-        display_name: 'Flex Microform Configuration',
+SecureIntegrationConfiguration:{
+        id: 'VisaAcceptance_SecureIntegrationConfiguration',
+        display_name: 'Secure Integration Configuration',
         Preferences: {
             /** @type {CustomPreference} */
-            FlexMicroformEnabled: {
-                id: 'Cybersource_FlexMicroform',
-                display_name: 'Enable Secure Acceptance - Flex Microfrom',
-                description: 'Enable or Disable Cybersource Flex Microform service',
+            SecureIntegrationMethod: {
+                id: 'VisaAcceptance_Secure_Integration_Method',
+                display_name: 'Secure Integration Method',
+                description: 'Secure Integration Method',
+                type: Types.EnumOfString,
+                default: false,
+                flags: {
+                    mandatory: false
+                }
+            },
+            UnifiedCheckoutPaymentAcceptanceLocation: {
+                id: 'VisaAcceptance_UnifiedCheckout_PaymentAcceptanceLocation',
+                display_name: 'Unified Checkout Payment Acceptance Location',
+                description: 'Embedded is loaded in the Checkout page while Sidebar is loaded in the side of the screen.',
+                type: Types.EnumOfString,
+                default: 'Embedded',
+                flags: {
+                    mandatory: false
+                }
+            },
+            AllowedCardNetworks: {
+                id: 'VisaAcceptance_AllowedCardNetworks',
+                display_name: 'Allowed Card Networks',
+                description: 'Configure card types for Microform or Unified Checkout',
+                type: Types.EnumOfString,
+                default: 'VISA',
+                flags: {
+                    mandatory: false
+                }
+            },
+            DigitalPaymentMethods: {
+                id: 'VisaAcceptance_UnifiedCheckout_DigitalPaymentMethods',
+                display_name: 'Digital Payment Methods in Unified Checkout',
+                type: Types.EnumOfString,
+                default: false,
+                flags: {
+                    mandatory: false
+                }
+            },               
+            ECheckEnabledforUnifiedCheckout: {
+                id: 'VisaAcceptance_UnifiedCheckout_EnableECheck',
+                display_name: 'Enable E-Check Payment for Unified Checkout',
+                description: 'Enable or Disable E-Check Payment for Unified Checkout',
                 type: Types.boolean,
-                default: true,
+                default: false,
+                flags: {
+                    mandatory: false
+                }
+            },
+            CheckoutLabelforUnifiedCheckout: {
+                id: 'VisaAcceptance_UnifiedCheckout_CheckoutLabel',
+                display_name: 'Checkout Label for Unified Checkout',
+                description: 'Label for Unified Checkout Tab on the payment page',
+                type: Types.string,
+                default: 'Secure Payments powered by Visa Acceptance Solutions',
+                flags: {
+                    mandatory: false
+                }
+            },
+            VisaAcceptance_UnifiedCheckout_Cart_Minicart: {
+                id: 'VisaAcceptance_UnifiedCheckout_Cart_Minicart',
+                display_name: 'Enable Unified Checkout for Cart and Mini Cart',
+                description: 'Enable or Disable Unified Checkout for digital payments on Cart and Mini Cart.',
+                type: Types.boolean,
+                default: false,
+                flags: {
+                    mandatory: false
+                }
+            },
+            CardTransactionType: {
+                id: 'Cybersource_CardTransactionType',
+                display_name: 'Transaction Type',
+                description: 'Transaction Type for Credit card and Unified Checkout',
+                type: Types.EnumOfString,
+                default: 'Auth',
                 flags: {
                     mandatory: false
                 }

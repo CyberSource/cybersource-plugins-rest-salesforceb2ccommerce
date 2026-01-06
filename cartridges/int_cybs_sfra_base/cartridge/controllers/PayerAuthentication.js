@@ -17,18 +17,12 @@ server.get('createDeviceDataCollection', server.middleware.https, function (req,
         return next();
     }
     var action = URLUtils.url('CheckoutServices-getResponse');
-    var paymentInstruments = order.paymentInstruments;
-    var paymentInstrument = paymentInstruments[0];
-    var cardNumber = paymentInstrument.creditCardNumber.slice(0, 6);
-    if (cardNumber) {
         res.render('payerAuthentication/deviceDataCollection', {
-            cardNumber: cardNumber,
             jwtToken: jwtToken,
             action: action,
             orderNo: orderNo,
             deviceDataUrl: deviceDataCollectionUrl
         });
-    }
     return next();
 });
 

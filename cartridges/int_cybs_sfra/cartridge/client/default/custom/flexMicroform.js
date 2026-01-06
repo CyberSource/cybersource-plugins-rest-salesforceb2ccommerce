@@ -158,6 +158,18 @@ $(document).ready(function () {
                 case "jcrew":
                     correctCardType = "JCrew";
                     break;
+                case 'meeza':
+                    correctCardType = 'Meeza';
+                    break;
+                case 'carnet':
+                    correctCardType = 'Carnet';
+                    break;
+                case 'mada':
+                    correctCardType = 'Mada';
+                    break;
+                case 'eftpos':
+                    correctCardType = 'EFTPOS';
+                    break;
             }
             $('#cardType').val(correctCardType);
         }

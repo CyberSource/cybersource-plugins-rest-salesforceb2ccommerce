@@ -139,7 +139,7 @@ function resetTimer(customer) {
  * @param {*} oldPaymentInstrumentId *
  * @param {*} skipFlexCheck *
  */
-function deleteInstrumentFromWallet(customer, newPaymentInstrumentId, paymentInstruments, oldPaymentInstrumentId, skipFlexCheck) {
+function deleteInstrumentFromWallet(customer, newPaymentInstrumentId, paymentInstruments, oldPaymentInstrumentId, skipFlexCheck, paymentDetails) {
     // eslint-disable-next-line no-shadow
     var Transaction = require('dw/system/Transaction');
     var wallet = customer.profile.wallet;
@@ -147,6 +147,7 @@ function deleteInstrumentFromWallet(customer, newPaymentInstrumentId, paymentIns
     var mapper = require('~/cartridge/scripts/util/mapper.js');
     var server = require('server');
 
+    var payments = require("~/cartridge/scripts/http/payments");
     // new payment instrument To Be Deleted
     var paymentToDelete = array.find(paymentInstruments, function (item) {
         var token = item.creditCardToken;
@@ -168,9 +169,32 @@ function deleteInstrumentFromWallet(customer, newPaymentInstrumentId, paymentIns
             var expirationMonth;
             var expirationYear;
             // Checking for my account flow or checkout flow
-            if (skipFlexCheck !== undefined && skipFlexCheck !== '') {
+            if (skipFlexCheck === 'UC') {
+                name = paymentDetails.orderInformation.billTo.firstName + ' ' + paymentDetails.orderInformation.billTo.lastName;
+                cardNumber = paymentDetails.paymentInformation.card.number;
+                cardType = paymentDetails.paymentInformation.card.type;
+                expirationMonth = parseInt(paymentDetails.paymentInformation.card.expirationMonth, 10);
+                expirationYear = parseInt(paymentDetails.paymentInformation.card.expirationYear, 10);
+            } else if (skipFlexCheck !== undefined && skipFlexCheck !== '') {
                 var billingForm = server.forms.getForm('billing');
                 name = billingForm.creditCardFields.cardOwner.value;
+                if(empty(name)){
+                    if(!empty(billingForm.creditCardFields.ucpaymenttoken.htmlValue)){
+                        try {
+                        var transientToken = decodeURIComponent(billingForm.creditCardFields.ucpaymenttoken.htmlValue);
+                    var paymentDetails = payments.getPaymentDetails(transientToken);
+                    name = paymentDetails.orderInformation.billTo.firstName +
+            " " + paymentDetails.orderInformation.billTo.lastName
+                    } catch (error) {
+                        
+                    }
+                    }else {
+                        name = billingForm.creditCardFields.billToAddressFields.firstName.value +
+                        " " + billingForm.creditCardFields.billToAddressFields.lastName.value;
+                    }
+                    
+                    
+                }
                 cardNumber = billingForm.creditCardFields.cardNumber.value;
                 cardType = billingForm.creditCardFields.cardType.value;
                 expirationMonth = billingForm.creditCardFields.expirationMonth.value;
@@ -217,7 +241,7 @@ function deleteInstrumentFromWallet(customer, newPaymentInstrumentId, paymentIns
  * @param {string} customer logged in customer
  * @returns {boolean} duplicateExists
  */
-function checkDuplicateInstrumentIdentifier(paymentInstruments, tokenInfo, customer) {
+function checkDuplicateInstrumentIdentifier(paymentInstruments, tokenInfo, customer,ucckeck) {
     var duplicateExists = false;
     var server = require('server');
     var mapper = require('~/cartridge/scripts/util/mapper.js');
@@ -267,6 +291,18 @@ function checkDuplicateInstrumentIdentifier(paymentInstruments, tokenInfo, custo
                         expiryYear = paymentForm.expirationYear.value;
                         address = mapper.SFFCAddressToProviderAddress(paymentForm.billToAddressFields);
                     }
+                    if(ucckeck){
+                        var payments = require("~/cartridge/scripts/http/payments");
+                        var form = server.forms.getForm('billing');
+                        var transientToken = decodeURIComponent(form.creditCardFields.ucpaymenttoken.htmlValue);
+                        var paymentDetails = payments.getPaymentDetails(transientToken);
+                        address.firstName = paymentDetails.orderInformation.billTo.firstName;
+                        address.lastName = paymentDetails.orderInformation.billTo.lastName;
+                        var billingForm = server.forms.getForm('billing');
+                        expiryMonth = billingForm.creditCardFields.expirationMonth.value;
+                        expiryYear = billingForm.creditCardFields.expirationYear.value;
+ 
+                    }
                     // patch call to cybersource
                     result = tokenManagement.httpUpdateCustomerPaymentInstrument(customer.profile.custom.customerID, oldPaymentInstrumentId, expiryMonth, expiryYear, address, email, instrumentIdentifierId);
                     break;
@@ -294,11 +330,12 @@ function checkDuplicateInstrumentIdentifier(paymentInstruments, tokenInfo, custo
     }
     return duplicateExists;
 }
+
 module.exports = {
     IsCustumerAllowedSinglePaymentInstrumentInsertion: IsCustumerAllowedSinglePaymentInstrumentInsertion,
     IsUserRateLimitExceeded: IsUserRateLimitExceeded,
     FailureReason: FailureReason,
     increaseCounter: increaseCounter,
     resetTimer: resetTimer,
-    checkDuplicateInstrumentIdentifier: checkDuplicateInstrumentIdentifier
+    checkDuplicateInstrumentIdentifier: checkDuplicateInstrumentIdentifier,
 };

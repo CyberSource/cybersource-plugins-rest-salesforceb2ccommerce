@@ -62,9 +62,18 @@ var baseUpdatePaymentInformation = base.methods.updatePaymentInformation;
 // eslint-disable-next-line consistent-return
 base.methods.updatePaymentInformation = function (order, customer) {
     // eslint-disable-line no-unused-vars
-    if ($(".tab-pane.active [name$='paymentMethod']").val() === 'CLICK_TO_PAY') {
-        var $paymentSummary = $('.payment-details');
+    var selectedPaymentMethod = $(".tab-pane.active [name$='paymentMethod']").val();
+    var $paymentSummary = $('.payment-details');
+    
+    if (selectedPaymentMethod === 'CLICK_TO_PAY') {
         var htmlToAppend = '<span>Click to Pay</span>';
+        $paymentSummary.empty().append(htmlToAppend);
+    } else if (selectedPaymentMethod === 'BANK_TRANSFER') {
+        var htmlToAppend = '';
+        htmlToAppend += '<span>eCheck</span>';
+        $paymentSummary.empty().append(htmlToAppend);
+    } else if (selectedPaymentMethod === 'DW_APPLE_PAY') {
+        var htmlToAppend = '<span>Apple Pay</span>';
         $paymentSummary.empty().append(htmlToAppend);
     } else {
         return baseUpdatePaymentInformation(order, customer);

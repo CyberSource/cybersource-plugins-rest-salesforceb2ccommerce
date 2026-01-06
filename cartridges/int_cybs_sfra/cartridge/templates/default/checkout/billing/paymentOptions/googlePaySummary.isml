@@ -1,10 +1,12 @@
 <div>
-	${dw.order.PaymentMgr.getPaymentMethod(payment.paymentMethod).getName()}
+    ${Resource.msg('msg.paid.using.google.pay', 'googlePay', null)}
 </div>
 <div class="credit-card-type">
+	<isif condition="${!empty(payment.type)}">
 	<span>
 		${Resource.msg('msg.payment.type.credit', 'confirmation', null)} ${payment.type}
 	</span>
+	</isif>
 </div>
 <div class="credit-card-number">
 	<isif condition="${!empty(payment.maskedCreditCardNumber)}">

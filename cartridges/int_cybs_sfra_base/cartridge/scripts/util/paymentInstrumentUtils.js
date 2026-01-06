@@ -49,6 +49,7 @@ function updatePaymentInstrumentGP(cart, cardInfo, email) {
         if (instrument === null || instrument.paymentMethod !== 'DW_GOOGLE_PAY') {
             throw new Error('Invalid payment instrument for Google Pay Checkout');
         }
+        if (cardInfo !== null) {
         var cardType;
         switch (cardInfo.cardNetwork) {
             case 'VISA':
@@ -82,6 +83,7 @@ function updatePaymentInstrumentGP(cart, cardInfo, email) {
             if (!billingAddress.success) {
                 return billingAddress;
             }
+        }
         }
         // set the email
         cart.customerEmail = email;

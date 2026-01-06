@@ -1,0 +1,116 @@
+/**
+ * Payment Form Toggle Styles
+ * Styles for UC/Flex microform toggle functionality
+ * Following SFCC SFRA SCSS structure and patterns
+ */
+ 
+.checkout-hidden {
+    display: none !important;
+}
+ 
+.credit-card-form,
+.user-payment-instruments {
+    transition: opacity 0.3s ease-in-out;
+}
+ 
+.payment-form-fields {
+    .btn {
+        margin-top: 1rem;
+    }
+}
+ 
+.selected-payment {
+    border: 2px solid #007bff;
+    background-color: #f8f9fa;
+}
+ 
+.add-payment,
+.cancel-new-payment {
+    width: 100%;
+    margin: 10px 0;
+}
+ 
+// UC-specific styles
+.uc-active {
+    .creditCardFields {
+        &.checkout-hidden {
+            display: none;
+        }
+    }
+}
+ 
+// Flex microform styles
+.flex-microform {
+    .form-control {
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        padding: 0.375rem 0.75rem;
+       
+        &.is-invalid {
+            border-color: #dc3545;
+        }
+       
+        &.is-valid {
+            border-color: #28a745;
+        }
+    }
+}
+ 
+// Saved payment instrument styles
+.saved-payment-instrument {
+    cursor: pointer;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    transition: all 0.15s ease-in-out;
+   
+    &:hover {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+   
+    &.selected-payment {
+        border-color: #007bff;
+        background-color: #f8f9fa;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+}
+ 
+// Form validation feedback
+.invalid-feedback {
+    display: none;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+    color: #dc3545;
+   
+    &.show {
+        display: block;
+    }
+}
+ 
+.valid-feedback {
+    display: none;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+    color: #28a745;
+   
+    &.show {
+        display: block;
+    }
+}
+ 
+// Responsive adjustments
+@media (max-width: 767.98px) {
+    .add-payment,
+    .cancel-new-payment {
+        margin: 15px 0;
+    }
+   
+    .saved-payment-instrument {
+        padding: 0.75rem;
+    }
+}
+ 

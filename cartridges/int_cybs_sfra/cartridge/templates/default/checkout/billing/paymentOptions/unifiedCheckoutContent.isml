@@ -1,0 +1,12 @@
+<div class="tab-pane unifiedCheckout-content" id="unifiedCheckout-content" role="tabpanel">
+    <div id="js-unifiedCheckout-container">
+		<div class="row">
+			<isset name="isCartridgeEnabled" value="${require('*/cartridge/configuration/index').cartridgeEnabled}" scope="page" />
+			<isif condition="${isCartridgeEnabled}">
+				<script src="${URLUtils.staticURL('/custom/lib/jquery/jquery-3.7.1.min.js')}"></script>
+				<script src="${URLUtils.staticURL('/custom/unifiedCheckout.js')}"></script>
+				<isinclude template="unifiedCheckout" />
+			</isif>
+		</div>
+	</div>
+</div>

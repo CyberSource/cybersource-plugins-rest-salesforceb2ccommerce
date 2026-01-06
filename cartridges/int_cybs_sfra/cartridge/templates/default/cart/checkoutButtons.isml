@@ -18,4 +18,18 @@
 		</div>
 
    	</div>
+
+<isset name="isUCEnabled" value="${require('*/cartridge/configuration/index').unifiedCheckoutEnabled}" scope="page" />
+<isset name="isMinicartEnabled" value="${require('*/cartridge/configuration/index').minicartEnabled}" scope="page" />
+<isset name="isCartridgeEnabled" value="${require('*/cartridge/configuration/index').cartridgeEnabled}" scope="page" />
+<isset name="isPaymentsPresent" value="${!empty(require('*/cartridge/configuration/index').digitalPaymentMethods)}" scope="page" />
+    <isif condition="${isUCEnabled && isMinicartEnabled && isCartridgeEnabled && isPaymentsPresent}">
+    <iscomment>Unified Checkout Widget for Cart and minicart</iscomment>
+    <div class="row">
+        <div class="col-12">
+            <isinclude template="cart/unifiedCheckoutCart" />
+        </div>
+    </div>
+ </isif>
+ 
 </div>

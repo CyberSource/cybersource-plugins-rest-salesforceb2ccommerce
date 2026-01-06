@@ -3,6 +3,7 @@
 @import "~base/global";
 @import "components/applePay";
 @import "components/googlePay";
+@import "checkout/billing/paymentFormToggle";
 
 body {
     background-color: violet;

@@ -9,8 +9,26 @@
             <production/>
         </preferences>
     </payment-processor>
-    <payment-processor processor-id="PAYMENTS_VISA_SRC">
-        <description>Processor for VISA SCR handling.</description>
+    <payment-processor processor-id="PAYMENTS_CLICK_TO_PAY"> 
+         <description>Processor for Click to Pay handling.</description>
+        <preferences>
+            <all-instances/>
+            <development/>
+            <staging/>
+            <production/>
+        </preferences>
+    </payment-processor>
+    <payment-processor processor-id="BANK_TRANSFER"> 
+        <description>Processor for Bank Transfer handling.</description>
+        <preferences>
+            <all-instances/>
+            <development/>
+            <staging/>
+            <production/>
+        </preferences>
+    </payment-processor>
+    <payment-processor processor-id="PAYMENTS_APPLEPAY"> 
+        <description>Payment processor for Apple pay</description>
         <preferences>
             <all-instances/>
             <development/>

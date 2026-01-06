@@ -9,20 +9,8 @@ server.prepend(
     'Begin',
     server.middleware.https,
     function (req, res, next) {
-        var URLUtils = require('dw/web/URLUtils');
         var Transaction = require('dw/system/Transaction');
         // eslint-disable-next-line no-undef
-        var requestQueryMap = (request.getHttpQueryString() || '').split('&').reduce(function (acc, current) {
-            var qs = current.split('=');
-            acc[qs[0]] = qs[1];
-            return acc;
-        }, {});
-        if ('stage' in requestQueryMap && requestQueryMap.stage === 'placeOrder'
-            // eslint-disable-next-line no-undef
-            && empty(session.privacy.encryptedDataGP)) {
-            res.redirectUrl = URLUtils.url('Checkout-Begin').toString() + '?stage=payment';
-            return next();
-        }
         session.custom.Flag3ds = false;
         session.custom.scaTokenFlag = false;
         // eslint-disable-next-line no-undef

@@ -39,8 +39,10 @@
     <field formid="securityCode" label="profile.securitycode" type="string" mandatory="true" binding="securityCode" max-length="4" missing-error="error.card.info.missing.securityCode" />
 
     <include formid="billToAddressFields" name="address"/>
-  <field formid="saveCard" label="label.save.card" binding="saveCard" type="boolean" mandatory="false" checked="true" />
-<field formid="flexresponse" type="string" /> 
+    <field formid="saveCard" label="label.save.card" binding="saveCard" type="boolean" mandatory="false" checked="true" />
+    <field formid="flexresponse" type="string" /> 
+    <field formid="ucpaymenttoken" type="string" />
+    <field formid="ucpaymentmethod" type="string" />
     <!-- actions provided by the edit shipping address dialog -->
     <action formid="apply" valid-form="true"/>
     <action formid="remove" valid-form="false"/>

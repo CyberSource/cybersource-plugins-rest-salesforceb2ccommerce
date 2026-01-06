@@ -31,7 +31,7 @@ module.exports = {
   SANDBOX_RUN_ENV: "cybersource.environment.sandbox",
   PRODUCTION_RUN_ENV: "cybersource.environment.production",
   APPLICATION_NAME: "Salesforce B2C(REST)",
-  APPLICATION_VERSION: "25.3.0",
+  APPLICATION_VERSION: "25.4.0",
   
   /* Digest Constants*/
   SIGNATURE_ALGORITHAM: "SHA-256=",
@@ -39,6 +39,9 @@ module.exports = {
 
   /* Flex microform constants */
   CLIENT_VERSION : "v2",
+
+  /* Unified Checkout constants */
+  UC_CLIENT_VERSION: "0.32",
 
  
 

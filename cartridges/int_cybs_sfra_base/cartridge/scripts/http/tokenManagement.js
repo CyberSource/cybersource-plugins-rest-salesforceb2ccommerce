@@ -31,6 +31,49 @@ function httpRetrievePaymentInstrument(paymentInstrumentId) {
 }
 
 /**
+ * Create payment token using UC (Unified Checkout) transient token
+ * @param {string} ucTransientToken - UC transient token from client
+ * @param {string} customerEmail - Customer email
+ * @param {Object} billingAddress - Billing address object
+ * @param {string} referenceCode - Reference code for transaction
+ * @returns {Object} Token creation response
+ */
+function httpUCCreateToken(ucTransientToken, customerEmail, billingAddress, referenceCode) {
+    var Logger = require('dw/system/Logger');
+    var logger = Logger.getLogger('Cybersource', 'UC-TokenManagement');
+    
+    try {
+        logger.info('Creating UC token for reference: {0}', referenceCode);
+        
+        var payments = require('~/cartridge/scripts/http/payments.js');
+        var result = payments.httpZeroDollarAuthWithTransientToken(
+            ucTransientToken,
+            customerEmail, 
+            referenceCode,
+            billingAddress, 
+            site.current.getDefaultCurrency()
+        );
+        
+        if (result.status === STATUSCODES.AUTHORIZED || result.status === 'AUTHORIZED_PENDING_REVIEW') {
+            logger.info('UC token created successfully for reference: {0}', referenceCode);
+            return {result:result.tokenInformation,
+                success:true
+            };
+        }
+        
+        logger.error('UC token creation failed for reference: {0}, Status: {1}', referenceCode, result.status);
+        return {
+            success: false,
+            error: 'UC token authorization failed with status: ' + result.status
+        };
+        
+    } catch (e) {
+        logger.error('Exception in UC token creation for reference: {0}, Error: {1}', referenceCode, e.message);
+        throw e;
+    }
+}
+
+/**
  *
  * @param {string} accounNumber accounNumber
  * @param {string} expiryMonth expiryMonth
@@ -168,6 +211,7 @@ function httpDeleteCustomerPaymentInstrument(customerTokenId, paymentInstrumentT
 module.exports = {
     httpCreateToken: httpCreateToken,
     httpFlexCreateToken: httpFlexCreateToken,
+    httpUCCreateToken: httpUCCreateToken,
     httpDeletePaymentInstrument: httpDeletePaymentInstrument,
     httpRetrievePaymentInstrument: httpRetrievePaymentInstrument,
     httpUpdateCustomerPaymentInstrument: httpUpdateCustomerPaymentInstrument,
