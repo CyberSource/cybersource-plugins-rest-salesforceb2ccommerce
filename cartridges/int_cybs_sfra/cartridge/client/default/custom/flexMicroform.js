@@ -92,7 +92,10 @@ $(document).ready(function () {
             let flag = false;
 
             if (err) {
-                $('.card-number-wrapper .invalid-feedback').text(err.message).css('display', 'block');
+                // Display error above the card form for Flex SDK errors (card number/CVV)
+                var customError = $('.card-number-wrapper').attr('data-custom-validation-error');
+                var errorMessage = (customError && customError !== 'flex.cardnumber.error' && customError.trim() !== '') ? customError : err.message;
+                $('.form-validation-error').text(errorMessage).css('display', 'block');
                 flag = true;
             }
 
@@ -170,6 +173,9 @@ $(document).ready(function () {
                 case 'eftpos':
                     correctCardType = 'EFTPOS';
                     break;
+                case 'jaywan':
+                    correctCardType = 'Jaywan';
+                    break;
             }
             $('#cardType').val(correctCardType);
         }
@@ -180,12 +186,6 @@ $(document).ready(function () {
         var expYear = $('#expirationYear').val();
 
         if (expMonth == '' || expYear == '') {
-            if (expMonth == '') {
-               $('#expirationMonthMissingMessage').css('display', 'block');
-            }
-            if (expYear == '') {
-                $('#expirationYearMissingMessage').css('display', 'block');
-            }
             return false;
         }
         else {
@@ -195,7 +195,6 @@ $(document).ready(function () {
 
             // Check if the card is expired
             if (expYear < currentYear || (expYear == currentYear && expMonth < currentMonth)) {
-               $('#expiredCardMessage').css('display', 'block');
                 return false;
             }
         }

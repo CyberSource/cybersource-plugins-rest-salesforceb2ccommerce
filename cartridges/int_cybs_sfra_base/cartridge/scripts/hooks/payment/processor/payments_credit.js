@@ -343,7 +343,7 @@ function Authorize(orderNumber, paymentInstrument, paymentProcessor) {
             paymentInstrument.paymentTransaction.setPaymentProcessor(paymentProcessor);
             if (!empty(card.gPayToken)) {
                 paymentInstrument.paymentTransaction.custom.paymentDetails = paymentInstrument.maskedCreditCardNumber + ', '
-                    + paymentInstrument.creditCardType + ', ' + paymentInstrument.creditCardExpirationMonth + '/' + paymentInstrument.creditCardExpirationYear;
+                    + paymentInstrument.creditCardType;
             } else if (paymentInstrument.custom.UCToken !== null && paymentInstrument.paymentMethod === 'DW_GOOGLE_PAY') {
             } else {
                 paymentInstrument.paymentTransaction.custom.paymentDetails = paymentInstrument.creditCardNumber + ', ' + paymentInstrument.creditCardType;
@@ -373,14 +373,16 @@ function Authorize(orderNumber, paymentInstrument, paymentProcessor) {
                             paymentInstrument.paymentTransaction.setTransactionID(cybersourceResponseData.id);
                             paymentInstrument.paymentTransaction.setPaymentProcessor(paymentProcessor);
                             if (!empty(card.gPayToken)) {
-                                paymentInstrument.paymentTransaction.custom.paymentDetails = paymentInstrument.creditCardHolder + ', ' + paymentInstrument.maskedCreditCardNumber + ', '
-                                    + paymentInstrument.creditCardType + ', ' + paymentInstrument.creditCardExpirationMonth + '/' + paymentInstrument.creditCardExpirationYear;
+                                paymentInstrument.paymentTransaction.custom.paymentDetails = paymentInstrument.maskedCreditCardNumber + ', '
+                                    + paymentInstrument.creditCardType;
                             } else if (paymentInstrument.custom.UCToken !== null && paymentInstrument.paymentMethod === 'DW_GOOGLE_PAY') {
                             } else {
                                 paymentInstrument.paymentTransaction.custom.paymentDetails = paymentInstrument.creditCardNumber + ', ' + paymentInstrument.creditCardType;
                             }
 
-                            delete paymentInstrument.custom.UCToken;
+                            paymentInstrument.custom.UCToken = null;
+                            paymentInstrument.custom.GooglePayEncryptedData = null;
+                            paymentInstrument.custom.isGooglePaycardHolderAuthenticated = null;
                         });
                     }
                     errorData.message = cybersourceResponseData.errorInformation.message; // Store original for debugging

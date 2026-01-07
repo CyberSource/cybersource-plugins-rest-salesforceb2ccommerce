@@ -11,5 +11,3 @@ window.addEventListener('message', function(event) {
        document.payerAuthRedirect.submit();
     }
 }, false);
-setTimeout(function () {
-    document.payerAuthRedirect.submit();}, 10000);

@@ -3,11 +3,29 @@
     <type-extension type-id="SitePreferences">
         <custom-attribute-definitions>
             <attribute-definition attribute-id="Cybersource_PayerAuthEnabled">
-                <display-name xml:lang="x-default">Enable Payer Authentication</display-name>
-                <description xml:lang="x-default">Enable or Disable Payer Authentication service</description>
-                <type>boolean</type>
+                <display-name xml:lang="x-default">Payer Authentication Mode</display-name>
+                <description xml:lang="x-default">Select Payer Authentication mode.</description>
+                <type>enum-of-string</type>
+                <mandatory-flag>true</mandatory-flag>
                 <externally-managed-flag>false</externally-managed-flag>
-                <default-value>false</default-value>
+                <value-definitions>
+                    <value-definition>
+                        <display xml:lang="x-default">Yes</display>
+                        <value>YES</value>
+                    </value-definition>
+                    <value-definition default="true">
+                        <display xml:lang="x-default">No</display>
+                        <value>NO</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Data Only + Yes</display>
+                        <value>DATA_ONLY_YES</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Data Only + No</display>
+                        <value>DATA_ONLY_NO</value>
+                    </value-definition>
+                </value-definitions>
             </attribute-definition>
             <attribute-definition attribute-id="Cybersource_IsSCAEnabled">
                 <display-name xml:lang="x-default">Enable SCA</display-name>
