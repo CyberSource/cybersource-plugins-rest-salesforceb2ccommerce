@@ -25,10 +25,17 @@ function setPaymentProcessorDetails(result) {
         Transaction.wrap(function () {
             paymentInstrument.paymentTransaction.setTransactionID(result.id);
             paymentInstrument.paymentTransaction.setPaymentProcessor(paymentProcessor);
+            
+            // Set payment details if masked card number exists
             if (!empty(paymentInstrument.maskedCreditCardNumber) && paymentInstrument.maskedCreditCardNumber !== 'undefined') {
-                paymentInstrument.paymentTransaction.custom.paymentDetails = paymentInstrument.maskedCreditCardNumber
-                    + ', ' + paymentInstrument.creditCardType + ', ' + paymentInstrument.creditCardExpirationMonth + '/' + paymentInstrument.creditCardExpirationYear;
+                var paymentDetails = paymentInstrument.maskedCreditCardNumber + ', ' + paymentInstrument.creditCardType;
+                // Only append expiration if both month and year are present
+                if (!empty(paymentInstrument.creditCardExpirationMonth) && !empty(paymentInstrument.creditCardExpirationYear)) {
+                    paymentDetails += ', ' + paymentInstrument.creditCardExpirationMonth + '/' + paymentInstrument.creditCardExpirationYear;
+                }
+                paymentInstrument.paymentTransaction.custom.paymentDetails = paymentDetails;
             }
+            
         });
     } catch (e) {
         error = true; // eslint-disable-line no-unused-vars
@@ -244,13 +251,30 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
     orderInformation.lineItems = lineItems;
 
     var consumerAuthenticationInformation = new cybersourceRestApi.Ptsv2paymentsConsumerAuthenticationInformation();
+    var threeDSMode = get3DSMode();
+    var cardType = getCardType(order.paymentInstruments[0]);
+    
+    if ('YES' === threeDSMode.value) {
+        if (session.custom.Flag3ds === true || session.custom.scaTokenFlag === true) {
+            session.custom.Flag3ds = true;
+            consumerAuthenticationInformation.challengeCode = '04';
+        }
+    } else if ('DATA_ONLY_YES' === threeDSMode.value || 'DATA_ONLY_NO' === threeDSMode.value) {
+        if ('MASTERCARD' === cardType || 'MAESTRO' === cardType) {
+            consumerAuthenticationInformation.messageCategory = '80';
+        } else if ('VISA' === cardType) {
+            consumerAuthenticationInformation.challengeCode = '06';
+
+        } else {
+            if (session.custom.Flag3ds === true || session.custom.scaTokenFlag === true) {
+                session.custom.Flag3ds = true;
+                consumerAuthenticationInformation.challengeCode = '04';
+            }
+        }
+    }
     consumerAuthenticationInformation.referenceId = referenceId;
     consumerAuthenticationInformation.returnUrl = URLUtils.https('CheckoutServices-handlingConsumerAuthResponse').toString();
-
-    if (session.custom.Flag3ds === true || session.custom.scaTokenFlag === true) {
-        session.custom.Flag3ds = true;
-        consumerAuthenticationInformation.challengeCode = '04';
-    }
+    consumerAuthenticationInformation.deviceChannel = 'Browser';
 
     var paymentInformation = new cybersourceRestApi.Ptsv2paymentsPaymentInformation();
     var request = new cybersourceRestApi.CreatePaymentRequest();
@@ -479,10 +503,46 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
     return result;
 }
 
+/**
+ * Get the 3DS Mode configuration from Business Manager
+ * @returns {string} - Returns the configured 3DS mode: 'Yes', 'No', 'DataOnlyYes', or 'DataOnlyNo'
+ */
+function get3DSMode() {
+    var Site = require('dw/system/Site');
+    var currentSite = Site.getCurrent();
+    var threeDSMode = currentSite.getCustomPreferenceValue('Cybersource_PayerAuthEnabled');
+    return threeDSMode;
+}
+
+/**
+ * Get card type from payment instrument or billing details
+ * @param {Object} paymentInstrument - The payment instrument containing creditCardType
+ * @returns {string} - Returns the card type in uppercase without spaces (e.g., 'VISA', 'MASTERCARD', 'MAESTRO', 'AMEX', etc.)
+ */
+function getCardType(paymentInstrument) {
+    var cardType = '';
+    
+    try {
+        if (paymentInstrument.creditCardType !== null && typeof paymentInstrument.creditCardType !== 'undefined') {
+            // Remove spaces and convert to uppercase
+            cardType = paymentInstrument.creditCardType.replace(/\s+/g, '').toUpperCase();
+            return cardType;
+        }  
+    } catch (e) {
+        var Logger = require('dw/system/Logger');
+        Logger.error('Error getting card type: {0}', e.message);
+        cardType = '';
+    }
+    return cardType;
+}
+
+
 if (configObject.cartridgeEnabled) {
     module.exports = {
         paSetup: paSetup,
         paEnroll: paEnroll,
-        paConsumerAuthenticate: paConsumerAuthenticate
+        paConsumerAuthenticate: paConsumerAuthenticate,
+        get3DSMode: get3DSMode,
+        getCardType: getCardType
     };
 }

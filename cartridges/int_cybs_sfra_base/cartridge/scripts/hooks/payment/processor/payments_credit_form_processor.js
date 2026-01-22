@@ -79,6 +79,9 @@ function processForm(req, paymentForm, viewFormData) {
             case 'eftpos':
                 correctCardType = 'EFTPOS';
                 break;
+            case 'jaywan':
+                correctCardType = 'Jaywan';
+                break;
         }
         // eslint-disable-next-line no-param-reassign
         paymentForm.creditCardFields.cardType.value = correctCardType;

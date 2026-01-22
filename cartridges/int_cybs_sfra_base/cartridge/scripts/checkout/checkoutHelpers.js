@@ -14,6 +14,7 @@ var Order = require('dw/order/Order');
 var Status = require('dw/system/Status');
 var configObject = require('../../configuration/index');
 var DAV = require('../http/addressVerification');
+var CardHelper = require('../helpers/CardHelper');
 
 // Overrides
 /**
@@ -149,9 +150,7 @@ function placeOrder(order, fraudDetectionStatus) {
         if (paymentInstruments && paymentInstruments.length > 0) {
             for (var i = 0; i < paymentInstruments.length; i++) {
                 var paymentInstrument = paymentInstruments[i];
-                if (paymentInstrument && paymentInstrument.custom && paymentInstrument.custom.UCToken) {
-                    paymentInstrument.custom.UCToken = null;
-                }
+                CardHelper.cleanupPaymentInstrumentCustomAttributes(paymentInstrument);
             }
         }
     });

@@ -1,9 +1,17 @@
 <isset name="flexError" value="${pdict.flexTokenResult == null ? Resource.msg('flex.tokenerror','cybersource',null) : ''}" scope="page" />
 <div class="row">
     <div class="col-12">
+        <div class="form-validation-error" style="display: none; color: #c00; font-size: 0.875em; margin-bottom: 10px;"></div>
+    </div>
+</div>
+
+<isset name="customFlexCardNumberError" value="${Resource.msg('message.error.flex', 'error', null)}" scope="page" />
+
+<div class="row"> 
+    <div class="col-12">
         <div class="form-group cardNumber" data-cardNumber="${Resource.msg('cardnumber.placeholder','cybersource',null)}">
             <label class="form-control-label" for="cardNumber">${Resource.msg('field.credit.card.number','creditCard',null)}</label>
-            <div class="card-number-wrapper">
+            <div class="card-number-wrapper" data-custom-validation-error ="${customFlexCardNumberError}">
                 <div id="cardNumber-container" class="form-control"></div>
                 <div class="invalid-feedback"></div>
             </div>

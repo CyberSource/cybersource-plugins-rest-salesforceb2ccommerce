@@ -1,6 +1,6 @@
 {
   "name": "int_cybs_sfra",
-  "version": "25.4.0",
+  "version": "26.1.0",
   "description": "New overlay cartridge",
   "main": "index.js",
   "scripts": {
