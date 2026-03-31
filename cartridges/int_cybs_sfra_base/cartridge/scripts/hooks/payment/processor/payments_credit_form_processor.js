@@ -202,6 +202,8 @@ function processForm(req, paymentForm, viewFormData) {
 
 /**
  * Save the credit card information to login account if save card option is selected
+ * This function is kept empty as the saving of payment information logic has been moved to tokenHelper.
+ * The tokenization and saving of card details now happen during the authorization call.
  * @param {Object} req - The request object
  * @param {dw.order.Basket} basket - The current basket
  * @param {Object} billingData - payment information
@@ -209,104 +211,6 @@ function processForm(req, paymentForm, viewFormData) {
  */
 function savePaymentInformation(req, basket, billingData) {
 
-    var billingForm = server.forms.getForm('billing');
-    var payments = require('~/cartridge/scripts/http/payments');
-
-    // Check if UC token exists before attempting to decode
-    var saveCardUC = false;
-    var ucTokenValue = billingForm.creditCardFields.ucpaymenttoken.value;
-
-    if (ucTokenValue && ucTokenValue !== '' && ucTokenValue !== 'undefined') {
-        try {
-            var decodedToken = payments.jwtDecode(ucTokenValue);
-            if (decodedToken && decodedToken.metadata && decodedToken.metadata.consumerPreference) {
-                saveCardUC = decodedToken.metadata.consumerPreference.saveCard || false;
-            }
-        } catch (error) {
-            // Log error but don't break the flow for saved card payments
-            var Logger = require('dw/system/Logger').getLogger('cybersource', 'payments');
-            var errorMessage = (error instanceof Error) ? error.message : 'Unknown error decoding UC token';
-            Logger.error('Error decoding UC token in savePaymentInformation: {0}', errorMessage);
-            saveCardUC = false;
-        }
-    }
-
-    // Handle both Flex and UC save card scenarios
-    var shouldSaveCard = false;
-
-    if (billingData.saveCard && !configObject.unifiedCheckoutEnabled) {
-        shouldSaveCard = true;
-    }
-    // Check for UC save card
-    if (configObject.unifiedCheckoutEnabled && configObject.tokenizationEnabled && saveCardUC) {
-        billingData.saveCard = true;
-        shouldSaveCard = true;
-    }
-
-    if (!billingData.storedPaymentUUID
-        && req.currentCustomer.raw.authenticated
-        && req.currentCustomer.raw.registered
-        && shouldSaveCard
-        && (billingData.paymentMethod.value === 'CREDIT_CARD')
-    ) {
-        var TRLHelper = require('~/cartridge/scripts/helpers/tokenRateLimiterHelper.js');
-        var CustomerMgr = require('dw/customer/CustomerMgr');
-
-        var customer = CustomerMgr.getCustomerByCustomerNumber(
-            req.currentCustomer.profile.customerNo
-        );
-
-        var isallowed = TRLHelper.IsCustumerAllowedSinglePaymentInstrumentInsertion(customer);
-        if (isallowed.result) {
-            // Check for duplicate  instrument
-            var wallet = customer.profile.wallet;
-            var paymentInstruments = wallet.getPaymentInstruments().toArray();
-            // eslint-disable-next-line no-undef
-
-            var mapper = require('~/cartridge/scripts/util/mapper.js');
-            var token = mapper.deserializeTokenInformation(session.privacy.tokenInformation);
-            var serializedToken = mapper.serializeTokenInformation(token);
-            var duplicateExists;
-            if (saveCardUC) {
-                duplicateExists =
-                    TRLHelper.checkDuplicateInstrumentIdentifier(
-                        //@ts-ignore
-                        paymentInstruments,
-                        session.privacy.tokenInformation,
-                        customer,
-                        saveCardUC
-                    );
-            } else {
-                duplicateExists =
-                    TRLHelper.checkDuplicateInstrumentIdentifier(
-                        //@ts-ignore
-                        paymentInstruments,
-                        session.privacy.tokenInformation,
-                        customer,
-                        saveCardUC
-                    );
-            }
-            //var duplicateExists = TRLHelper.checkDuplicateInstrumentIdentifier(paymentInstruments, session.privacy.tokenInformation, customer);
-            if (!duplicateExists) {
-                // eslint-disable-next-line no-shadow
-                var BaseCreditFormProcessor = require('app_storefront_base/cartridge/scripts/hooks/payment/processor/basic_credit_form_processor.js');
-                var resultSave = BaseCreditFormProcessor.savePaymentInformation(req, basket, billingData);
-            }
-            var limiterResult = TRLHelper.IsCustumerAllowedSinglePaymentInstrumentInsertion(customer);
-            if (limiterResult.result) {
-                if (limiterResult.resetTimer) {
-                    TRLHelper.resetTimer(customer);
-                }
-
-                if (limiterResult.increaseCounter) {
-                    TRLHelper.increaseCounter(customer);
-                }
-            }
-
-            // eslint-disable-next-line block-scoped-var
-            return resultSave;
-        }
-    }
     return null;
 }
 

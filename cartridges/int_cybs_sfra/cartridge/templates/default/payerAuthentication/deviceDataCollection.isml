@@ -10,7 +10,10 @@
 
 	 <form class="payerAuthRedirect" action="${pdict.action}" method="POST" name="payerAuthRedirect"
             target="_parent">
-			<input type="hidden" name="MD" value="${pdict.orderNo}" />
+			<input type="hidden" name="orderID" value="${pdict.orderNo}" />
+			<input type="hidden" name="referenceId" value="${pdict.referenceId}" />
+			<input type="hidden" name="isScaFlow" value="${pdict.isScaFlow}"/>
+			<input type="hidden" name="browserfields" id="browserfields" value= ""/>
         </form>  
 
 	<script src="${URLUtils.staticURL('/js/deviceDataCollection.js')}" type="text/javascript"></script>

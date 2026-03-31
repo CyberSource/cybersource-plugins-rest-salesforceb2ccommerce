@@ -1,33 +1,35 @@
+<!--- TEMPLATENAME: postToStepUpUrl.isml --->
 <iscomment>
-	<isdecorate template="common/layout/checkout">
+	This template renders the payer authentication step-up page with modal
 </iscomment>
+
+<iscomment> <isdecorate template="common/layout/checkout"> </iscomment>
 <iscontent type="text/html" charset="UTF-8" compact="true">
-	<iscomment> <style>
-		.iframe-stepUp {
-			display: flex;
-			justify-content: center;
-		}
-	</style> </iscomment>
+<link rel="stylesheet" href="${URLUtils.staticURL('/css/payerAuth.css')}" />
+<script src="${URLUtils.staticURL('/custom/lib/jquery/jquery-3.7.1.min.js')}" type="text/javascript"></script>
+<script src="${URLUtils.staticURL('/js/payerAuthStepUp.js')}"></script>
 
-	<iscomment> target="myStepUpFrame" </iscomment>
-	 <form id="stepUpForm" name="stepup" target="myStepUpFrame" method="POST" action="${pdict.stepUpUrl}">
-		<input type="hidden" name="JWT" value="${pdict.jwtToken}" />
-	</form> 
-	<iscomment>
-		<div class="iframe-stepUp">
-			<iframe name="myStepUpFrame" height="600" width="400"></iframe>
+<div id="cyb_payerauth_stepup" class="payerauth-stepup">
+	<input type="hidden" id="stepUpUrl" value="${pdict.stepUpUrl}" />
+	<input type="hidden" id="JWT" value="${pdict.jwtToken}" />
+	<input type="hidden" id="orderNo" value="${pdict.orderNo}" />
+</div>
+
+<iscomment>Modal for Step-Up Authentication</iscomment>
+<div id="stepup-modal-overlay" class="stepup-modal-overlay">
+	<div class="stepup-modal-content">
+		<h3 class="stepup-modal-title">${Resource.msg('payment.authentication.title', 'cybersource', 'Payment Authentication')}</h3>
+		<div class="stepup-iframe-container">
+			<iframe id="step-up-iframe" name="step-up-iframe" class="stepup-iframe"></iframe>
+			<form id="step-up-form" target="step-up-iframe" method="post" action="${pdict.stepUpUrl}" class="hidden">
+				<input type="hidden" name="JWT" value="${pdict.jwtToken}" />
+				<input type="hidden" name="MD" value="${pdict.orderNo}" />
+				<isif condition="${pdict.isScaFlow}">
+					<input type="hidden" name="MD" value="SCA" />
+				</isif>
+			</form>
 		</div>
-	</iscomment>
-
-	<iframe width="100%" height="100%" scrolling="auto" name="myStepUpFrame"> </iframe>
-
-	<script>window.onload = function() {
-	  // Auto submit form on page load
-      	 document.getElementById('stepUpForm').submit();
-     	}
-    	 </script>
-
+	</div>
+</div>
 </iscontent>
-<iscomment>
-	</isdecorate>
-</iscomment>
+<iscomment> </isdecorate> </iscomment>

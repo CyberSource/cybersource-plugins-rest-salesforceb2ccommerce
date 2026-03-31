@@ -9,6 +9,10 @@
             "script": "./cartridge/scripts/hooks/payment/processor/applePay"
         },
         {
+            "name": "dw.extensions.applepay.paymentAuthorized.failOrder",
+            "script": "./cartridge/scripts/hooks/payment/processor/applePay"
+        },
+        {
             "name": "dw.extensions.applepay.cancel",
             "script": "./cartridge/scripts/hooks/payment/processor/applePay"
         },
@@ -29,25 +33,25 @@
             "script": "../app_storefront_base/cartridge/scripts/hooks/payment/processor/basic_credit"
         },
         {
-			"name": "app.payment.processor.payments_credit",
-			"script": "./cartridge/scripts/hooks/payment/processor/payments_credit"
-		},
+            "name": "app.payment.processor.payments_credit",
+            "script": "./cartridge/scripts/hooks/payment/processor/payments_credit"
+        },
         {
             "name": "app.payment.form.processor.payments_credit",
             "script": "./cartridge/scripts/hooks/payment/processor/payments_credit_form_processor"
         },
         {
-			"name": "app.payment.processor.bank_transfer",
-			"script": "./cartridge/scripts/hooks/payment/processor/bank_transfer"
-		},
+            "name": "app.payment.processor.bank_transfer",
+            "script": "./cartridge/scripts/hooks/payment/processor/bank_transfer"
+        },
         {
             "name": "app.payment.form.processor.bank_transfer",
             "script": "./cartridge/scripts/hooks/payment/processor/bank_transfer_form_processor"
         },
         {
-			"name": "app.payment.processor.payments_click_to_pay",
-			"script": "./cartridge/scripts/hooks/payment/processor/clickToPay"
-		},
+            "name": "app.payment.processor.payments_click_to_pay",
+            "script": "./cartridge/scripts/hooks/payment/processor/clickToPay"
+        },
         {
             "name": "app.payment.form.processor.payments_click_to_pay",
             "script": "./cartridge/scripts/hooks/payment/processor/clickToPay_form_processor"
@@ -59,11 +63,11 @@
         {
             "name": "dw.order.calculateTax",
             "script": "./cartridge/scripts/hooks/cart/calculateAdjustments.js"
-        },        
+        },
         {
-			"name": "app.payment.processor.payments_applepay",
-			"script": "./cartridge/scripts/hooks/payment/processor/apple_pay_uc"
-		},
+            "name": "app.payment.processor.payments_applepay",
+            "script": "./cartridge/scripts/hooks/payment/processor/apple_pay_uc"
+        },
         {
             "name": "app.payment.form.processor.payments_applepay",
             "script": "./cartridge/scripts/hooks/payment/processor/apple_pay_uc_form_processor"

@@ -9,7 +9,8 @@ function getNonGCPaymemtInstument(lineItemCtnr) {
     var paymentInstruments = lineItemCtnr.getPaymentInstruments();
     if (paymentInstruments.size() > 0) {
         // eslint-disable-next-line no-restricted-syntax
-        for (var paymentInstrument in paymentInstruments) {
+        for (var i = 0; i < paymentInstruments.length; i += 1) {
+            var paymentInstrument = paymentInstruments[i];            
             // For GC we need to create an array of objects to be passed to PayeezyFacade-PaymentAuthorize.
             if (!'GIFT_CERTIFICATE'.equalsIgnoreCase(paymentInstrument.paymentMethod)) { // eslint-disable-line no-mixed-spaces-and-tabs
                 return paymentInstrument; // eslint-disable-line no-mixed-spaces-and-tabs

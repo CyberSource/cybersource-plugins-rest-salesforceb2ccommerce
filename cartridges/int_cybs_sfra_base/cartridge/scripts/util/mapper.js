@@ -29,9 +29,7 @@ function mapAddress(basketAddress) {
  * @returns {*} *
  */
 function MapOrderLineItems(lineItems, overrideTax) {
-    var StringUtils = require('dw/util/StringUtils');
     var mappedProductLineItems = [];
-    var locale = request.locale.equals('default') ? 'en-us' : request.locale.replace('_', '-').toLowerCase();
     for (var i = 0; i < lineItems.length; i++) {
         var lineItem = lineItems[i];
 
@@ -40,77 +38,67 @@ function MapOrderLineItems(lineItems, overrideTax) {
             itemObject = {
                 productName: lineItem.productName,
                 quantity: lineItem.quantityValue.toString(),
-                unitPrice: StringUtils.formatNumber(lineItem.basePrice.value, '000000.00', locale),
-                totalAmount: lineItem.adjustedGrossPrice.value,
-                amount: overrideTax ? lineItem.priceValue : null,
-                taxAmount: overrideTax ? StringUtils.formatNumber(lineItem.adjustedTax.value > 0 ? lineItem.adjustedTax.value : 0, '000000.00', locale) : null,
-                taxRate: overrideTax ? lineItem.taxRate : null,
+                unitPrice: lineItem.basePrice.value.toString(),
+                totalAmount: lineItem.adjustedGrossPrice.value.toString(),
+                taxAmount: overrideTax ? (lineItem.adjustedTax.value > 0 ? lineItem.adjustedTax.value : 0).toString() : null,
                 productCode: 'default',
                 productSKU: lineItem.productID,
                 UUID: lineItem.UUID
             };
 
             if (lineItem.lineItemCtnr.priceAdjustments.length > 0 || lineItem.proratedPriceAdjustmentPrices.length > 0) {
-                itemObject.unitPrice = StringUtils.formatNumber(lineItem.proratedPrice.value / lineItem.quantityValue, '000000.00', locale);
-                itemObject.totalAmount = StringUtils.formatNumber(lineItem.proratedPrice.value, '000000.00', locale);
-                itemObject.amount = lineItem.proratedPrice.value;
+                itemObject.unitPrice = (lineItem.proratedPrice.value / lineItem.quantityValue).toString();
+                itemObject.totalAmount = lineItem.proratedPrice.value.toString();
+                var discountTotal = 0;
+                var proratedAdjustments = lineItem.proratedPriceAdjustmentPrices;
+                var adjustmentEntries = proratedAdjustments.entrySet().iterator();
+                while (adjustmentEntries.hasNext()) {
+                    var entry = adjustmentEntries.next();
+                    discountTotal += Math.abs(entry.getValue().value);
+                }
+                itemObject.discountAmount = discountTotal.toString();
             }
             if (!overrideTax && lineItem.taxClassID === 'exempt') {
-                itemObject.taxAmount = 0;
-                itemObject.taxRate = 0;
+                itemObject.taxAmount = '0';
             }
         } else if (lineItem instanceof dw.order.GiftCertificateLineItem) {
             itemObject = {
                 productName: 'GIFT_CERTIFICATE',
                 quantity: '1',
-                unitPrice: StringUtils.formatNumber(lineItem.adjustedPrice.value, '000000.00', locale),
-                totalAmount: lineItem.adjustedGrossPrice.value,
-                amount: lineItem.priceValue,
-                taxAmount: overrideTax ? StringUtils.formatNumber(0, '000000.00', locale) : null,
-                taxRate: overrideTax ? lineItem.taxRate : null,
+                unitPrice: lineItem.adjustedPrice.value.toString(),
+                totalAmount: lineItem.adjustedGrossPrice.value.toString(),
+                taxAmount: overrideTax ? '0' : null,
                 productCode: 'GIFT_CERTIFICATE',
                 productSKU: 'GIFT_CERTIFICATE',
                 UUID: lineItem.UUID
             };
         } else if (lineItem instanceof dw.order.ShippingLineItem) {
+            if (lineItem.adjustedPrice.value === 0) {
+                // eslint-disable-next-line no-continue
+                continue;
+            }
             itemObject = {
                 productName: lineItem.ID,
                 quantity: '1',
-                unitPrice: overrideTax ? StringUtils.formatNumber(lineItem.adjustedPrice.value, '000000.00', locale) : lineItem.basePrice.value,
-                totalAmount: lineItem.adjustedGrossPrice.value,
-                amount: overrideTax ? lineItem.priceValue : null,
+                unitPrice: overrideTax ? lineItem.adjustedPrice.value.toString() : lineItem.basePrice.value.toString(),
+                totalAmount: lineItem.adjustedGrossPrice.value.toString(),
                 taxRate: overrideTax ? lineItem.taxRate : null,
                 productCode: lineItem.ID,
                 productSKU: lineItem.ID,
                 UUID: lineItem.UUID
             };
             if (lineItem.adjustedTax.available && lineItem.adjustedTax.value > 0 && overrideTax) {
-                itemObject.taxAmount = StringUtils.formatNumber(lineItem.adjustedTax.value, '000000.00', locale);
+                itemObject.taxAmount = lineItem.adjustedTax.value.toString();
             }
         } else if (lineItem instanceof dw.order.ProductShippingLineItem) {
             itemObject = {
                 productName: 'SHIPPING_SURCHARGE',
                 quantity: '1',
-                unitPrice: StringUtils.formatNumber(lineItem.adjustedPrice.value, '000000.00', locale),
-                totalAmount: lineItem.adjustedGrossPrice.value,
-                amount: overrideTax ? lineItem.priceValue : null,
-                taxRate: overrideTax ? lineItem.taxRate : null,
-                taxAmount: overrideTax ? StringUtils.formatNumber(lineItem.adjustedTax.value, '000000.00', locale) : null,
+                unitPrice: lineItem.adjustedPrice.value.toString(),
+                totalAmount: lineItem.adjustedGrossPrice.value.toString(),
+                taxAmount: overrideTax ? lineItem.adjustedTax.value.toString() : null,
                 productCode: 'SHIPPING_SURCHARGE',
                 productSKU: 'SHIPPING_SURCHARGE',
-                UUID: lineItem.UUID
-            };
-        } else if (lineItem instanceof dw.order.PriceAdjustment) {
-            itemObject = {
-                productName: 'PRICE_ADJUSTMENT',
-                quantity: '1',
-                unitPrice: StringUtils.formatNumber(lineItem.basePrice.value < 0 ? 0 : lineItem.basePrice.value, '000000.00', locale),
-                totalAmount: lineItem.basePrice.value < 0 ? 0 : lineItem.basePrice.value,
-                amount: lineItem.priceValue < 0 ? 0 : lineItem.priceValue,
-                taxAmount: StringUtils.formatNumber(lineItem.tax.value > 0 ? lineItem.tax.value : 0, '000000.00', locale),
-                taxRate: lineItem.taxRate,
-                productCode: 'PRICE_ADJUSTMENT',
-                productSKU: 'PRICE_ADJUSTMENT',
                 UUID: lineItem.UUID
             };
         } else {

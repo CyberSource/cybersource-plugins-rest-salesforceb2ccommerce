@@ -1,6 +1,6 @@
 'use strict';
 
-const { encryptAndTag } = require('~/cartridge/scripts/mleEncrypt/aesgcmCustom.js');
+const { encryptAndTag } = require('~/cartridge/scripts/mle/aesgcmCustom.js');
 
 var Cipher = require('dw/crypto/Cipher');
 var WeakCipher = require('dw/crypto/WeakCipher');

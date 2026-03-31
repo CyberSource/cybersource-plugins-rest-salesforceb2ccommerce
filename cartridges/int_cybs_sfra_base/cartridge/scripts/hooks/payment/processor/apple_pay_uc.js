@@ -108,7 +108,6 @@ function Authorize(orderNumber, paymentInstrument, paymentProcessor) {
         Transaction.wrap(function () {
             /* eslint-disable no-undef */
             /* eslint-disable no-param-reassign */
-            session.privacy.orderId = orderNumber;
             session.privacy.orderStatus = result.status;
             paymentInstrument.paymentTransaction.setTransactionID(result.id);
             paymentInstrument.paymentTransaction.setPaymentProcessor(paymentProcessor);

@@ -12,6 +12,48 @@ var server = require('server');
 var collections = require('*/cartridge/scripts/util/collections');
 var payments = require('../../../http/payments');
 var mapper = require('~/cartridge/scripts/util/mapper.js');
+var payerAuthentication = require('~/cartridge/scripts/http/payerAuthentication');
+var configObject = require('~/cartridge/configuration/index.js');
+
+/**
+ * Check if Payer Authentication should be applied
+ * @param {dw.order.PaymentInstrument} paymentInstrument - The payment instrument
+ * @returns {boolean} - Returns true if Payer Authentication conditions are met
+ */
+function shouldApplyPayerAuthentication(paymentInstrument) {
+    var isVisaCTP = false;
+    var isApplePayUC = false;
+    var isEcheck = false;
+    var performPayerAuth = true;
+    var isGPay_PayerAuthEnabled = false;
+
+    if (empty(paymentInstrument)) {
+        return false;
+    }
+
+    var paymentMethod = paymentInstrument.paymentMethod;
+
+    if (!empty(paymentMethod)) {
+        isVisaCTP = paymentMethod.equals('CLICK_TO_PAY');
+    }
+    if (!empty(paymentMethod)) {
+        isApplePayUC = paymentMethod.equals('DW_APPLE_PAY');
+    }
+    if (!empty(paymentMethod)) {
+        isEcheck = paymentMethod.equals('BANK_TRANSFER');
+    }
+    // Get 3DS mode and card scheme
+    var threeDSMode = payerAuthentication.get3DSMode();
+    var cardType = payerAuthentication.getCardType(paymentInstrument);
+    // Check if 3DS should be skipped based on mode and card scheme
+    if ('NO' === threeDSMode.value || ('DATA_ONLY_NO' === threeDSMode.value && !('VISA' === cardType || 'MASTERCARD' === cardType || 'MAESTRO' === cardType))) {
+        performPayerAuth = false;
+    }
+    if (!empty(paymentInstrument.custom.GooglePayEncryptedData) && paymentInstrument.custom.isGooglePaycardHolderAuthenticated == false && performPayerAuth) {
+        isGPay_PayerAuthEnabled = true;
+    }
+    return ((performPayerAuth && empty(paymentInstrument.custom.GooglePayEncryptedData)) || isGPay_PayerAuthEnabled) && configObject.cartridgeEnabled && !isVisaCTP && !isEcheck && !isApplePayUC;
+}
 
 /**
  * Creates a token.
@@ -180,94 +222,9 @@ function Handle(basket, paymentInformation) {
 
             if (basket.customer.registered && configObject.tokenizationEnabled && paymentForm.creditCardFields.saveCard.checked) {
                 var token;
-                var tokenManagement = require('~/cartridge/scripts/http/tokenManagement.js');
-                var billingForm = server.forms.getForm('billing');
-                //var token1 = billingForm.creditCardFields.ucpaymenttoken.value;
-                if (require('*/cartridge/configuration/index').unifiedCheckoutEnabled && paymentForm.creditCardFields.ucpaymenttoken.value) {
-                    // UC Microform token processing
-                    logger.info('Processing UC payment token for basket: {0}', basket.UUID);
 
-                    if (paymentInformation.creditCardToken != null) {
-                        token = paymentInformation.creditCardToken;
-                    } else {
-                        var ucResponse = tokenManagement.httpUCCreateToken(
-                            paymentForm.creditCardFields.ucpaymenttoken.value,
-                            email,
-                            basket.billingAddress,
-                            basket.UUID
-                        );
-
-                        if (ucResponse.success) {
-                            // Store session information for UC tokens
-                            if (ucResponse.result.customer && ucResponse.result.customer.id) {
-                                // eslint-disable-next-line no-undef
-                                session.privacy.tokenInformation = [
-                                    ucResponse.result.instrumentIdentifier.id,
-                                    ucResponse.result.paymentInstrument.id,
-                                    'false',
-                                    ucResponse.result.customer.id,
-                                    'UC'
-                                ].join('-');
-                            } else {
-                                // eslint-disable-next-line no-undef
-                                session.privacy.tokenInformation = [
-                                    ucResponse.result.instrumentIdentifier.id,
-                                    ucResponse.result.paymentInstrument.id,
-                                    'false',
-                                    'UC'
-                                ].join('-');
-                            }
-
-                            token = mapper.serializeTokenInformation(ucResponse.result);
-                            logger.info('UC token created and serialized for basket: {0}', basket.UUID);
-                        } else {
-                            logger.error('UC token creation failed: {0}', ucResponse.error);
-                            throw new Error('UC tokenization failed: ' + ucResponse.error);
-                        }
-                    }
-
-                    paymentInstrument.setCreditCardToken(token);
-                } else if (!configObject.flexMicroformEnabled) {
-                    // Traditional tokenization
-                    token = paymentInformation.creditCardToken
-                        ? paymentInformation.creditCardToken
-                        : createToken(
-                            cardNumber,
-                            expirationMonth,
-                            expirationYear,
-                            cardSecurityCode,
-                            email,
-                            basket.billingAddress,
-                            basket.UUID,
-                            true,
-                            false
-                        );
-                    paymentInstrument.setCreditCardToken(token);
-                } else {
-                    // Flex Microform token processing
-
-                    if (paymentInformation.creditCardToken != null) {
-                        token = paymentInformation.creditCardToken;
-                    } else {
-                        var flexInfo = tokenManagement.httpFlexCreateToken(paymentForm.creditCardFields.flexresponse.value, email, basket.billingAddress, basket.UUID);
-                        if (flexInfo.customer != null && flexInfo.customer.id != null) {
-                            // eslint-disable-next-line no-undef
-                            session.privacy.tokenInformation = [
-                                flexInfo.instrumentIdentifier.id,
-                                flexInfo.paymentInstrument.id,
-                                false,
-                                flexInfo.customer.id
-                            ].join('-');
-                        } else {
-                            // eslint-disable-next-line no-undef
-                            session.privacy.tokenInformation = [
-                                flexInfo.instrumentIdentifier.id,
-                                flexInfo.paymentInstrument.id,
-                                false
-                            ].join('-');
-                        }
-                        token = mapper.serializeTokenInformation(flexInfo);
-                    }
+                if (paymentInformation.creditCardToken != null) {
+                    token = paymentInformation.creditCardToken;
                     paymentInstrument.setCreditCardToken(
                         token
                     );
@@ -326,17 +283,41 @@ function Authorize(orderNumber, paymentInstrument, paymentProcessor) {
         gPayToken: paymentInstrument.custom.GooglePayEncryptedData,
 
     };
+
+    // Check if payer authentication is required before proceeding with authorization. If required, return early to trigger payer authentication setup, enroll and validation.
+    if (shouldApplyPayerAuthentication(paymentInstrument)) {
+        Transaction.wrap(function () {
+            paymentInstrument.paymentTransaction.setPaymentProcessor(paymentProcessor);
+        });
+
+        return {
+            fieldErrors: fieldErrors,
+            serverErrors: serverErrors,
+            error: false,
+            performPayerAuthSetup: true
+        };
+    }
+
     // eslint-disable-next-line no-undef
     var customerEmail = order.customerEmail;
     var currencyCode = order.currencyCode.toUpperCase();
+    var savePayment = paymentInstrument.paymentMethod.equals('CREDIT_CARD') && paymentForm.creditCardFields.saveCard.checked && empty(paymentInstrument.creditCardToken);
     try {
         // process authorization
         var lineItems = mapper.MapOrderLineItems(order.allLineItems, true);
-        var result = payments.httpAuthorizeWithToken(card, customerEmail, orderNumber, total.value, currencyCode, billingAddress, shippingAddress, lineItems);
+        var result = payments.httpAuthorizeWithToken(card, customerEmail, orderNumber, total.value, currencyCode, billingAddress, shippingAddress, lineItems, savePayment);
+
+        if (paymentForm && paymentForm.creditCardFields && paymentForm.creditCardFields.saveCard && paymentForm.creditCardFields.saveCard.checked && (empty(card.token)) && (paymentInstrument.paymentMethod === 'CREDIT_CARD')) {
+            if (result.tokenInformation) {
+                var tokenHelper = require('~/cartridge/scripts/helpers/tokenHelper.js');
+                tokenHelper.TokenizeCard(result);
+            }
+            else {
+                Logger.error('Tokenization failed during Authorization. Order ID: {0}', order.orderNo);
+            }
+        }
 
         Transaction.wrap(function () {
-            // eslint-disable-next-line no-undef
-            session.privacy.orderId = orderNumber;
             // eslint-disable-next-line no-undef
             session.privacy.orderStatus = result.status;
             paymentInstrument.paymentTransaction.setTransactionID(result.id);
@@ -367,7 +348,6 @@ function Authorize(orderNumber, paymentInstrument, paymentProcessor) {
                     if (cybersourceResponseData && cybersourceResponseData.id) {
                         Transaction.wrap(function () {
                             // Set transaction ID and processor even for declined payments
-                            session.privacy.orderId = orderNumber;
                             // eslint-disable-next-line no-undef
                             session.privacy.orderStatus = cybersourceResponseData.status;
                             paymentInstrument.paymentTransaction.setTransactionID(cybersourceResponseData.id);
@@ -406,7 +386,6 @@ function Authorize(orderNumber, paymentInstrument, paymentProcessor) {
 }
 
 var overrides = {};
-var configObject = require('~/cartridge/configuration/index.js');
 
 if (configObject.cartridgeEnabled) {
     overrides.createToken = createToken;

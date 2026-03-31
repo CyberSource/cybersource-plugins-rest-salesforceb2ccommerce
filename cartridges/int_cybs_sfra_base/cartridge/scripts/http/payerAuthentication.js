@@ -4,20 +4,16 @@ var configObject = require('../../configuration/index');
 var URLUtils = require('dw/web/URLUtils');
 var cybersourceRestApi = require('../../apiClient/index');
 var mapper = require('~/cartridge/scripts/util/mapper.js');
+var Logger = require('dw/system/Logger');
 
 /**
  * *
  * @param {*} result *
  */
-function setPaymentProcessorDetails(result) {
+function setPaymentProcessorDetails(result, paymentInstrument) {
     var OrderMgr = require('dw/order/OrderMgr');
     var PaymentManager = require('dw/order/PaymentMgr');
     var Transaction = require('dw/system/Transaction');
-    // eslint-disable-next-line no-undef
-    var orderNo = session.privacy.orderID;
-    var order = OrderMgr.getOrder(orderNo);
-    var paymentInstruments = order.paymentInstruments;
-    var paymentInstrument = paymentInstruments[0];
     var error;
     var paymentProcessor = PaymentManager.getPaymentMethod(paymentInstrument.paymentMethod).getPaymentProcessor();
 
@@ -25,7 +21,7 @@ function setPaymentProcessorDetails(result) {
         Transaction.wrap(function () {
             paymentInstrument.paymentTransaction.setTransactionID(result.id);
             paymentInstrument.paymentTransaction.setPaymentProcessor(paymentProcessor);
-            
+
             // Set payment details if masked card number exists
             if (!empty(paymentInstrument.maskedCreditCardNumber) && paymentInstrument.maskedCreditCardNumber !== 'undefined') {
                 var paymentDetails = paymentInstrument.maskedCreditCardNumber + ', ' + paymentInstrument.creditCardType;
@@ -35,7 +31,7 @@ function setPaymentProcessorDetails(result) {
                 }
                 paymentInstrument.paymentTransaction.custom.paymentDetails = paymentDetails;
             }
-            
+
         });
     } catch (e) {
         error = true; // eslint-disable-line no-unused-vars
@@ -51,7 +47,7 @@ function setPaymentProcessorDetails(result) {
  * @param {*} cardData *
  * @returns {*} *
  */
-function paSetup(billingDetails, referenceInformationCode, cardData, order) {
+function paSetup(billingDetails, referenceInformationCode, cardData, order, paymentInstrument) {
     var instance = new cybersourceRestApi.PayerAuthenticationApi(configObject);
 
     var clientReferenceInformation = new cybersourceRestApi.Ptsv2paymentsClientReferenceInformation();
@@ -160,7 +156,7 @@ function paSetup(billingDetails, referenceInformationCode, cardData, order) {
             throw new Error(data);
         }
     });
-    setPaymentProcessorDetails(result);
+    setPaymentProcessorDetails(result, paymentInstrument);
     return result;
 }
 
@@ -176,7 +172,9 @@ function paSetup(billingDetails, referenceInformationCode, cardData, order) {
  * @param {*} lineItems *
  * @returns {*} *
  */
-function paEnroll(billingDetails, shippingAddress, referenceInformationCode, total, currency, referenceId, cardData, lineItems, order) {
+function paEnroll(billingDetails, shippingAddress, referenceInformationCode, total, currency, referenceId, cardData, lineItems, order, isScaFlow, payerauthArgs, paymentInstrument) {
+    var tokenHelper = require('~/cartridge/scripts/helpers/tokenHelper.js');
+
     var instance = new cybersourceRestApi.PaymentsApi(configObject);
 
     var clientReferenceInformation = new cybersourceRestApi.Ptsv2paymentsClientReferenceInformation();
@@ -194,12 +192,12 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
         }
     }
     else {
-        if (order.paymentInstruments[0].paymentMethod === 'DW_GOOGLE_PAY') {
+        if (paymentInstrument.paymentMethod === 'DW_GOOGLE_PAY') {
             if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_GooglePayTransactionType').value === 'sale') {
                 processingInformation.capture = true;
             }
         }
-        if (order.paymentInstruments[0].paymentMethod === 'CREDIT_CARD') {
+        if (paymentInstrument.paymentMethod === 'CREDIT_CARD') {
             if (configObject.cardTransactionType.value === 'sale') {
                 processingInformation.capture = true;
             }
@@ -209,7 +207,29 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
     if (!configObject.fmeDmEnabled) {
         processingInformation.actionList.push('DECISION_SKIP');
     }
-
+    var scaTokenFlag = false;
+    var server = require('server');
+    var paymentForm = server.forms.getForm('billing');
+    if (paymentForm && paymentForm.creditCardFields && paymentForm.creditCardFields.saveCard && paymentForm.creditCardFields.saveCard.checked && (empty(cardData.token)) && (paymentInstrument.paymentMethod === 'CREDIT_CARD')) {
+        processingInformation.actionList.push('TOKEN_CREATE');
+        if (configObject.isSCAEnabled) {
+            scaTokenFlag = true;
+        }
+        //@ts-ignore
+        if (session.getCustomer().getProfile().custom.customerID != null) {
+            processingInformation.actionTokenTypes = [
+                'paymentInstrument',
+                'instrumentIdentifier'
+            ];
+        } else {
+            processingInformation.actionTokenTypes = [
+                'customer',
+                'shippingAddress',
+                'paymentInstrument',
+                'instrumentIdentifier'
+            ];
+        }
+    }
     var amountDetails = new cybersourceRestApi.Ptsv2paymentsOrderInformationAmountDetails();
     if (typeof total !== 'undefined') {
         amountDetails.totalAmount = total.toString();
@@ -252,29 +272,23 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
 
     var consumerAuthenticationInformation = new cybersourceRestApi.Ptsv2paymentsConsumerAuthenticationInformation();
     var threeDSMode = get3DSMode();
-    var cardType = getCardType(order.paymentInstruments[0]);
-    
-    if ('YES' === threeDSMode.value) {
-        if (session.custom.Flag3ds === true || session.custom.scaTokenFlag === true) {
-            session.custom.Flag3ds = true;
-            consumerAuthenticationInformation.challengeCode = '04';
-        }
-    } else if ('DATA_ONLY_YES' === threeDSMode.value || 'DATA_ONLY_NO' === threeDSMode.value) {
-        if ('MASTERCARD' === cardType || 'MAESTRO' === cardType) {
-            consumerAuthenticationInformation.messageCategory = '80';
-        } else if ('VISA' === cardType) {
-            consumerAuthenticationInformation.challengeCode = '06';
+    var cardType = getCardType(paymentInstrument);
 
-        } else {
-            if (session.custom.Flag3ds === true || session.custom.scaTokenFlag === true) {
-                session.custom.Flag3ds = true;
-                consumerAuthenticationInformation.challengeCode = '04';
-            }
-        }
+    if (isScaFlow === true || scaTokenFlag === true) {
+        consumerAuthenticationInformation.challengeCode = '04';
     }
+
+    if (('DATA_ONLY_YES' === threeDSMode.value || 'DATA_ONLY_NO' === threeDSMode.value) && ('VISA' === cardType || 'MASTERCARD' === cardType || 'MAESTRO' === cardType)) {
+        consumerAuthenticationInformation.challengeCode = '06';
+    }
+
     consumerAuthenticationInformation.referenceId = referenceId;
-    consumerAuthenticationInformation.returnUrl = URLUtils.https('CheckoutServices-handlingConsumerAuthResponse').toString();
-    consumerAuthenticationInformation.deviceChannel = 'Browser';
+    consumerAuthenticationInformation.returnUrl = URLUtils.https('PayerAuthentication-PayerAuthValidation').toString();
+
+    // Set deviceChannel from browser fields if available, otherwise default to 'Browser'
+    if (payerauthArgs && payerauthArgs.parsedBrowserfields && payerauthArgs.parsedBrowserfields.deviceChannel) {
+        consumerAuthenticationInformation.deviceChannel = payerauthArgs.parsedBrowserfields.deviceChannel;
+    }
 
     var paymentInformation = new cybersourceRestApi.Ptsv2paymentsPaymentInformation();
     var request = new cybersourceRestApi.CreatePaymentRequest();
@@ -298,12 +312,27 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
         session.privacy.iv = iv;
     }
 
-    var deviceSessionId = new cybersourceRestApi.Ptsv2paymentsDeviceInformation();
-    deviceSessionId.fingerprintSessionId = session.privacy.dfID;
+    var deviceInformation = new cybersourceRestApi.Ptsv2paymentsDeviceInformation();
 
     if (configObject.deviceFingerprintEnabled && configObject.fmeDmEnabled) {
-        request.deviceInformation = deviceSessionId;
+        deviceInformation.fingerprintSessionId = session.privacy.dfID;
     }
+    // Populate device information from browser fields collected on client side
+    if (payerauthArgs && payerauthArgs.parsedBrowserfields) {
+        var browserData = payerauthArgs.parsedBrowserfields;
+        deviceInformation.httpBrowserColorDepth = browserData.httpBrowserColorDepth ? browserData.httpBrowserColorDepth.toString() : undefined;
+        deviceInformation.httpBrowserJavaEnabled = browserData.httpBrowserJavaEnabled;
+        deviceInformation.httpBrowserJavaScriptEnabled = browserData.httpBrowserJavaScriptEnabled;
+        deviceInformation.httpBrowserLanguage = browserData.httpBrowserLanguage;
+        deviceInformation.httpBrowserScreenHeight = browserData.httpBrowserScreenHeight ? browserData.httpBrowserScreenHeight.toString() : undefined;
+        deviceInformation.httpBrowserScreenWidth = browserData.httpBrowserScreenWidth ? browserData.httpBrowserScreenWidth.toString() : undefined;
+        deviceInformation.httpBrowserTimeDifference = browserData.httpBrowserTimeDifference ? browserData.httpBrowserTimeDifference.toString() : undefined;
+        deviceInformation.userAgentBrowserValue = browserData.httpUserAgent;
+        deviceInformation.httpAcceptContent = browserData.httpAcceptContent;
+        deviceInformation.ipAddress = browserData.ipAddress;
+    }
+
+    request.deviceInformation = deviceInformation;
 
     var tokenInformation;
     var card;
@@ -339,6 +368,13 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
     if (!paymentInformation.card) {
         paymentInformation.card = {};
     }
+
+    if (session.getCustomer().isAuthenticated() && session.getCustomer().getProfile().custom.customerID) {
+        var customer = new cybersourceRestApi.Ptsv2paymentsPaymentInformationCustomer();
+        customer.id = session.getCustomer().getProfile().custom.customerID;
+        paymentInformation.customer = customer;
+    }
+
     paymentInformation.card.typeSelectionIndicator = '1';
     request.clientReferenceInformation = clientReferenceInformation;
     request.processingInformation = processingInformation;
@@ -354,12 +390,23 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
             throw new Error(data);
         }
     });
+    if (scaTokenFlag === true) { // This flag indicates that the SCA condition for tokenized card flow, so we don't have to retrigger the transaction again.
+        result.scaConditionMetForTokenFlow = true;
+    }
     if (result.riskInformation != null) {
         if (result.riskInformation.profile.action === 'PAYERAUTH_INVOKE' || result.riskInformation.profile.action === 'PAYERAUTH_EXTERNAL') {
             session.privacy.requestId = result.id;
         }
     }
-    setPaymentProcessorDetails(result);
+    if (paymentForm && paymentForm.creditCardFields && paymentForm.creditCardFields.saveCard && paymentForm.creditCardFields.saveCard.checked && (empty(cardData.token)) && (paymentInstrument.paymentMethod === 'CREDIT_CARD')) {
+        if (result.tokenInformation) {
+            tokenHelper.TokenizeCard(result);
+        }
+        else {
+            Logger.error('Tokenization failed during Payer Authentication enrollment. Order ID: {0}', order.orderNo);
+        }
+    }
+    setPaymentProcessorDetails(result, paymentInstrument);
     return result;
 }
 /**
@@ -373,7 +420,9 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
  * @param {*} lineItems *
  * @returns {*} *
  */
-function paConsumerAuthenticate(billingDetails, referenceInformationCode, total, currency, transactionId, cardData, lineItems, order) {
+function paConsumerAuthenticate(billingDetails, referenceInformationCode, total, currency, transactionId, cardData, lineItems, order, paymentInstrument) {
+    var tokenHelper = require('~/cartridge/scripts/helpers/tokenHelper.js');
+
     var instance = new cybersourceRestApi.PaymentsApi(configObject);
 
     var clientReferenceInformation = new cybersourceRestApi.Ptsv2paymentsClientReferenceInformation();
@@ -385,6 +434,24 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
     processingInformation.commerceIndicator = 'internet';
     processingInformation.actionList = [];
     processingInformation.actionList.push('VALIDATE_CONSUMER_AUTHENTICATION');
+    var server = require('server');
+    var paymentForm = server.forms.getForm('billing');
+    if (paymentForm && paymentForm.creditCardFields && paymentForm.creditCardFields.saveCard && paymentForm.creditCardFields.saveCard.checked && (empty(cardData.token)) && (paymentInstrument.paymentMethod === 'CREDIT_CARD')) {
+        processingInformation.actionList.push('TOKEN_CREATE');
+        if (session.getCustomer().getProfile().custom.customerID != null) {
+            processingInformation.actionTokenTypes = [
+                'paymentInstrument',
+                'instrumentIdentifier'
+            ];
+        } else {
+            processingInformation.actionTokenTypes = [
+                'customer',
+                'shippingAddress',
+                'paymentInstrument',
+                'instrumentIdentifier'
+            ];
+        }
+    }
 
     //Capture service call if Payer Authentication is enabled
     if (cardData.ucJwtToken) {
@@ -393,12 +460,12 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
         }
     }
     else {
-        if (order.paymentInstruments[0].paymentMethod === 'DW_GOOGLE_PAY') {
+        if (paymentInstrument.paymentMethod === 'DW_GOOGLE_PAY') {
             if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_GooglePayTransactionType').value === 'sale') {
                 processingInformation.capture = true;
             }
         }
-        if (order.paymentInstruments[0].paymentMethod === 'CREDIT_CARD') {
+        if (paymentInstrument.paymentMethod === 'CREDIT_CARD') {
             if (configObject.cardTransactionType.value === 'sale') {
                 processingInformation.capture = true;
             }
@@ -473,6 +540,11 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
         paymentInformation.card = card;
     }
 
+    if (session.getCustomer().isAuthenticated() && session.getCustomer().getProfile().custom.customerID) {
+        var customer = new cybersourceRestApi.Ptsv2paymentsPaymentInformationCustomer();
+        customer.id = session.getCustomer().getProfile().custom.customerID;
+        paymentInformation.customer = customer;
+    }
     request.clientReferenceInformation = clientReferenceInformation;
     request.processingInformation = processingInformation;
     request.orderInformation = orderInformation;
@@ -499,7 +571,15 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
             }
         }
     });
-    setPaymentProcessorDetails(result);
+    setPaymentProcessorDetails(result, paymentInstrument);
+    if (paymentForm && paymentForm.creditCardFields && paymentForm.creditCardFields.saveCard && paymentForm.creditCardFields.saveCard.checked && (empty(cardData.token)) && (paymentInstrument.paymentMethod === 'CREDIT_CARD')) {
+        if (result.tokenInformation) {
+            tokenHelper.TokenizeCard(result);
+        }
+        else {
+            Logger.error('Tokenization failed during Payer Authentication Validation. Order ID: {0}', order.orderNo);
+        }
+    }
     return result;
 }
 
@@ -521,13 +601,13 @@ function get3DSMode() {
  */
 function getCardType(paymentInstrument) {
     var cardType = '';
-    
+
     try {
         if (paymentInstrument.creditCardType !== null && typeof paymentInstrument.creditCardType !== 'undefined') {
             // Remove spaces and convert to uppercase
             cardType = paymentInstrument.creditCardType.replace(/\s+/g, '').toUpperCase();
             return cardType;
-        }  
+        }
     } catch (e) {
         var Logger = require('dw/system/Logger');
         Logger.error('Error getting card type: {0}', e.message);

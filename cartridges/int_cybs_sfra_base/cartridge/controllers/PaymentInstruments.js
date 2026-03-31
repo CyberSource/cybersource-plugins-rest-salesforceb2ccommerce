@@ -3,6 +3,7 @@
 var server = require('server');
 var URLUtils = require('dw/web/URLUtils');
 var configObject = require('../configuration/index');
+var secureResponseHelper = require('~/cartridge/scripts/helpers/secureResponseHelper');
 var csrfProtection = require('*/cartridge/scripts/middleware/csrf');
 var userLoggedIn = require('*/cartridge/scripts/middleware/userLoggedIn');
 
@@ -141,7 +142,7 @@ if (configObject.tokenizationEnabled && configObject.cartridgeEnabled) {
                 // Send account edited email
                 accountHelpers.sendAccountEditedEmail(customer.profile);
 
-                res1.json({
+                secureResponseHelper.secureJsonResponse(res1, {
                     success: true,
                     redirectUrl: URLUtils.url('PaymentInstruments-List').toString()
                 });
@@ -177,7 +178,7 @@ if (configObject.tokenizationEnabled && configObject.cartridgeEnabled) {
     server.post('VerifyAddress', csrfProtection.validateAjaxRequest, userLoggedIn.validateLoggedInAjax, function (req, res, next) {
         var addressFieldsForm = server.forms.getForm('creditCard').billToAddressFields;
         var result = verifyAddess(addressFieldsForm);
-        res.json(result);
+        secureResponseHelper.secureJsonResponse(res, result);
         next();
     });
 

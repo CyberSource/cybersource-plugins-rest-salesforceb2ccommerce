@@ -61,7 +61,7 @@ function isTaxStale(basket, taxResult) {
         // ('quantity' in lineItem) && (lineItem.quantity != null && 'value' in lineItem.quantity )? lineItem.quantity.value.toString() : null;
         if ('quantity' in lineItem) {
             if (lineItem === Object(lineItem.quantity)) {
-                quantity = lineItem.quantity.value.toString();
+            quantity = lineItem.quantity.value.toString();
             } else {
                 quantity = lineItem.quantity;
             }

@@ -30,7 +30,8 @@
                         countryCode: "${countryCode}",
                         totalPriceStatus: 'FINAL',
                         sessionCallBack : "${dw.web.URLUtils.url('CheckoutServices-SubmitPaymentGP')}",
-                        submitURL : "${dw.web.URLUtils.https('Checkout-Begin', 'stage', 'placeOrder')}"
+                        submitURL : "${dw.web.URLUtils.https('Checkout-Begin', 'stage', 'placeOrder')}",
+                        getCartTotalURL : "${dw.web.URLUtils.url('CheckoutServices-GetCartTotal')}"
                     }
 
  window.googlepayval = googlePayVariables;

@@ -1,0 +1,67 @@
+// Payer Authentication Step-Up Modal Styles
+
+.payerauth-stepup {
+	display: none;
+}
+
+.hidden {
+	display: none;
+}
+
+.show {
+	display: block;
+}
+
+// Cardinal Payer Authentication Modal Styles
+.stepup-modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	z-index: 9999;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.stepup-modal-content {
+	background-color: #fff;
+	width: 550px;
+	height: 600px;
+	border-radius: 8px;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+	position: relative;
+	padding: 20px;
+}
+
+.stepup-modal-title {
+	margin-top: 0;
+	margin-bottom: 20px;
+	text-align: center;
+	color: #333;
+	font-size: 1.2rem;
+	font-weight: bold;
+}
+
+.stepup-iframe-container {
+	width: 100%;
+	height: 530px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.stepup-iframe {
+	width: 100%;
+	height: 530px;
+	border: none;
+	border-radius: 4px;
+}
+
+.payerAuth_payment {
+	text-align: center;
+	padding: 17.125rem 0rem;
+	color: #00a1e0;
+}

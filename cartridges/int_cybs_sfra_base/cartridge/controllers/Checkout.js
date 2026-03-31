@@ -11,8 +11,6 @@ server.prepend(
     function (req, res, next) {
         var Transaction = require('dw/system/Transaction');
         // eslint-disable-next-line no-undef
-        session.custom.Flag3ds = false;
-        session.custom.scaTokenFlag = false;
         // eslint-disable-next-line no-undef
         if (session.getCustomer().getProfile() !== null) {
             // eslint-disable-next-line no-undef

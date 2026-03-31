@@ -94,7 +94,7 @@ $(document).ready(function () {
             if (err) {
                 // Display error above the card form for Flex SDK errors (card number/CVV)
                 var customError = $('.card-number-wrapper').attr('data-custom-validation-error');
-                var errorMessage = (customError && customError !== 'flex.cardnumber.error' && customError.trim() !== '') ? customError : err.message;
+                var errorMessage = (customError && customError !== 'flex.cardnumber.error' && String.prototype.trim.call(customError) !== '') ? customError : err.message;
                 $('.form-validation-error').text(errorMessage).css('display', 'block');
                 flag = true;
             }

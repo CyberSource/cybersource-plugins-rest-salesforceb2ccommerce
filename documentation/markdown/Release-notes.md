@@ -3,7 +3,30 @@
 Release history and updates for the Cybersource Salesforce B2C Commerce cartridge.
 
 ---
-
+## Version 26.2.0 (March 2026)
+ 
+**Enhancements:**
+- Updated Payer Authentication flow to align with SFRA best practices.
+- Added fallback device data capture for Payer Authentication.
+- Updated Mastercard 3-D Secure Data Only transactions.
+- Updated Cardinal Commerce URLs for Data Center Migration.
+- Modified subscription creation during the authorization call in checkout.
+- Decision Manager support for Apple Pay Transactions.
+- Apple Pay address handling improvements:
+  - Checkout page: collect address from checkout page.
+  - Cart/Mini Cart page: collect address from Apple Pay.
+ 
+**Bug Fixes:**
+- Corrected page routing for failed Apple Pay scenarios.
+- Fetch the total amount from the server side instead of capturing it on the frontend to avoid issues for different currencies across different locales.
+- Correct handling of AUTHORIZED_RISK_DECLINED response for post authorization scenarios.
+- CheckoutServices Error Fix: Resolved TypeError occurring when the cartridge is disabled.
+- Fixed issue where the Unified Checkout capture context did not refresh when the Delivery Address Verification is enabled.
+- Corrected page redirection issue for Decision Manager reject scenarios.
+- Fixed bug causing "setAddress1" of null when performing follow-up transactions with a registered customer after updating shipping address.
+- Fixed issue where the eCheck transient token exceeded the session.privacy 2000-character limit.
+ 
+---
 ## Version 26.1.0 (January 2026)
 
 **New Features:**

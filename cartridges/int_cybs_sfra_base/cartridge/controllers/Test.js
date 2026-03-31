@@ -1,15 +1,16 @@
 'use strict';
 
 var server = require('server');
+var secureResponseHelper = require('~/cartridge/scripts/helpers/secureResponseHelper');
 var cybersourceRestApi = require('../apiClient/index');
 var configObject = require('../configuration/index');
 
 var tests = {
     handleResponseTerst: function (res, data, error, response) { // eslint-disable-line no-unused-vars
         if (!error) {
-            res.json(data);
+            secureResponseHelper.secureJsonResponse(res, data);
         } else {
-            res.json({ errorCode: error, error: data });
+            secureResponseHelper.secureJsonResponse(res, { errorCode: error, error: data });
         }
     },
     getUserInformation: function (callback) {
