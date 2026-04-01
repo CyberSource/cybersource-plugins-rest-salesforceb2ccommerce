@@ -58,7 +58,8 @@
 		totalPriceStatus: 'FINAL',
 		sessionCallBack : "${dw.web.URLUtils.url('CheckoutServices-GetGooglePayToken')}",
 		returnURL : "${dw.web.URLUtils.https('Checkout-Begin', 'stage', 'placeOrder')}",
-		cartURL : "${dw.web.URLUtils.https('Checkout-Begin', 'stage', 'payment','payerAuthError', Resource.msg('message.payerAuthError', 'error', null))}"
+		cartURL : "${dw.web.URLUtils.https('Checkout-Begin', 'stage', 'payment','payerAuthError', Resource.msg('message.payerAuthError', 'error', null))}",
+		getCartTotalURL : "${dw.web.URLUtils.url('CheckoutServices-GetCartTotal')}"
 	 	}
 	 window.googlepayval = googlePayVariables;
 	</script>

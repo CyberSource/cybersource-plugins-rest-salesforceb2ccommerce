@@ -2,6 +2,7 @@
 
 var server = require('server');
 var configObject = require('../configuration/index');
+var secureResponseHelper = require('~/cartridge/scripts/helpers/secureResponseHelper');
 
 if (configObject.cartridgeEnabled) {
     server.get('CreateFlexToken', server.middleware.https, function (req, res, next) {
@@ -11,7 +12,7 @@ if (configObject.cartridgeEnabled) {
         if(parsedPayload != null){
             var clientLibrary = parsedPayload.ctx[0].data.clientLibrary;
             var clientLibraryIntegrity = parsedPayload.ctx[0].data.clientLibraryIntegrity;
-            res.render('secureAcceptanceFlexMicroformContent', {
+            secureResponseHelper.secureRender(res, 'secureAcceptanceFlexMicroformContent', {
                 flexTokenResult: flexResult,
                 clientLibrary: clientLibrary,
                 clientLibraryIntegrity: clientLibraryIntegrity
@@ -33,7 +34,7 @@ if (configObject.cartridgeEnabled) {
         if (parsedPayload != null) {
             var clientLibrary = parsedPayload.ctx[0].data.clientLibrary;
             var clientLibraryIntegrity = parsedPayload.ctx[0].data.clientLibraryIntegrity;
-            res.render('unifiedCheckout', {
+            secureResponseHelper.secureRender(res, 'unifiedCheckout', {
                 UcCaptureContext: UcCaptureContext,
                 clientLibrary: clientLibrary,
                 clientLibraryIntegrity: clientLibraryIntegrity

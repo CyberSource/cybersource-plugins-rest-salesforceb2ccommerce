@@ -2,8 +2,8 @@
 
 - **Description:** Cybersource, a Visa solution, is the only global, modular payment management platform built on secure Visa infrastructure with the payment reach and fraud insights of a massive $500B+ global processing network. You can find out more about what Cybersource does [here](https://www.cybersource.com/en-gb.html)
 - **Categories:** Payment Processing, Fraud Detection, Address Validation, Tax Computation
-- **Version:** 26.1.0
-- **Last Certification Date:** January 2026
+- **Version:** 26.2.0
+- **Last Certification Date:** March 2026
 - **Supports SFRA v7.0**
 - **JavaScript Controllers Friendly:** **YES**
 

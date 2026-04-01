@@ -3,6 +3,7 @@
 var server = require('server');
 var System = require('dw/system/System');
 var configObject = require('../configuration/index');
+var secureResponseHelper = require('~/cartridge/scripts/helpers/secureResponseHelper');
 
 /**
  * Renders Test Capture Service Form.
@@ -23,7 +24,7 @@ server.get('TestCaptureService', function (req, res, next) {
             session.forms.generictestinterfaceform.clearFormElement();
             var captureServiceForm = server.forms.getForm('generictestinterfaceform');
             // render the refund service form
-            res.render('captureServiceForm', {
+            secureResponseHelper.secureRender(res, 'captureServiceForm', {
                 captureServiceForm: captureServiceForm,
                 // eslint-disable-next-line no-undef
                 continueUrl: dw.web.URLUtils.https('ServiceFrameworkTest-CaptureService').toString()
@@ -63,14 +64,14 @@ server.post('CaptureService', function (req, res, next) {
         session.forms.generictestinterfaceform.clearFormElement();
         // eslint-disable-next-line no-undef
         if (!empty(serviceResponse)) {
-            res.render('transactionresult', {
+            secureResponseHelper.secureRender(res, 'transactionresult', {
                 serviceReply: captureReply,
                 response: serviceResponse,
                 msgHeader: captureReplyTitle
             });
             return next();
         }
-        res.render('common/scripterror', {
+        secureResponseHelper.secureRender(res, 'common/scripterror', {
             // eslint-disable-next-line no-undef
             log: !empty(serviceResponse.errorMsg) ? serviceResponse.errorMsg : 'System Exception occured contact administrator'
         });
@@ -97,7 +98,7 @@ server.get('TestAuthReversal', function (req, res, next) {
             session.forms.generictestinterfaceform.clearFormElement();
             var authReversalServiceForm = server.forms.getForm('generictestinterfaceform');
             // render the refund service form
-            res.render('authreversalform', {
+            secureResponseHelper.secureRender(res, 'authreversalform', {
                 authreversalform: authReversalServiceForm,
                 continueUrl: URLUtils.https('ServiceFrameworkTest-authReversalService').toString()
             });
@@ -136,14 +137,14 @@ server.post('authReversalService', function (req, res, next) {
         session.forms.generictestinterfaceform.clearFormElement();
         // eslint-disable-next-line no-undef
         if (!empty(serviceResponse)) {
-            res.render('transactionresult', {
+            secureResponseHelper.secureRender(res, 'transactionresult', {
                 serviceReply: reversalReply,
                 response: serviceResponse,
                 msgHeader: reversalReplyTitle
             });
             return next();
         }
-        res.render('common/scripterror', {
+        secureResponseHelper.secureRender(res, 'common/scripterror', {
             // eslint-disable-next-line no-undef
             log: !empty(serviceResponse.errorMsg) ? serviceResponse.errorMsg : 'System Exception occured contact administrator'
         });

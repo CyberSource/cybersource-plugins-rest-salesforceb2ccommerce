@@ -2,6 +2,7 @@
 
 var server = require('server');
 var configObject = require('../configuration/index');
+var secureResponseHelper = require('~/cartridge/scripts/helpers/secureResponseHelper');
 /*
  * Controller that handles the Cybersource Device Fingerprint
 */
@@ -55,7 +56,7 @@ if (configObject.cartridgeEnabled) {
         var url = location + '/fp/tags.js?org_id=' + orgID + '&session_id=' + merchID + dfpSessionId;
         session.privacy.dfID = dfpSessionId;
         res.cacheExpiration(0);
-        res.render('common/deviceFingerprint', {
+        secureResponseHelper.secureRender(res, 'common/deviceFingerprint', {
             url: url,
             getDeviceFingerprint: getDeviceFingerprint
         });

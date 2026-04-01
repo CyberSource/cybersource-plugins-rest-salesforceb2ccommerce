@@ -15,11 +15,21 @@ var OrderMgr = require('dw/order/OrderMgr');
 function postAuthorization(handlePaymentResult, order, options) { // eslint-disable-line no-unused-vars
     var req = options.req;
     var res = options.res;
- 
+
     if (handlePaymentResult.error) {
         return {
             error: true,
             redirectUrl: URLUtils.url('Checkout-Begin', 'stage', 'payment', 'PlaceOrderError', Resource.msg('error.technical', 'checkout', null)).toString()
+        };
+    }
+
+    // Check if payer authentication setup is required
+    if (handlePaymentResult.performPayerAuthSetup) {
+        return {
+            error: false,
+            orderID: order.orderNo,
+            orderToken: order.orderToken,
+            continueUrl: URLUtils.url('PayerAuthentication-PayerAuthSetup').toString()
         };
     }
 }

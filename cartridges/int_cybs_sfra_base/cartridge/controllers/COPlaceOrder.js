@@ -10,6 +10,7 @@ var OrderModel = require('*/cartridge/models/order');
 var hooksHelper = require('*/cartridge/scripts/helpers/hooks');
 var configObject = require('../configuration/index');
 var csrfProtection = require('*/cartridge/scripts/middleware/csrf');
+var secureResponseHelper = require('~/cartridge/scripts/helpers/secureResponseHelper');
 
 if (configObject.cartridgeEnabled) {
     server.post('Submit', function (req, res, next) {
@@ -49,13 +50,13 @@ if (configObject.cartridgeEnabled) {
         if (!req.currentCustomer.profile) {
             var passwordForm = server.forms.getForm('newPasswords');
             passwordForm.clear();
-            res.render('checkout/confirmation/confirmation', {
+            secureResponseHelper.secureRender(res, 'checkout/confirmation/confirmation', {
                 order: orderModel,
                 returningCustomer: false,
                 passwordForm: passwordForm
             });
         } else {
-            res.render('checkout/confirmation/confirmation', {
+            secureResponseHelper.secureRender(res, 'checkout/confirmation/confirmation', {
                 order: orderModel,
                 returningCustomer: true
             });
@@ -68,7 +69,7 @@ if (configObject.cartridgeEnabled) {
 server.get('SubmitOrderConformation', csrfProtection.generateToken, function (req, res, next) {
     var orderId = req.querystring.ID;
     var token = req.querystring.token;
-    res.render('cart/RedirectToConformation', {
+    secureResponseHelper.secureRender(res, 'cart/RedirectToConformation', {
         orderId: orderId,
         orderToken: token
     });

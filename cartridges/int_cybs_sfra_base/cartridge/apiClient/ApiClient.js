@@ -226,7 +226,7 @@ _exports.prototype.callApi = function (path, httpMethod, pathParams, queryParams
         var isMLEEnabled = configObject.mleEnabled;
  
         if (isMLEEnabled && isMLESupportedByCybsForApi == true) {
-            var encryptPayload = require('*/cartridge/scripts/mleEncrypt/jweEncrypt.js');
+            var encryptPayload = require('*/cartridge/scripts/mle/jweEncrypt.js');
             payload = encryptPayload.getJWE(payload);
  
         }

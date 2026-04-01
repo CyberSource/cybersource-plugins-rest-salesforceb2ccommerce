@@ -6,6 +6,7 @@ var server = require('server');
 var system = require('dw/system/System');
 var URLUtils = require('dw/web/URLUtils');
 var configObject = require('../configuration/index');
+var secureResponseHelper = require('~/cartridge/scripts/helpers/secureResponseHelper');
 
 var page = module.superModule;
 server.extend(page);
@@ -15,7 +16,7 @@ if (configObject.cartridgeEnabled) {
         var redirectURL = URLUtils.url('Error-ErrorCode', 'err', req.querystring.err).toString();
         var statusCode = +req.querystring.statuscode;
         res.setStatusCode(statusCode);
-        res.json({
+        secureResponseHelper.secureJsonResponse(res, {
             success: false,
             redirectUrl: redirectURL
         });
@@ -42,7 +43,7 @@ if (configObject.cartridgeEnabled) {
                 messages.push();
                 res.setContentType('application/json;charset=utf-8');
                 if (req.httpHeaders.get('x-requested-with') === 'XMLHttpRequest') {
-                    res.json({
+                    secureResponseHelper.secureJsonResponse(res, {
                         errorObj: customError,
                         showError: showError,
                         message: messages[0],
@@ -50,7 +51,7 @@ if (configObject.cartridgeEnabled) {
                         fieldErrors: []
                     });
                 } else {
-                    res.render('error', {
+                    secureResponseHelper.secureRender(res, 'error', {
                         errorObj: customError,
                         showError: showError,
                         message: messages[0]

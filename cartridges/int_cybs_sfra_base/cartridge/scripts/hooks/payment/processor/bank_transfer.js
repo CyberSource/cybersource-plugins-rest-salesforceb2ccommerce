@@ -1,4 +1,4 @@
-/* eslint-disable no-plusplus */
+/* eslint-disable no-plusplus */ 
 
 "use strict";
 
@@ -8,6 +8,64 @@ var Resource = require("dw/web/Resource");
 var Transaction = require("dw/system/Transaction");
 var OrderMgr = require("dw/order/OrderMgr");
 //var server = require("server");
+
+// Constants for session.privacy character limit
+var MAX_SESSION_PRIVACY_LENGTH = 1999;
+
+/**
+ * Stores transient token in session, splitting if it exceeds 2000 char limit
+ * SFCC session.privacy variables have a 2000 character limit.
+ * This function splits large tokens to avoid the limit.
+ * @param {string} transientToken - The transient token to store
+ */
+function storeTransientToken(transientToken) {
+    // eslint-disable-next-line no-undef
+    if (transientToken.length > MAX_SESSION_PRIVACY_LENGTH) {
+        // Split the token into two parts to avoid 2000 char limit
+        // eslint-disable-next-line no-undef
+        session.privacy.echeckTransientToken = transientToken.substring(0, MAX_SESSION_PRIVACY_LENGTH);
+        // eslint-disable-next-line no-undef
+        session.privacy.echeckTransientToken2 = transientToken.substring(MAX_SESSION_PRIVACY_LENGTH);
+    } else {
+        // eslint-disable-next-line no-undef
+        session.privacy.echeckTransientToken = transientToken;
+        // eslint-disable-next-line no-undef
+        session.privacy.echeckTransientToken2 = null;
+    }
+}
+
+/**
+ * Retrieves and concatenates transient token from session
+ * Handles both single and split token scenarios
+ * @returns {string|null} The complete transient token or null if not found
+ */
+function getTransientToken() {
+    // eslint-disable-next-line no-undef
+    var token = session.privacy.echeckTransientToken;
+    
+    if (!token) {
+        return null;
+    }
+    
+    // Check if there's a second part to concatenate
+    // eslint-disable-next-line no-undef
+    if (session.privacy.echeckTransientToken2) {
+        // eslint-disable-next-line no-undef
+        token = token + session.privacy.echeckTransientToken2;
+    }
+    
+    return token;
+}
+
+/**
+ * Clears transient token from session (both parts if split)
+ */
+function clearTransientToken() {
+    // eslint-disable-next-line no-undef
+    delete session.privacy.echeckTransientToken;
+    // eslint-disable-next-line no-undef
+    delete session.privacy.echeckTransientToken2;
+}
 
 
 /**
@@ -79,8 +137,8 @@ function Handle(basket, paymentInformation) {
       );
 
       // Store the transient token in session for later use in Authorize
-      // eslint-disable-next-line no-undef
-      session.privacy.echeckTransientToken = transientToken;
+      // Using helper function to handle tokens exceeding 2000 char limit
+      storeTransientToken(transientToken);
 
       // Decode and store bank details in payment instrument
       var paymentDetails = payments.getPaymentDetails(transientToken);
@@ -152,9 +210,8 @@ function Authorize(orderNumber, paymentInstrument, paymentProcessor) {
 
     // Process eCheck authorization
 
-    // Get transient token from session
-    // eslint-disable-next-line no-undef
-    var transientToken = session.privacy.echeckTransientToken;
+    // Get transient token from session (handles split tokens)
+    var transientToken = getTransientToken();
 
     if (!transientToken) {
       logger.error(
@@ -168,13 +225,10 @@ function Authorize(orderNumber, paymentInstrument, paymentProcessor) {
     //@ts-ignore
     result = payments.httpAuthorizeWithTransientToken(transientToken,customerEmail,orderNumber,total.value,currencyCode,billingAddress,lineItems,shippingAddress,true);
 
-    // Clear transient token from session after use
-    // eslint-disable-next-line no-undef
-    delete session.privacy.echeckTransientToken;
+    // Clear transient token from session after use (clears both parts if split)
+    clearTransientToken();
 
     Transaction.wrap(function () {
-      // eslint-disable-next-line no-undef
-      session.privacy.orderId = orderNumber;
       // eslint-disable-next-line no-undef
       session.privacy.orderStatus = result.status;
       //@ts-ignore
@@ -233,3 +287,4 @@ for (var i = 0; i < keys.length; i++) {
 }
 
 module.exports = CreditProcessorExport;
+ 

@@ -18,7 +18,7 @@ var errors = require('~/cartridge/scripts/util/errors.js');
  * @param {*} lineItems *
  * @returns {*} *
  */
-function httpAuthorizeWithToken(cardData, customerEmail, referenceInformationCode, total, currency, billingAddress, shippingAddress, lineItems) {
+function httpAuthorizeWithToken(cardData, customerEmail, referenceInformationCode, total, currency, billingAddress, shippingAddress, lineItems, savePayment) {
     /* eslint-disable block-scoped-var */
     /* eslint-disable no-undef */
     var configObject = require('../../configuration/index');
@@ -42,6 +42,30 @@ function httpAuthorizeWithToken(cardData, customerEmail, referenceInformationCod
     processingInformation.actionList = [];
     if (!configObject.fmeDmEnabled) {
         processingInformation.actionList.push('DECISION_SKIP');
+    }
+    var paymentInformation = new cybersourceRestApi.Ptsv2paymentsPaymentInformation();
+    var customer = new cybersourceRestApi.Ptsv2paymentsPaymentInformationCustomer();
+
+    var server = require('server');
+    var paymentForm = server.forms.getForm('billing');
+    if (paymentForm && paymentForm.creditCardFields && paymentForm.creditCardFields.saveCard && paymentForm.creditCardFields.saveCard.checked && savePayment) {
+        processingInformation.actionList.push('TOKEN_CREATE');
+        //@ts-ignore
+        if (session.getCustomer().getProfile().custom.customerID != null) {
+            processingInformation.actionTokenTypes = [
+                'paymentInstrument',
+                'instrumentIdentifier'
+            ];
+            customer.id = session.getCustomer().getProfile().custom.customerID;
+            paymentInformation.customer = customer;
+        } else {
+            processingInformation.actionTokenTypes = [
+                'customer',
+                'shippingAddress',
+                'paymentInstrument',
+                'instrumentIdentifier'
+            ];
+        }
     }
     if (cardData.gPayToken) {
         processingInformation.paymentSolution = '012';
@@ -83,9 +107,6 @@ function httpAuthorizeWithToken(cardData, customerEmail, referenceInformationCod
     orderInformation.billTo = billTo;
     orderInformation.shipTo = shipTo;
 
-    var paymentInformation = new cybersourceRestApi.Ptsv2paymentsPaymentInformation();
-
-    var customer = new cybersourceRestApi.Ptsv2paymentsPaymentInformationCustomer();
 
     var request = new cybersourceRestApi.CreatePaymentRequest();
     request.clientReferenceInformation = clientReferenceInformation;
@@ -156,6 +177,12 @@ function httpAuthorizeWithToken(cardData, customerEmail, referenceInformationCod
                 result = data;
                 return data;
             }
+            if (data.status === 'AUTHORIZED_RISK_DECLINED') {
+                var Logger = require('dw/system/Logger');
+                Logger.error('[payments.js] Payment authorized but risk declined. Reversal initiated. Order: {0}, Status: {1}', data.clientReferenceInformation.code, data.status);
+                var authReversal = require('./authReversal');
+                authReversal.httpAuthReversal(data.id, data.clientReferenceInformation.code, total, currency);
+            }
             throw new errors.CARD_NOT_AUTHORIZED_ERROR(JSON.stringify(data)); // eslint-disable-line no-undef
         } else {
             var e = data;
@@ -198,12 +225,6 @@ function httpZeroDollarAuth(
     var deviceSessionId = new cybersourceRestApi.Ptsv2paymentsDeviceInformation();
     deviceSessionId.fingerprintSessionId = session.privacy.dfID;
 
-
-    var scaEnabled = dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_IsSCAEnabled');
-
-    if (scaEnabled === true) {
-        session.custom.scaTokenFlag = true;
-    }
 
     var processingInformation = new cybersourceRestApi.Ptsv2paymentsProcessingInformation();
     processingInformation.commerceIndicator = configObject.CommerceIndicator.value;
@@ -282,6 +303,12 @@ function httpZeroDollarAuth(
                 result = data;
                 return data;
             }
+            if (data.status === 'AUTHORIZED_RISK_DECLINED') {
+                var Logger = require('dw/system/Logger');
+                Logger.error('[payments.js] Zero dollar auth authorized but risk declined. Reversal initiated. Order: {0}, Status: {1}', data.clientReferenceInformation.code, data.status);
+                var authReversal = require('./authReversal');
+                authReversal.httpAuthReversal(data.id, data.clientReferenceInformation.code, '0', currency);
+            }
             throw new errors.CARD_NOT_AUTHORIZED_ERROR(JSON.stringify(data));
         } else {
             throw new errors.API_CLIENT_ERROR(JSON.stringify(data));
@@ -310,12 +337,6 @@ function httpZeroDollarAuthWithTransientToken(
 
     var clientReferenceInformation = new cybersourceRestApi.Ptsv2paymentsClientReferenceInformation();
     clientReferenceInformation.code = referenceInformationCode;
-
-    var scaEnabled = dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_IsSCAEnabled');
-
-    if (scaEnabled === true) {
-        session.custom.scaTokenFlag = true;
-    }
 
 
     var processingInformation = new cybersourceRestApi.Ptsv2paymentsProcessingInformation();
@@ -386,6 +407,12 @@ function httpZeroDollarAuthWithTransientToken(
             if (data.status === 'AUTHORIZED' || data.status === 'AUTHORIZED_PENDING_REVIEW') {
                 result = data;
                 return data;
+            }
+            if (data.status === 'AUTHORIZED_RISK_DECLINED') {
+                var Logger = require('dw/system/Logger');
+                Logger.error('[payments.js] Zero dollar auth (transient token) authorized but risk declined. Reversal initiated. Order: {0}, Status: {1}', data.clientReferenceInformation.code, data.status);
+                var authReversal = require('./authReversal');
+                authReversal.httpAuthReversal(data.id, data.clientReferenceInformation.code, '0', currency);
             }
             throw new errors.CARD_NOT_AUTHORIZED_ERROR(JSON.stringify(data));
         } else {
@@ -522,6 +549,10 @@ function httpAuthorizeWithTransientToken(transientToken, customerEmail, referenc
                     isEcheck ? 'eCheck' : 'Credit Card', referenceInformationCode, data.status, data.id);
                 response = data;
                 return data;
+            }
+            if (data.status === 'AUTHORIZED_RISK_DECLINED') {
+                var authReversal = require('./authReversal');
+                authReversal.httpAuthReversal(data.id, data.clientReferenceInformation.code, total, currency);
             }
             throw new errors.CARD_NOT_AUTHORIZED_ERROR(JSON.stringify(data)); // eslint-disable-line no-undef
         } else {

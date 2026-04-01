@@ -2,9 +2,9 @@
 <iscomment>
 	This template the use to redirect
 </iscomment>
-<link rel="stylesheet" href="${URLUtils.staticURL('/css/deviceDataCollection.css')}">
-	<form id="ScaRedirect" action="${URLUtils.url('CheckoutServices-PlaceOrder')}" method="POST" name="ScaRedirect" target="_parent">
+	<form id="ScaRedirect" action="${URLUtils.url('PayerAuthentication-PayerAuthSetup')}" method="POST" name="ScaRedirect" target="_parent">
 	    <input type="hidden" name="orderID" value="${pdict.orderID}"/>
+		<input type="hidden" name="isScaFlow" value="${pdict.isScaFlow}"/>
 	</form>
 
 <script type="text/javascript">

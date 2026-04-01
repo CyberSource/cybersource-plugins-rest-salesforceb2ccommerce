@@ -109,8 +109,6 @@ function populateBasketAddresses(basket, paymentDetails, paymentForm) {
         }
     });
 
-    // Recalculate the basket 
-    COHelpers.recalculateBasket(basket);
 }
 
 /**
