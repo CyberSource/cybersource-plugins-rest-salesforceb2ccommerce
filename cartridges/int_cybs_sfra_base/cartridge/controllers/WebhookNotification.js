@@ -19,7 +19,7 @@ var instance;
         if (configObject.networkTokenizationEnabled && req.httpMethod === 'POST') {
             var digitalSignature = req.httpHeaders.get('v-c-signature');
             var payload = JSON.parse(req.body);
-            var organizationId = payload.payload[0].organizationId;
+            var organizationId = configObject.merchantID;
             var message = JSON.stringify(payload.payload);
 
             if (validator(digitalSignature, message, organizationId)) {
@@ -134,12 +134,24 @@ var instance;
 
         if (isValidTimestamp(timestamp)) {
             const regeneratedSignature = regenerateSignature(timestamp, message, merchantId);
-            if (regeneratedSignature.toString() === Encoding.fromBase64(signature).toString()) {
+            if (constantTimeEquals(regeneratedSignature, Encoding.fromBase64(signature))) {
                 return true;
             }
             Logger.error('No match in signature');
             return false;
         }
+    }
+
+    function constantTimeEquals(a, b) {
+        var HMAC_SHA256_LENGTH = 32;
+        if (a.getLength() !== HMAC_SHA256_LENGTH || b.getLength() !== HMAC_SHA256_LENGTH) {
+            return false;
+        }
+        var result = 0;
+        for (var i = 0; i < HMAC_SHA256_LENGTH; i++) {
+            result |= (a.byteAt(i) ^ b.byteAt(i));
+        }
+        return result === 0;
     }
 
     function regenerateSignature(timestamp, message, merchantId) {

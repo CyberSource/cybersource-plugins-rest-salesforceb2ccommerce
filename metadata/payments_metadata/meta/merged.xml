@@ -50,6 +50,13 @@
                     </value-definition>
                 </value-definitions>
             </attribute-definition>
+            <attribute-definition attribute-id="Cybersource_EnableTestEndpoints">
+                <display-name xml:lang="x-default">Enable CyberSource Test Endpoints</display-name>
+                <description xml:lang="x-default">Enable capture and auth reversal test endpoints (ServiceFrameworkTest controller). Must be explicitly enabled per sandbox instance. Disabled by default.</description>
+                <type>boolean</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>false</default-value>
+            </attribute-definition>
             <attribute-definition attribute-id="VisaAcceptance_UnifiedCheckout_Cart_Minicart">
                 <display-name xml:lang="x-default">Enable Unified Checkout for Cart and Mini Cart</display-name>
                 <description xml:lang="x-default">Enable or Disable Unified Checkout for digital payments on Cart and Mini Cart.</description>
@@ -531,6 +538,7 @@
                 <attribute attribute-id="Cybersource_MerchantKeySecret"/>
                 <attribute attribute-id="Cybersource_DeveloperId"/>
                 <attribute attribute-id="Cybersource_CommerceIndicator"/>
+                <attribute attribute-id="Cybersource_EnableTestEndpoints"/>
             </attribute-group>
             <attribute-group group-id="Cybersource_DeliveryAddressVerification">
                 <display-name xml:lang="x-default">Delivery Address Verification Configuration</display-name>

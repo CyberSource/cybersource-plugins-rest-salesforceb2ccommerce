@@ -7,7 +7,7 @@
     </service-credential>
 
     <service-profile service-profile-id="PaymentServiceProfile">
-        <timeout-millis>0</timeout-millis>
+        <timeout-millis>30000</timeout-millis>
         <rate-limit-enabled>false</rate-limit-enabled>
         <rate-limit-calls>0</rate-limit-calls>
         <rate-limit-millis>0</rate-limit-millis>

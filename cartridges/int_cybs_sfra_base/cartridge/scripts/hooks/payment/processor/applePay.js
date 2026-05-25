@@ -197,7 +197,7 @@ exports.placeOrder = function (order) {
     }
     var URLUtils = require('dw/web/URLUtils');
     var ApplePayHookResult = require('dw/extensions/applepay/ApplePayHookResult');
-    var response = new ApplePayHookResult(Status(Status.OK), URLUtils.url('COPlaceOrder-Submit', 'order_id', order.currentOrderNo));
+    var response = new ApplePayHookResult(Status(Status.OK), URLUtils.url('COPlaceOrder-Submit', 'order_id', order.currentOrderNo, 'order_token', order.getOrderToken()));
     return response;
 };
 

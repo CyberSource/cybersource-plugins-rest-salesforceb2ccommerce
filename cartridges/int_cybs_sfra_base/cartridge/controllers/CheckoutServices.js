@@ -3,10 +3,11 @@
 var page = module.superModule;
 var server = require('server');
 var secureResponseHelper = require('~/cartridge/scripts/helpers/secureResponseHelper');
+var csrfProtection = require('*/cartridge/scripts/middleware/csrf');
 server.extend(page);
 
 // for Gpay on checkout page
-server.post('SubmitPaymentGP', function (req, res, next) {
+server.post('SubmitPaymentGP', csrfProtection.validateAjaxRequest, function (req, res, next) {
     var COHelpers = require('*/cartridge/scripts/checkout/checkoutHelpers');
     var Encoding = require('dw/crypto/Encoding');
     var paymentForm = server.forms.getForm('billing');
@@ -274,7 +275,7 @@ function shippingUpdate(cart, shippingdetails) {
 
 //for Gapy on cart and minicart
 // eslint-disable-next-line consistent-return
-server.post('GetGooglePayToken', function (req, res, next) {
+server.post('GetGooglePayToken', csrfProtection.validateAjaxRequest, function (req, res, next) {
     var Encoding = require('dw/crypto/Encoding');
     var paymentForm = server.forms.getForm('billing');
     var payments = require('*/cartridge/scripts/http/payments');

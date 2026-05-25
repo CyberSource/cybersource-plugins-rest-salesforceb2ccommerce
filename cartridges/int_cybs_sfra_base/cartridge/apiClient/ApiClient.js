@@ -32,8 +32,88 @@ _exports.prototype.createService = function () {
             return client.text;
         },
         filterLogMessage: function (msg) {
-            //  No need to filter logs.  No sensitive information.
-            return msg;
+            // Filter sensitive payment data from logs to comply with PCI-DSS
+            if (!msg || typeof msg !== 'string') {
+                return msg;
+            }
+
+            function filterSensitiveFields(obj) {
+                if (!obj || typeof obj !== 'object') {
+                    return obj;
+                }
+
+                var filtered = Array.isArray(obj) ? [] : {};
+
+                for (var key in obj) {
+                    if (obj.hasOwnProperty(key)) {
+                        var lowerKey = key.toLowerCase();
+                        var value = obj[key];
+
+                        // Mask credit card numbers - keep last 4 digits
+                        if (lowerKey === 'number' || lowerKey === 'cardnumber' || lowerKey === 'accountnumber') {
+                            if (typeof value === 'string' && value.length >= 13) {
+                                filtered[key] = '****' + value.slice(-4);
+                            } else {
+                                filtered[key] = '****';
+                            }
+                        }
+                        // Completely redact security codes, CVV, CVV2
+                        else if (lowerKey === 'securitycode' || lowerKey === 'cvv' || lowerKey === 'cvv2' || lowerKey === 'cvc') {
+                            filtered[key] = '***';
+                        }
+                        // Redact secret keys, passwords, tokens
+                        else if (lowerKey.indexOf('secret') !== -1 || lowerKey.indexOf('password') !== -1 ||
+                                 lowerKey.indexOf('token') !== -1 || lowerKey === 'pin') {
+                            filtered[key] = '[REDACTED]';
+                        }
+                        // Mask authorization signatures
+                        else if (lowerKey === 'signature' || lowerKey === 'authorization') {
+                            filtered[key] = '[REDACTED]';
+                        }
+                        // Recursively filter nested objects and arrays
+                        else if (typeof value === 'object' && value !== null) {
+                            filtered[key] = filterSensitiveFields(value);
+                        }
+                        // Keep non-sensitive values
+                        else {
+                            filtered[key] = value;
+                        }
+                    }
+                }
+
+                return filtered;
+            }
+
+            function filterSensitiveText(text) {
+                var filtered = text;
+
+                // Mask 13-19 digit card numbers (keep last 4)
+                filtered = filtered.replace(/\b(\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{3,4})\b/g, function(match) {
+                    var digits = match.replace(/[\s-]/g, '');
+                    return '****' + digits.slice(-4);
+                });
+
+                // Redact CVV/CVV2 patterns (3-4 digits labeled as CVV)
+                filtered = filtered.replace(/\b(cvv2?|cvc|security_?code)["\s:=]+(\d{3,4})\b/gi, '$1:***');
+
+                // Redact authorization headers
+                filtered = filtered.replace(/(authorization|signature)["\s:=]+[^\s,"}]+/gi, '$1:[REDACTED]');
+
+                return filtered;
+            }
+
+            var filteredMsg = msg;
+
+            try {
+                // Try to parse as JSON to filter structured data
+                var parsedMsg = JSON.parse(msg);
+                filteredMsg = JSON.stringify(filterSensitiveFields(parsedMsg));
+            } catch (e) {
+                // Not JSON, apply regex-based filtering for plain text logs
+                filteredMsg = filterSensitiveText(msg);
+            }
+
+            return filteredMsg;
         }
     });
     return PaymentsHttpService;

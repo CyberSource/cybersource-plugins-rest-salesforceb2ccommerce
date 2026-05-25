@@ -997,11 +997,17 @@ function processGooglePay() {
     }
     var submiturl = window.googlepayval.submitURL;
     // var GPData = JSON.stringify(paymentData);
+    var csrfInfo = (window.googlepayval && window.googlepayval.csrf) || {};
+    var csrfTokenName = csrfInfo.tokenName || 'csrf_token';
+    var csrfToken = csrfInfo.token || $('input[name="csrf_token"]').val() || $('.csrf_token').val() || '';
     var paymentForm;
     if ($('#dwfrm_billing').length > 0) {
         $('#dwfrm_billing').attr('action', postdataUrl);
         $('input[name=dwfrm_billing_paymentMethod]').val('DW_GOOGLE_PAY');
         paymentForm = $('#dwfrm_billing').serialize() + '&UC=true';
+        if (!/(^|&)csrf_token=/.test(paymentForm)) {
+            paymentForm += '&' + encodeURIComponent(csrfTokenName) + '=' + encodeURIComponent(csrfToken);
+        }
     } else {
         var ucToken = $('#uc-payment-token').val();
         var fluidData = $('#gPayFluidData').val();
@@ -1010,7 +1016,8 @@ function processGooglePay() {
             + '&dwfrm_billing_creditCardFields_ucpaymenttoken=' + encodeURIComponent(ucToken)
             + '&gPayFluidData=' + encodeURIComponent(fluidData)
             + '&UC=true'
-            + '&isminicart=true'; // Add the minicart flag
+            + '&isminicart=true' // Add the minicart flag
+            + '&' + encodeURIComponent(csrfTokenName) + '=' + encodeURIComponent(csrfToken);
     }
 
     function loadFormErrors(parentSelector, fieldErrors) { // eslint-disable-line

@@ -6,15 +6,28 @@ var BasketCalculationHelpers = require('app_storefront_base/cartridge/scripts/he
 var Money = require('dw/value/Money');
 var taxCalculation = require('*/cartridge/scripts/http/taxCalculation.js');
 var configObject = require('../../configuration/index');
+var hmacHelper = require('*/cartridge/scripts/helpers/hmacHelper');
 
 /**
  * @param {*} taxResult *
  */
 function storeTaxResult(taxResult) {
     var Cookie = require('dw/web/Cookie');
-    var taxCookieValue = encodeURIComponent(JSON.stringify(taxResult));
+    var taxData = JSON.stringify(taxResult);
+
+    // Generate HMAC signature for the tax data
+    var signature = hmacHelper.generateHMAC(taxData);
+
+    // Store both data and signature
+    var signedTaxData = {
+        data: taxResult,
+        signature: signature
+    };
+
+    var taxCookieValue = encodeURIComponent(JSON.stringify(signedTaxData));
     var taxCookie = new Cookie(configObject.taxCookieId, taxCookieValue);
     taxCookie.setHttpOnly(true);
+    taxCookie.setSecure(true); // Ensure cookie is only sent over HTTPS
     // eslint-disable-next-line no-undef
     response.addHttpCookie(taxCookie);
 }
@@ -35,7 +48,30 @@ function retrieveTaxResult() {
         }
     }
     if (!taxCookie) return null;
-    var taxResult = JSON.parse(decodeURIComponent(taxCookie.value));
+
+    var signedTaxData;
+    try {
+        signedTaxData = JSON.parse(decodeURIComponent(taxCookie.value));
+    } catch (e) {
+        // Invalid JSON in cookie, reject it
+        return null;
+    }
+
+    // Verify this is a signed cookie with required fields
+    if (!signedTaxData || !signedTaxData.data || !signedTaxData.signature) {
+        // Cookie format is invalid or legacy unsigned cookie, reject it
+        return null;
+    }
+
+    // Verify HMAC signature using constant-time comparison
+    var taxData = JSON.stringify(signedTaxData.data);
+    if (!hmacHelper.verifyHMAC(taxData, signedTaxData.signature)) {
+        // Signature verification failed, cookie has been tampered with
+        return null;
+    }
+
+    // Signature is valid, reconstruct Money objects
+    var taxResult = signedTaxData.data;
     for (i = 0; i < taxResult.taxes.length; i++) {
         taxResult.taxes[i].value = new Money(
             taxResult.taxes[i].normalized.taxAmount,
