@@ -9,12 +9,19 @@ var CardHelper = require('~/cartridge/scripts/helpers/CardHelper');
 var secureResponseHelper = require('~/cartridge/scripts/helpers/secureResponseHelper');
 
 /**
- * @returns {*} *
+ * Retrieves an order only if it belongs to the current session.
+ * Validates that the requested orderNo matches the session-stored order
+ * set during checkout in postAuthorizationHandling.
+ * @param {string} orderNo - The order number to retrieve
+ * @returns {dw.order.Order|null} The order if valid, null otherwise
  */
 function getOrder(orderNo) {
     var OrderMgr = require('dw/order/OrderMgr');
-    var order = OrderMgr.getOrder(orderNo);
-    return order;
+    // eslint-disable-next-line no-undef
+    if (!orderNo || orderNo !== session.privacy.currentOrderNo) {
+        return null;
+    }
+    return OrderMgr.getOrder(orderNo);
 }
 
 /**
@@ -99,6 +106,8 @@ function handleOrderPlacement(params) {
     // Clear session privacy data
     // eslint-disable-next-line no-undef
     session.privacy.orderStatus = '';
+    // eslint-disable-next-line no-undef
+    session.privacy.currentOrderNo = '';
 
     return result;
 }
@@ -119,7 +128,7 @@ server.post('PayerAuthSetup', server.middleware.https, function (req, res, next)
 
     // eslint-disable-next-line no-undef
     var orderNo = req.form.orderID;
-    var order = OrderMgr.getOrder(orderNo);
+    var order = getOrder(orderNo);
 
     if (!order) {
         res.redirect(URLUtils.url('Cart-Show'));
@@ -442,4 +451,4 @@ server.post('PayerAuthValidation', server.middleware.https, function (req, res, 
  */
 if (configObject.cartridgeEnabled) {
     module.exports = server.exports();
-}
+} 

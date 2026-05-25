@@ -224,6 +224,12 @@ function processPayment(paymentData) {
     $('#googletoken').val(GPData);
     $('input[name=dwfrm_billing_paymentMethod]').val('DW_GOOGLE_PAY');
     var paymentForm = $('#dwfrm_billing').serialize();
+    if (!/(^|&)csrf_token=/.test(paymentForm)) {
+        var csrfInfo = (window.googlepayval && window.googlepayval.csrf) || {};
+        var csrfTokenName = csrfInfo.tokenName || 'csrf_token';
+        var csrfToken = csrfInfo.token || $('input[name="csrf_token"]').val() || $('.csrf_token').val() || '';
+        paymentForm += '&' + encodeURIComponent(csrfTokenName) + '=' + encodeURIComponent(csrfToken);
+    }
 
     function loadFormErrors(parentSelector, fieldErrors) { // eslint-disable-line
         // Display error messages and highlight form fields with errors.

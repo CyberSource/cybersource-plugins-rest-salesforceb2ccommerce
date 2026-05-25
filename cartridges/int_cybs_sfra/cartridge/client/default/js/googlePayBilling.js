@@ -151,10 +151,13 @@ function prefetchGooglePaymentData() {
  */
 function processPayment(paymentData) {
     var postdataUrl = window.googlepayval.sessionCallBack;
+    var csrfInfo = (window.googlepayval && window.googlepayval.csrf) || {};
+    var csrfTokenName = csrfInfo.tokenName || 'csrf_token';
+    var csrfToken = csrfInfo.token || $('input[name="csrf_token"]').val() || $('.csrf_token').val();
     var urlParams = {
         paymentData: JSON.stringify(paymentData)
-
     };
+    urlParams[csrfTokenName] = csrfToken;
     $.ajax({
         url: postdataUrl,
         type: 'post',
