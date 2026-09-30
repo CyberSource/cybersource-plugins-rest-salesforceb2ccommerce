@@ -9,12 +9,52 @@ var CardHelper = require('~/cartridge/scripts/helpers/CardHelper');
 var secureResponseHelper = require('~/cartridge/scripts/helpers/secureResponseHelper');
 
 /**
- * @returns {*} *
+ * How long an early (card-entry time) setup reference stays usable. Past this the order-time
+ * setup runs normally, so an idling shopper gets a clean fallback instead of an enrollment
+ * failure on a reference the authentication provider has already aged out.
+ */
+var EARLY_SETUP_MAX_AGE_MS = 900000; // 15 minutes
+
+/**
+ * postMessage type the return interstitial sends to the parent window to say the 3DS challenge is
+ * finished. Defined once and handed to both templates so the sender and the listener cannot drift.
+ */
+var PAYER_AUTH_COMPLETE_MESSAGE = 'visaacceptance:payerauth-complete';
+
+/**
+ * Session keys written by the PayerAuthEarlySetup controller. Cleared once enrollment has
+ * consumed them so a second order attempt cannot reuse a spent reference.
+ */
+var EARLY_SESSION_KEYS = [
+    'cybsEarlyPaReferenceId',
+    'cybsEarlyPaBrowserFields',
+    'cybsEarlyPaGeneration',
+    'cybsEarlyPaSetupTime'
+];
+
+/**
+ * Drops all early Payer Auth setup state from the session.
+ */
+function clearEarlyPayerAuthState() {
+    for (var i = 0; i < EARLY_SESSION_KEYS.length; i += 1) {
+        session.privacy[EARLY_SESSION_KEYS[i]] = '';
+    }
+}
+
+/**
+ * Retrieves an order only if it belongs to the current session.
+ * Validates that the requested orderNo matches the session-stored order
+ * set during checkout in postAuthorizationHandling.
+ * @param {string} orderNo - The order number to retrieve
+ * @returns {dw.order.Order|null} The order if valid, null otherwise
  */
 function getOrder(orderNo) {
     var OrderMgr = require('dw/order/OrderMgr');
-    var order = OrderMgr.getOrder(orderNo);
-    return order;
+    // eslint-disable-next-line no-undef
+    if (!orderNo || orderNo !== session.privacy.currentOrderNo) {
+        return null;
+    }
+    return OrderMgr.getOrder(orderNo);
 }
 
 /**
@@ -57,7 +97,6 @@ function handleOrderPlacement(params) {
 
     if (fraudDetectionStatus.status === 'fail') {
         Transaction.wrap(function () {
-            CardHelper.cleanupPaymentInstrumentCustomAttributes(paymentInstrument);
             OrderMgr.failOrder(order, true);
         });
 
@@ -99,6 +138,8 @@ function handleOrderPlacement(params) {
     // Clear session privacy data
     // eslint-disable-next-line no-undef
     session.privacy.orderStatus = '';
+    // eslint-disable-next-line no-undef
+    session.privacy.currentOrderNo = '';
 
     return result;
 }
@@ -119,21 +160,50 @@ server.post('PayerAuthSetup', server.middleware.https, function (req, res, next)
 
     // eslint-disable-next-line no-undef
     var orderNo = req.form.orderID;
-    var order = OrderMgr.getOrder(orderNo);
+    var order = getOrder(orderNo);
 
     if (!order) {
         res.redirect(URLUtils.url('Cart-Show'));
         return next();
     }
+
+    // Early setup gate. When PayerAuthEarlySetup-PayerAuthSetupData already ran setup and DDC at
+    // card-entry time, reuse that referenceId and go straight to enrollment instead of paying for
+    // a second setup call and a second device data collection round trip.
+    //
+    // Deliberately NOT taken when isScaFlow: an SCA retrigger must always get a fresh setup.
+    // Also not taken once the reference is older than EARLY_SETUP_MAX_AGE_MS, so an idling
+    // shopper falls back to the normal order-time setup rather than failing enrollment on an
+    // expired reference.
+    var earlyReferenceId = session.privacy.cybsEarlyPaReferenceId;
+    var earlySetupTime = Number(session.privacy.cybsEarlyPaSetupTime) || 0;
+    var earlyAge = new Date().getTime() - earlySetupTime;
+
+    if (!isScaFlow && earlyReferenceId && earlyAge < EARLY_SETUP_MAX_AGE_MS) {
+        require('dw/system/Logger').getLogger('VisaAcceptance', 'PayerAuthentication')
+            .warn('PayerAuthSetup: reusing early setup reference, skipping setup and DDC. Order: {0}', orderNo);
+
+        secureResponseHelper.secureRender(res, 'payerAuthentication/earlyPayerAuthEnroll', {
+            action: URLUtils.url('PayerAuthentication-PayerAuthEnroll'),
+            orderNo: orderNo,
+            referenceId: earlyReferenceId,
+            isScaFlow: isScaFlow
+        });
+        return next();
+    }
+
+    if (earlyReferenceId) {
+        require('dw/system/Logger').getLogger('VisaAcceptance', 'PayerAuthentication')
+            .warn('PayerAuthSetup: ignoring early setup reference ({0}), running order-time setup. Order: {1}',
+                isScaFlow ? 'SCA retrigger needs a fresh setup' : 'reference is stale', orderNo);
+    }
+
     var paymentInstrument = CardHelper.getNonGCPaymemtInstument(order);
 
     var billingForm = server.forms.getForm('billing');
     var card = {
         token: paymentInstrument.creditCardToken,
-        jwttoken: billingForm.creditCardFields.flexresponse.value,
-        ucJwtToken: paymentInstrument.custom.UCToken,
-        securityCode: billingForm.creditCardFields.securityCode.value,
-        googlePayFluidData: paymentInstrument.custom.GooglePayEncryptedData
+        securityCode: billingForm.creditCardFields.securityCode.value
     };
 
     try {
@@ -158,7 +228,6 @@ server.post('PayerAuthSetup', server.middleware.https, function (req, res, next)
     } catch (e) {
         // Fail the order and clean up
         Transaction.wrap(function () {
-            CardHelper.cleanupPaymentInstrumentCustomAttributes(paymentInstrument);
             OrderMgr.failOrder(order, true);
         });
 
@@ -201,6 +270,25 @@ server.post('PayerAuthEnroll', server.middleware.https, function (req, res, next
         }
     }
 
+    // When setup ran early, the browser fields were collected and POSTed at card-entry time
+    // rather than by the DDC page, so they arrive from the session instead of this request.
+    if (!payerauthArgs.parsedBrowserfields && session.privacy.cybsEarlyPaBrowserFields) {
+        try {
+            var earlyBrowserfields = JSON.parse(session.privacy.cybsEarlyPaBrowserFields);
+            earlyBrowserfields.ipAddress = request.httpRemoteAddress;
+            earlyBrowserfields.httpAcceptContent = secureResponseHelper.sanitizeHttpHeader(request.httpHeaders.get('accept'));
+            payerauthArgs.parsedBrowserfields = earlyBrowserfields;
+        } catch (eBrowserfields) {
+            require('dw/system/Logger').getLogger('VisaAcceptance', 'PayerAuthentication')
+                .warn('PayerAuthEnroll: could not parse early browser fields, enrolling without them: {0}',
+                    eBrowserfields.message || eBrowserfields);
+        }
+    }
+
+    // The reference is single-use: whatever happens to this enrollment, a later order attempt
+    // must run its own setup rather than replaying this one.
+    clearEarlyPayerAuthState();
+
     var referenceId = req.form.referenceId;
     var billingForm = server.forms.getForm('billing');
     var shippingAddress = null;
@@ -214,10 +302,7 @@ server.post('PayerAuthEnroll', server.middleware.https, function (req, res, next
         var currencyCode = order.currencyCode;
         var card = {
             token: paymentInstrument.creditCardToken,
-            jwttoken: billingForm.creditCardFields.flexresponse.value,
-            ucJwtToken: paymentInstrument.custom.UCToken,
-            securityCode: billingForm.creditCardFields.securityCode.value,
-            googlePayFluidData: paymentInstrument.custom.GooglePayEncryptedData,
+            securityCode: billingForm.creditCardFields.securityCode.value
         };
     }
 
@@ -248,7 +333,8 @@ server.post('PayerAuthEnroll', server.middleware.https, function (req, res, next
                         stepUpUrl: stepUpUrl,
                         jwtToken: jwtToken,
                         orderNo: orderNo,
-                        isScaFlow: isScaFlow
+                        isScaFlow: isScaFlow,
+                        completeMessageType: PAYER_AUTH_COMPLETE_MESSAGE
                     });
                 });
             }
@@ -278,7 +364,6 @@ server.post('PayerAuthEnroll', server.middleware.https, function (req, res, next
             authReversal.httpAuthReversal(enrollResponse.id, enrollResponse.clientReferenceInformation.code, totalAmount, currencyCode);
             redirect = true;
             Transaction.wrap(function () {
-                CardHelper.cleanupPaymentInstrumentCustomAttributes(paymentInstrument);
                 OrderMgr.failOrder(order);
             });
         }
@@ -295,8 +380,6 @@ server.post('PayerAuthEnroll', server.middleware.https, function (req, res, next
         else {
             redirect = true;
             Transaction.wrap(function () {
-                // Clean up UCToken on enrollment failure
-                CardHelper.cleanupPaymentInstrumentCustomAttributes(paymentInstrument);
                 OrderMgr.failOrder(order);
             });
         }
@@ -317,8 +400,6 @@ server.post('PayerAuthEnroll', server.middleware.https, function (req, res, next
             });
         } else {
             Transaction.wrap(function () {
-                // Clean up UCToken on exception
-                CardHelper.cleanupPaymentInstrumentCustomAttributes(paymentInstrument);
                 OrderMgr.failOrder(order);
             });
             redirect = true;
@@ -328,6 +409,60 @@ server.post('PayerAuthEnroll', server.middleware.https, function (req, res, next
             });
         }
     }
+    return next();
+});
+
+/**
+ * PayerAuthentication-PayerAuthReturn : thin interstitial the ACS returns to after the challenge.
+ *
+ * Does no payment work at all. Its only jobs are to tell the parent window that the challenge is
+ * over - the parent cannot see inside the issuer's iframe, so this same-origin page is the first
+ * reliable signal it gets - and then to hand the ACS's POST straight on to PayerAuthValidation.
+ *
+ * Why this exists: pointing the returnUrl directly at PayerAuthValidation means the browser only
+ * learns the challenge finished AFTER validation, order placement and email have all run, which is
+ * far too late to put a spinner up. Splitting the return into a cheap page first makes the timing
+ * exact instead of inferred from iframe load counts.
+ *
+ * The body is forwarded generically rather than by naming fields: which parameters an ACS echoes
+ * back varies, and PayerAuthValidation reads MD and TransactionId off the request itself.
+ */
+server.post('PayerAuthReturn', server.middleware.https, function (req, res, next) {
+    // Conservative allowlist for parameter names, so nothing odd reaches an HTML attribute.
+    var SAFE_PARAM_NAME = /^[A-Za-z0-9_.-]{1,128}$/;
+
+    var forwardedParams = [];
+    // eslint-disable-next-line no-undef
+    var parameterMap = request.httpParameterMap;
+    var parameterNames = parameterMap.getParameterNames().toArray();
+
+    for (var i = 0; i < parameterNames.length; i += 1) {
+        var name = String(parameterNames[i]);
+        if (SAFE_PARAM_NAME.test(name)) {
+            forwardedParams.push({
+                name: name,
+                value: parameterMap.get(name).stringValue || ''
+            });
+        } else {
+            require('dw/system/Logger').getLogger('VisaAcceptance', 'PayerAuthentication')
+                .warn('PayerAuthReturn: dropped a returned parameter whose name is not forwardable');
+        }
+    }
+
+    // Carry any querystring the returnUrl was built with onto the forwarding action, so params
+    // added to the returnUrl later keep working without touching this code.
+    var action = URLUtils.https('PayerAuthentication-PayerAuthValidation').toString();
+    // eslint-disable-next-line no-undef
+    var queryString = request.httpQueryString;
+    if (queryString && /^[A-Za-z0-9_.\-=&%+]{1,512}$/.test(queryString)) {
+        action += (action.indexOf('?') > -1 ? '&' : '?') + queryString;
+    }
+
+    secureResponseHelper.secureRender(res, 'payerAuthentication/payerAuthReturn', {
+        action: action,
+        forwardedParams: forwardedParams,
+        completeMessageType: PAYER_AUTH_COMPLETE_MESSAGE
+    });
     return next();
 });
 
@@ -364,10 +499,7 @@ server.post('PayerAuthValidation', server.middleware.https, function (req, res, 
         var currencyCode = order.currencyCode;
         var card = {
             token: paymentInstrument.creditCardToken,
-            jwttoken: billingForm.creditCardFields.flexresponse.value,
-            ucJwtToken: paymentInstrument.custom.UCToken,
-            securityCode: billingForm.creditCardFields.securityCode.value,
-            googlePayFluidData: paymentInstrument.custom.GooglePayEncryptedData,
+            securityCode: billingForm.creditCardFields.securityCode.value
         };
     }
     var mapper = require('~/cartridge/scripts/util/mapper.js');
@@ -402,7 +534,6 @@ server.post('PayerAuthValidation', server.middleware.https, function (req, res, 
         authReversal.httpAuthReversal(authenticateResponse.id, authenticateResponse.clientReferenceInformation.code, totalAmount, currencyCode);
         redirect = true;
         Transaction.wrap(function () {
-            CardHelper.cleanupPaymentInstrumentCustomAttributes(paymentInstrument);
             OrderMgr.failOrder(order);
         });
     }
@@ -421,8 +552,6 @@ server.post('PayerAuthValidation', server.middleware.https, function (req, res, 
     else {
         redirect = true;
         Transaction.wrap(function () {
-            // Clean up UCToken before failing order (placeOrder won't be called)
-            CardHelper.cleanupPaymentInstrumentCustomAttributes(paymentInstrument);
             // Fail the order
             OrderMgr.failOrder(order);
         });
@@ -442,4 +571,4 @@ server.post('PayerAuthValidation', server.middleware.https, function (req, res, 
  */
 if (configObject.cartridgeEnabled) {
     module.exports = server.exports();
-}
+} 

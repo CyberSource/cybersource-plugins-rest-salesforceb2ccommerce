@@ -1,0 +1,30 @@
+<iscomment>
+	TEMPLATENAME: payerAuthReturn.isml
+
+	Rendered inside the step-up iframe the moment the ACS finishes the 3DS challenge.
+
+	Deliberately does no payment work. It exists so that the parent window gets a same-origin
+	signal at the exact moment the challenge ends: while the challenge is up the iframe is on the
+	issuer's domain and the parent can see nothing inside it. Returning straight to
+	PayerAuthValidation would mean that signal only arrived after validation, order placement and
+	the confirmation email had all run - far too late to raise a spinner.
+
+	It posts the completion message to the parent FIRST, then forwards the ACS's POST body on to
+	PayerAuthValidation. Fields are forwarded generically because the set an ACS echoes back varies.
+</iscomment>
+<iscontent type="text/html" charset="UTF-8" compact="true"/>
+<div class="payerauth-return">
+	<iscomment>
+		target="_self" keeps the forward inside this iframe, so PayerAuthValidation's response
+		renders here and its checkoutRedirect script can drive window.top as it always has.
+	</iscomment>
+	<form id="payerAuthForwardForm" name="payerAuthForwardForm" action="${pdict.action}" method="POST" target="_self">
+		<isloop items="${pdict.forwardedParams}" var="forwardedParam">
+			<input type="hidden" name="${forwardedParam.name}" value="${forwardedParam.value}"/>
+		</isloop>
+	</form>
+
+	<input type="hidden" id="payerAuthCompleteMessageType" value="${pdict.completeMessageType}"/>
+
+	<script src="${URLUtils.staticURL('/js/payerAuthReturn.js')}"></script>
+</div>

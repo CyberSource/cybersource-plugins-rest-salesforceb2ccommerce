@@ -15,5 +15,8 @@
         <isif condition="${payment.paymentMethod === 'BANK_TRANSFER'}">
             <isinclude template="checkout/billing/paymentOptions/bankTransferSummary" />
         </isif>
+        <isif condition="${payment.paymentMethod === 'PAYPAL' || payment.paymentMethod === 'VENMO'}">
+            <isinclude template="checkout/billing/paymentOptions/altPaymentSummary" />
+        </isif>
     </isloop>
 </div>

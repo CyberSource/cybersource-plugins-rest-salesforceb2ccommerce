@@ -1,0 +1,95 @@
+<isdecorate template="application/MenuFrame">
+<!-- START GENAI -->
+<!-- Neutral, lightly-styled Webhook Manager. Inline style attributes only: no stylesheet block,
+     no computed classes, no parenthesised or nested ternaries, no numeric entities, ASCII only
+     so it compiles cleanly in BM ISML. -->
+<div style="padding:26px 30px;max-width:980px;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#24292f">
+
+    <div style="border-bottom:1px solid #e1e4e8;padding-bottom:16px;margin-bottom:20px">
+        <h1 style="margin:0 0 5px;font-size:22px;font-weight:600;color:#1f2328">Webhook Manager</h1>
+        <p style="margin:0;color:#57606a;font-size:13px;line-height:1.55;max-width:66ch">Reconcile your webhook subscriptions with the current Site Preferences. Configure features first in <b>Merchant Tools &gt; Site Preferences</b>, then synchronize here.</p>
+    </div>
+
+    <isif condition="${pdict.success}">
+        <div style="background:#eaf6ef;border:1px solid #c3e6d0;border-left:3px solid #1a7f4b;color:#15633b;padding:12px 14px;border-radius:6px;margin:0 0 10px;font-size:13px;line-height:1.5"><b>Synced.</b> Webhooks synchronized successfully.</div>
+    </isif>
+    <isif condition="${pdict.error === 'no_fraud_product'}">
+        <div style="background:#fbeae9;border:1px solid #f0c6c2;border-left:3px solid #b3261e;color:#8a2018;padding:12px 14px;border-radius:6px;margin:0 0 10px;font-size:13px;line-height:1.5"><b>Fraud product not provisioned.</b> Fraud screening was enabled but neither Decision Manager nor Fraud Management Essentials is provisioned for this merchant. The feature has been automatically disabled. Please contact support to have a fraud product provisioned.</div>
+    </isif>
+    <isif condition="${pdict.error === 'sync_failed'}">
+        <div style="background:#fbeae9;border:1px solid #f0c6c2;border-left:3px solid #b3261e;color:#8a2018;padding:12px 14px;border-radius:6px;margin:0 0 10px;font-size:13px;line-height:1.5"><b>Sync failed.</b> One or more webhooks could not be synchronized. Check the table below for products still showing <b>NOT SUBSCRIBED</b>, confirm the product is provisioned for your merchant, then review the <code style="font-family:ui-monospace,Consolas,monospace;background:rgba(27,31,36,0.07);padding:1px 5px;border-radius:4px">customerror</code> custom log for details.</div>
+    </isif>
+    <isif condition="${pdict.error === 'unexpected'}">
+        <div style="background:#fbeae9;border:1px solid #f0c6c2;border-left:3px solid #b3261e;color:#8a2018;padding:12px 14px;border-radius:6px;margin:0 0 10px;font-size:13px;line-height:1.5"><b>Unexpected error.</b> The action could not be completed<isif condition="${pdict.errorDetail}">: <isprint value="${pdict.errorDetail}" encoding="htmlcontent"/></isif>. Review the <code style="font-family:ui-monospace,Consolas,monospace;background:rgba(27,31,36,0.07);padding:1px 5px;border-radius:4px">customerror</code> custom log for the full stack trace.</div>
+    </isif>
+    <isset name="fraudSub" value="${pdict.subscriptions.fraudManagement}" scope="page" />
+    <isset name="ucSub" value="${pdict.subscriptions.unifiedCheckout}" scope="page" />
+    <!-- "Not active" is only meaningful when a subscription actually EXISTS; a non-active status on an
+         existing subscription is what this warns about. When no subscription exists, the "Configuration
+         mismatch" banner below is the correct (and only) message. -->
+    <isset name="fraudNotActive" value="${fraudSub && fraudSub.status && fraudSub.status !== 'ACTIVE'}" scope="page" />
+    <isset name="ucNotActive" value="${ucSub && ucSub.status && ucSub.status !== 'ACTIVE'}" scope="page" />
+    <isif condition="${fraudNotActive || ucNotActive}">
+        <div style="background:#fdf3d7;border:1px solid #ecd9a4;border-left:3px solid #9a6700;color:#7a5200;padding:12px 14px;border-radius:6px;margin:0 0 10px;font-size:13px;line-height:1.5"><b>Webhook not active.</b> A subscription is not <b>ACTIVE</b> at Visa Acceptance (see the Webhook Status column). A webhook only delivers when ACTIVE; it moves to ACTIVE after a successful health check from Visa Acceptance. If it stays INACTIVE, PENDING REVIEW, or SUSPENDED, confirm Visa Acceptance can reach the webhook URL.</div>
+    </isif>
+
+    <!-- "Configuration mismatch" covers the not-subscribed case: feature enabled but no subscription exists. -->
+    <isset name="dmMismatch" value="${pdict.config.dmEnabled && !fraudSub}" scope="page" />
+    <isset name="ucMismatch" value="${pdict.config.secureIntegrationMethod === 'Unified_Checkout' && !ucSub}" scope="page" />
+    <isif condition="${dmMismatch || ucMismatch}">
+        <div style="background:#fbeae9;border:1px solid #f0c6c2;border-left:3px solid #b3261e;color:#8a2018;padding:12px 14px;border-radius:6px;margin:0 0 10px;font-size:13px;line-height:1.5"><b>Configuration mismatch.</b> Some features are enabled in Site Preferences but have no active webhook subscription. Click <b>Synchronize Webhooks</b> below to prevent order-processing issues.</div>
+    </isif>
+
+    <form action="${pdict.actionUrl}" method="POST">
+        <input type="hidden" name="action" value="sync"/>
+        <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:#57606a;margin:24px 0 9px">Synchronization Status</div>
+        <table style="width:100%;border-collapse:collapse;border:1px solid #d0d7de;border-radius:8px;overflow:hidden;font-size:13px">
+            <thead>
+                <tr style="background:#f6f8fa">
+                    <th style="text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.03em;color:#656d76;padding:10px 14px;border-bottom:1px solid #d0d7de">Product</th>
+                    <th style="text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.03em;color:#656d76;padding:10px 14px;border-bottom:1px solid #d0d7de">Feature</th>
+                    <th style="text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.03em;color:#656d76;padding:10px 14px;border-bottom:1px solid #d0d7de">Webhook Status</th>
+                    <th style="text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.03em;color:#656d76;padding:10px 14px;border-bottom:1px solid #d0d7de">Webhook ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="padding:13px 14px;border-bottom:1px solid #eaecef;font-weight:600">Fraud Management
+<span style="font-weight:400;font-size:11.5px;color:#656d76">Decision Manager &amp; Fraud Management Essentials</span></td>
+                    <td style="padding:13px 14px;border-bottom:1px solid #eaecef;color:#57606a">${pdict.config.dmEnabled ? 'Enabled' : 'Disabled'}</td>
+                    <td style="padding:13px 14px;border-bottom:1px solid #eaecef;font-weight:600">${pdict.subscriptions.fraudManagement ? pdict.subscriptions.fraudManagement.status || 'ACTIVE' : 'NOT SUBSCRIBED'}</td>
+                    <td style="padding:13px 14px;border-bottom:1px solid #eaecef;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;color:#57606a;word-break:break-all">${pdict.subscriptions.fraudManagement ? pdict.subscriptions.fraudManagement.webhookId : '-'}</td>
+                </tr>
+                <tr>
+                    <td style="padding:13px 14px;font-weight:600">Unified Checkout
+<span style="font-weight:400;font-size:11.5px;color:#656d76">Order transaction results</span></td>
+                    <td style="padding:13px 14px;color:#57606a">${pdict.config.secureIntegrationMethod === 'Unified_Checkout' ? 'Enabled' : 'Disabled'}</td>
+                    <td style="padding:13px 14px;font-weight:600">${pdict.subscriptions.unifiedCheckout ? pdict.subscriptions.unifiedCheckout.status || 'ACTIVE' : 'NOT SUBSCRIBED'}</td>
+                    <td style="padding:13px 14px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;color:#57606a;word-break:break-all">${pdict.subscriptions.unifiedCheckout ? pdict.subscriptions.unifiedCheckout.webhookId : '-'}</td>
+                </tr>
+            </tbody>
+        </table>
+        <div style="text-align:right;margin:14px 0 30px"><button type="submit" style="background:#24292f;color:#ffffff;border:1px solid #24292f;padding:9px 18px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">Synchronize Webhooks with Site Preferences</button></div>
+    </form>
+
+    <form action="${pdict.actionUrl}" method="POST">
+        <input type="hidden" name="action" value="advanced"/>
+        <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:#57606a;margin:0 0 9px">Advanced Configuration</div>
+        <table style="width:100%;border-collapse:collapse;border:1px solid #d0d7de;border-radius:8px;overflow:hidden;font-size:13px">
+            <tbody>
+                <tr>
+                    <td style="padding:16px 14px;width:34%;vertical-align:top;font-weight:600;background:#f6f8fa;border-right:1px solid #d0d7de">Webhook Response Decryption Key Alias</td>
+                    <td style="padding:16px 14px">
+                        <input type="text" name="egressMleAlias" value="${pdict.config.egressMleAlias}" placeholder="Webhook response decryption key alias" spellcheck="false" autocomplete="off" style="width:100%;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;padding:9px 11px;border:1px solid #d0d7de;border-radius:6px;box-sizing:border-box;color:#24292f"/>
+                        <div style="font-size:12px;color:#656d76;margin-top:8px;line-height:1.5">Must match the alias of your <b>.p12</b> in <b>Private Keys and Certificates</b>. Both the private key (for decryption) and the public certificate (registered with the gateway) are taken from this <b>.p12</b>.</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div style="text-align:right;margin:14px 0 30px"><button type="submit" onclick="return confirm('Updating these settings will re-sync active webhooks. Continue?')" style="background:#f6f8fa;color:#24292f;border:1px solid #d0d7de;padding:9px 18px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">Update Advanced Settings</button></div>
+    </form>
+
+</div>
+<!-- END GENAI -->
+</isdecorate>
+ </code>

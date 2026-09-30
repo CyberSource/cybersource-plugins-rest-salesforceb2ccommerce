@@ -1,6 +1,6 @@
-# Install Cybersource for Salesforce B2C Commerce
+# Install Visa Acceptance for Salesforce B2C Commerce
 
-Download and install the Cybersource cartridge for Salesforce B2C Commerce.
+Download and install the Visa Acceptance cartridge for Salesforce B2C Commerce.
 
 ---
 
@@ -16,15 +16,15 @@ Before beginning installation, ensure you have:
 
 ## Download
 
-Download Cybersource cartridge for Salesforce B2C Commerce from GitHub.
+Download the Visa Acceptance cartridge for Salesforce B2C Commerce from GitHub.
 
 ---
 
 ## Set up workspace
 
-1. Create a "Cybersource" folder in your Salesforce workspace and copy the downloaded cartridge (`int_cybs_sfra` and `int_cybs_sfra_base`) to the workspace.
+1. Create a "Visaacceptance" folder in your Salesforce workspace and copy the downloaded cartridges (`int_cybs_sfra`, `int_cybs_sfra_base`, and `bm_cybs_sfra`) to the workspace.
 
-2. If the project's base path is different from the one available in Cybersource's package.json, open the file `/package.json` and modify the `paths.base` value to point to your `app_storefront_base` cartridge. This path is used by the JS and SCSS build scripts.
+2. If the project's base path is different from the one available in the cartridge's package.json, open the file `/package.json` and modify the `paths.base` value to point to your `app_storefront_base` cartridge. This path is used by the JS and SCSS build scripts.
 
 ---
 
@@ -41,6 +41,7 @@ If you use VSCode, install the extension Prophet Debugger and include these line
     "cartridge": [
         "int_cybs_sfra",
         "int_cybs_sfra_base",
+        "bm_cybs_sfra",
         "app_storefront_base",
         "modules"
     ]
@@ -55,7 +56,7 @@ If you are using a different IDE, please refer to the respective guide to set up
 
 ### Step 1: Install Node Dependencies
 
-Install the node in the "Cybersource" folder.
+Install the node in the "Visaacceptance" folder.
 
 Install sgmf-scripts and copy-webpack-plugin with this command:
 
@@ -79,10 +80,10 @@ Upload the code to Salesforce Commerce Cloud instance:
 npm run uploadCartridge
 ```
 
-The Cybersource cartridge is now installed and ready for configuration in your Salesforce B2C Commerce environment.
+The Visa Acceptance cartridge is now installed and ready for configuration in your Salesforce B2C Commerce environment.
 
 ---
 
 ---
 
-[Next: Configure Cybersource for Salesforce B2C Commerce →](Configuration.md)
+[Next: Configure Visa Acceptance for Salesforce B2C Commerce →](Configuration.md)

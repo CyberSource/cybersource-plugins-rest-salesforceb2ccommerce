@@ -2,6 +2,11 @@
 <isset name="UnifiedCheckoutPaymentAcceptanceLocation" value="${require('*/cartridge/configuration/index').UnifiedCheckoutPaymentAcceptanceLocation}" scope="page" />
 <input type="hidden" id="unified-token-url" value="${URLUtils.https('SecureAcceptance-CreateUCToken')}" />
 <input type="hidden" id="minicart-token-url" value="${URLUtils.https('SecureAcceptance-CreateUCTokenMiniCart')}" />
+<input type="hidden" id="place-order-direct-url" value="${URLUtils.https('CheckoutServices-PlaceOrderDirect')}" />
+<input type="hidden" id="checkout-stage-url" value="${URLUtils.https('Checkout-Begin', 'stage', 'payment')}" />
+<input type="hidden" id="get-saved-cards-url" value="${URLUtils.https('SecureAcceptance-GetSavedCards')}" />
+<input type="hidden" id="create-uc-token-with-card-url" value="${URLUtils.https('SecureAcceptance-CreateUCTokenWithCard')}" />
+<input type="hidden" id="set-uc-billing-address-url" value="${URLUtils.https('SecureAcceptance-SetUCBillingAddress')}" />
  
 <div class="unified-checkout-container">
     <div class="row">
@@ -11,12 +16,19 @@
                 <div id="buttonPaymentListContainer" class="payment-selection-container"></div>
                 <div id="embeddedPaymentContainer" class="payment-screen-container"></div>
             </div>
-            <iscomment>Only show server-side error for critical failures when JS can't handle it</iscomment>
-            <isif condition="${pdict.UcCaptureContext == null}">
+            <iscomment>
+                On a null capture context, show only a generic, customer-friendly message -
+                never the raw gateway response. The minicart is an optional express-pay
+                convenience, so it must surface no error at all (suppressed below).
+                A server-side failure shows the message immediately; otherwise it stays
+                hidden (d-none) for JS to reveal when appropriate.
+            </iscomment>
+            <isif condition="${pdict.UcCaptureContext == null && !pdict.isMiniCart}">
+                <isset name="ucErrorClass" value="${pdict.serverError ? 'alert alert-danger' : 'alert alert-danger d-none'}" scope="page" />
                 <noscript>
                     <div class="alert alert-danger">${Resource.msg('uc.tokenerror','payments',null)}</div>
                 </noscript>
-                <div id="uc-server-error" class="alert alert-danger d-none">
+                <div id="uc-server-error" class="${ucErrorClass}">
                     ${Resource.msg('uc.tokenerror','payments',null)}
                 </div>
             </isif>
@@ -41,6 +53,8 @@
                     value="" name="dwfrm_billing_creditCardFields_ucresponse" />
                 <input type="hidden" class="form-control uc-payment-token" id="uc-payment-token"
                     value="" name="dwfrm_billing_creditCardFields_ucpaymenttoken" />
+                <input type="hidden" class="form-control uc-transaction-id" id="uc-transaction-id"
+                    value="" name="dwfrm_billing_creditCardFields_transactionId" />
                 <input type="hidden" class="form-control uc-payment-method" id="uc-payment-method"
                     value="" name="dwfrm_billing_creditCardFields_ucpaymentmethod" />
 

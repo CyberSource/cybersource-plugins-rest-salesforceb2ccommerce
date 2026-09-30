@@ -27,8 +27,44 @@
             <production/>
         </preferences>
     </payment-processor>
-    <payment-processor processor-id="PAYMENTS_APPLEPAY"> 
+    <payment-processor processor-id="PAYMENTS_APPLEPAY">
         <description>Payment processor for Apple pay</description>
+        <preferences>
+            <all-instances/>
+            <development/>
+            <staging/>
+            <production/>
+        </preferences>
+    </payment-processor>
+    <payment-processor processor-id="PAYMENTS_GOOGLEPAY">
+        <description>Payment processor for Google Pay</description>
+        <preferences>
+            <all-instances/>
+            <development/>
+            <staging/>
+            <production/>
+        </preferences>
+    </payment-processor>
+    <payment-processor processor-id="PAYMENTS_PAYPAL">
+        <description>Payment processor for PayPal</description>
+        <preferences>
+            <all-instances/>
+            <development/>
+            <staging/>
+            <production/>
+        </preferences>
+    </payment-processor>
+    <payment-processor processor-id="PAYMENTS_VENMO">
+        <description>Payment processor for Venmo</description>
+        <preferences>
+            <all-instances/>
+            <development/>
+            <staging/>
+            <production/>
+        </preferences>
+    </payment-processor>
+    <payment-processor processor-id="PAYMENTS_PAZE">
+        <description>Payment processor for Paze (card-backed digital wallet)</description>
         <preferences>
             <all-instances/>
             <development/>

@@ -2,10 +2,26 @@
     <div id="js-unifiedCheckout-container">
 		<div class="row">
 			<isset name="isCartridgeEnabled" value="${require('*/cartridge/configuration/index').cartridgeEnabled}" scope="page" />
+			
+			<!-- DEBUG: Template loaded, cartridgeEnabled = ${isCartridgeEnabled} -->
+			
 			<isif condition="${isCartridgeEnabled}">
+				<iscomment>
+					Saved card selector is created dynamically by unifiedCheckout.js
+					when customer has saved cards. No ISML template needed.
+				</iscomment>
+				
+				<iscomment>UC Widget Container - JS will show/hide as needed</iscomment>
+				<div id="uc-widget-wrapper" class="col-12">
+					<!-- DEBUG: UC widget wrapper rendered -->
+					<isinclude template="unifiedCheckout" />
+				</div>
+				
+				<iscomment>Load scripts AFTER the UC container so DOM elements exist</iscomment>
 				<script src="${URLUtils.staticURL('/custom/lib/jquery/jquery-3.7.1.min.js')}"></script>
 				<script src="${URLUtils.staticURL('/custom/unifiedCheckout.js')}"></script>
-				<isinclude template="unifiedCheckout" />
+			<iselse/>
+				<!-- DEBUG: Cartridge is DISABLED -->
 			</isif>
 		</div>
 	</div>

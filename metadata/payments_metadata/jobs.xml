@@ -28,4 +28,23 @@
         </triggers>
     </job>
 
+    <job job-id="Payment: Refresh Payment Status" priority="0">
+        <description>On-demand: refresh Visa Acceptance payment status for the supplied order numbers and update the Visa Acceptance Transaction Status. Enter a comma-separated list of order numbers in the OrderNumbers parameter and use Run Now.</description>
+        <parameters/>
+        <flow>
+            <context site-id="RefArch"/>
+            <step step-id="RefreshPaymentStatus" type="ExecuteScriptModule" enforce-restart="false">
+                <description>Refresh payment status for the supplied order numbers.</description>
+                <parameters>
+                    <parameter name="ExecuteScriptModule.Module">int_cybs_sfra_base/cartridge/scripts/jobs/RefreshPaymentStatus.js</parameter>
+                    <parameter name="ExecuteScriptModule.FunctionName">refreshOrders</parameter>
+                    <parameter name="ExecuteScriptModule.Transactional">false</parameter>
+                    <parameter name="OrderNumbers"></parameter>
+                </parameters>
+            </step>
+        </flow>
+        <rules/>
+        <triggers/>
+    </job>
+
 </jobs>

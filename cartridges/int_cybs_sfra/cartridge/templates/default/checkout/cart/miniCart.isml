@@ -72,11 +72,9 @@
 		
 	<iscomment>Unified Checkout Widget for MiniCart</iscomment>
 	<isset name="isUCEnabled" value="${require('*/cartridge/configuration/index').unifiedCheckoutEnabled}" scope="page" />
-	<isset name="isMinicartEnabled" value="${require('*/cartridge/configuration/index').minicartEnabled}" scope="page" />
 	<isset name="isCartridgeEnabled" value="${require('*/cartridge/configuration/index').cartridgeEnabled}" scope="page" />
-	
-	<isset name="isPaymentsPresent" value="${!empty(require('*/cartridge/configuration/index').digitalPaymentMethods)}" scope="page" />
-	<isif condition="${isUCEnabled && isMinicartEnabled && isCartridgeEnabled && isPaymentsPresent}">
+	<isset name="isExpressPayEnabled" value="${require('*/cartridge/configuration/index').unifiedCheckoutExpressPay}" scope="page" />
+	<isif condition="${isUCEnabled && isCartridgeEnabled && isExpressPayEnabled}">
 		<isscript>
 			var CSRFProtection = require('dw/web/CSRFProtection');
 		</isscript>

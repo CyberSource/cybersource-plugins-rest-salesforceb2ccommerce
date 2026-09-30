@@ -1,4 +1,4 @@
-/**
+﻿/**
  * CyberSource Merged Spec
  * All CyberSource API specs merged together. These are available at https://developer.cybersource.com/api/reference/api-reference.html
  *
@@ -16,22 +16,19 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/Tmsv2customersEmbeddedDefaultPaymentInstrumentEmbeddedInstrumentIdentifierProcessingInformationAuthorizationOptionsInitiator'], factory);
+    define(['ApiClient'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./Tmsv2customersEmbeddedDefaultPaymentInstrumentEmbeddedInstrumentIdentifierProcessingInformationAuthorizationOptionsInitiator'));
+    module.exports = factory(require('../ApiClient'));
   } else {
     // Browser globals (root is window)
     if (!root.CyberSource) {
       root.CyberSource = {};
     }
-    root.CyberSource.Tmsv2customersEmbeddedDefaultPaymentInstrumentEmbeddedInstrumentIdentifierProcessingInformationAuthorizationOptions = factory(root.CyberSource.ApiClient, root.CyberSource.Tmsv2customersEmbeddedDefaultPaymentInstrumentEmbeddedInstrumentIdentifierProcessingInformationAuthorizationOptionsInitiator);
+    root.CyberSource.Tmsv2customersEmbeddedDefaultPaymentInstrumentEmbeddedInstrumentIdentifierProcessingInformationAuthorizationOptions = factory(root.CyberSource.ApiClient);
   }
-}(this, function(ApiClient, Tmsv2customersEmbeddedDefaultPaymentInstrumentEmbeddedInstrumentIdentifierProcessingInformationAuthorizationOptionsInitiator) {
+}(this, function(ApiClient) {
   'use strict';
-
-
-
 
   /**
    * The Tmsv2customersEmbeddedDefaultPaymentInstrumentEmbeddedInstrumentIdentifierProcessingInformationAuthorizationOptions model module.
@@ -46,8 +43,6 @@
    */
   var exports = function() {
     var _this = this;
-
-
   };
 
   /**
@@ -62,20 +57,16 @@
       obj = obj || new exports();
 
       if (data.hasOwnProperty('initiator')) {
-        obj['initiator'] = Tmsv2customersEmbeddedDefaultPaymentInstrumentEmbeddedInstrumentIdentifierProcessingInformationAuthorizationOptionsInitiator.constructFromObject(data['initiator']);
+        obj['initiator'] = ApiClient.convertToType(data['initiator'], Object);
       }
     }
     return obj;
   }
 
   /**
-   * @member {module:model/Tmsv2customersEmbeddedDefaultPaymentInstrumentEmbeddedInstrumentIdentifierProcessingInformationAuthorizationOptionsInitiator} initiator
+   * @member {Object} initiator
    */
   exports.prototype['initiator'] = undefined;
 
-
-
   return exports;
 }));
-
-

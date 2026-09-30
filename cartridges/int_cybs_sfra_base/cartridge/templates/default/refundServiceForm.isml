@@ -1,0 +1,86 @@
+<iscontent type="text/html" charset="UTF-8" compact="true"/>
+<isinclude template="components/modules"/>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<title>${Resource.msg('test.unittestpagetitle','visaacceptance',null)}</title>
+</head>
+<body>
+<iscomment>
+ Refund service form
+</iscomment>
+<div id="RefundForm" class="refund_form container" >
+ <h1>${Resource.msg('test.refundserviceform','visaacceptance',null)}</h1>
+ <form class="refund_form" action="${pdict.continueUrl}" method="post" id="generic-form-submit">
+   <input type="hidden" name="${pdict.csrf.tokenName}" value="${pdict.csrf.token}"/>
+   <fieldset>
+    <div id="refundform" class="refundform">
+     <div class="row">
+         <div class="col-md-8">
+             <div class="form-group">
+                 <label class="form-control-label" for="merchantReferenceCode">${Resource.msg('service_merchantrefcode','visaacceptance',null)}</label>
+                 <div class="merchantReferenceCode-wrapper">
+                     <input type="text" class="form-control" id="merchantReferenceCode"
+                         name="${pdict.refundServiceForm.merchantReferenceCode.htmlName}"
+                         value="${pdict.refundServiceForm.merchantReferenceCode.htmlValue}"
+                     >
+                 </div>
+             </div>
+         </div>
+         <div class="col-md-8">
+             <div class="form-group">
+              <label class="form-control-label" for="authRequestID">${Resource.msg('service_captureOrPaymentsRequestId','visaacceptance',null)}</label>
+                 <div class="authRequestID-wrapper">
+                     <input type="text" class="form-control" id="authRequestID"
+                         name="${pdict.refundServiceForm.authRequestID.htmlName}"
+                         value="${pdict.refundServiceForm.authRequestID.htmlValue}"
+                     >
+                 </div>
+             </div>
+         </div>
+         <div class="col-md-8">
+             <div class="form-group">
+              <label class="form-control-label" for="currency">${Resource.msg('service_currency','visaacceptance',null)}</label>
+                 <div class="currency-wrapper">
+                     <input type="text" class="form-control" id="currency"
+                         name="${pdict.refundServiceForm.currency.htmlName}"
+                         value="${pdict.refundServiceForm.currency.htmlValue}"
+                     >
+                 </div>
+             </div>
+         </div>
+         <div class="col-md-8">
+             <div class="form-group">
+              <label class="form-control-label" for="grandtotalamount">${Resource.msg('service_refundamount','visaacceptance',null)}</label>
+                 <div class="grandtotalamount-wrapper">
+                     <input type="text" class="form-control" id="grandtotalamount"
+                         name="${pdict.refundServiceForm.grandtotalamount.htmlName}"
+                         value="${pdict.refundServiceForm.grandtotalamount.htmlValue}"
+                     >
+                 </div>
+             </div>
+         </div>
+         <div class="col-md-8">
+             <div class="form-group">
+              <label class="form-control-label" for="refundEndpointType">${Resource.msg('service_refundendpointtype','visaacceptance','Payment type')}</label>
+                 <div class="refundEndpointType-wrapper">
+                     <select class="form-control" id="refundEndpointType"
+                         name="${pdict.refundServiceForm.refundEndpointType.htmlName}">
+                         <isloop items="${pdict.refundServiceForm.refundEndpointType.options}" var="endpointOption">
+                             <option value="${endpointOption.htmlValue}" ${endpointOption.selected ? 'selected="selected"' : ''}>${endpointOption.label}</option>
+                         </isloop>
+                     </select>
+                 </div>
+             </div>
+         </div>
+     </div>
+    </div>
+    <fieldset>
+   <div class="actions clearfix">
+    <button id="dialogApplyBtn" name="${pdict.refundServiceForm.submit}" type="submit" value="${Resource.msg('test.submit','visaacceptance',null)}"><span>${Resource.msg('test.submit','visaacceptance',null)}</span></button>
+   </div>
+ </form>
+</div>
+</body>
+</html>

@@ -60,6 +60,56 @@
 	border-radius: 4px;
 }
 
+// The iframe starts hidden and is only revealed once a cross-origin load proves the issuer has
+// put something on screen. It goes back behind the spinner for the post-challenge wait.
+.stepup-iframe-hidden {
+	display: none;
+}
+
+// Spinner shown while the ACS is being contacted, and again for the whole post-challenge wait
+// (validation, order placement, then the top-level redirect).
+.stepup-status {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	text-align: center;
+}
+
+.stepup-status-hidden {
+	display: none;
+}
+
+.stepup-spinner {
+	width: 48px;
+	height: 48px;
+	margin-bottom: 1rem;
+	border: 4px solid rgba(0, 0, 0, 0.1);
+	border-top-color: #00a1e0;
+	border-radius: 50%;
+	animation: stepup-spin 1s linear infinite;
+}
+
+.stepup-status-message {
+	margin: 0;
+	padding: 0 1.5rem;
+	color: #333;
+	font-size: 0.95rem;
+}
+
+// On timeout the message stays but the spinner goes: nothing is still in progress.
+.stepup-status-timeout .stepup-spinner {
+	display: none;
+}
+
+@keyframes stepup-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
 .payerAuth_payment {
 	text-align: center;
 	padding: 17.125rem 0rem;

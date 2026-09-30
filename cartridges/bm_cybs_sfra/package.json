@@ -1,0 +1,9 @@
+{
+    "name": "bm_cybs_sfra",
+    "packageInfo": {
+      "version": "0.0.1"
+   },
+    "description": "Visa Acceptance Business Manager Extension - Webhook Management",
+    "main": "index.js",
+    "cartridge": true
+}

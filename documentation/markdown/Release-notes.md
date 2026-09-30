@@ -1,6 +1,47 @@
 # Release Notes
 
-Release history and updates for the Cybersource Salesforce B2C Commerce cartridge.
+Release history and updates for the Visa Acceptance Salesforce B2C Commerce cartridge.
+
+---
+## Version 2.0.0 (September 2026)
+
+Versioning changed from Calendar Versioning to Semantic Versioning
+
+**Enhancements:**
+- Renamed integration from Cybersource to Visa Acceptance Solutions
+- Upgraded Unified Checkout to version 1.x, supporting multiple payment methods and services in a single integration
+- Added Refund function
+- Added webhook notifications for Fraud Screening and Unified Checkout events
+- Added new Business Manager cartridge `bm_cybs_sfra`, including webhook manager page.
+- Reorganised meta and site preference groupings
+- Updated the authentication method to JSON web token
+- Full support for Message Level Encryption
+- Added support for Response MLE
+- Refined the payer authentication workflow to initiate Device Data Collection (DDC) only after customer card details are received.
+- Introduced a new option for managing Request MLE keys.
+
+**Changes:**
+- Business Manager controls for Payer Authentication (including SCA), Decision Manager, and Transaction Type now only applies to the Salesforce default card form (direct API).
+- Unified Checkout payment methods/services now configured in Business Center
+- Google Pay now only supported through Unified Checkout
+- Replaced Network Token lifecycle notifications with API based updates
+- Added webhook notifications for Fraud Screening and Unified Checkout events
+- Replaced Network Token lifecycle notifications with API based updates
+
+**Security:**
+- Addressed security issues
+
+**Removed:**
+- Microform
+
+**Bug Fix:**
+- Added timeout handling for Device Data Collection (DDC) to prevent payer authentication failures caused by delayed or unresponsive DDC processing.
+
+---
+## Version 26.3.0 (June 2026)
+
+**Changes:**
+- Removed the Flex Microform card capture integration. The Secure Integration Method now offers Unified Checkout; leave it unset to use the default SFCC payment form (Direct API).
 
 ---
 ## Version 26.2.0 (March 2026)
@@ -171,4 +212,4 @@ Added support for 3D-Secure Data Only
 
 ---
 
-[Next: Install Cybersource for Salesforce B2C Commerce →](Installation.md)
+[Next: Install Visa Acceptance for Salesforce B2C Commerce →](Installation.md)

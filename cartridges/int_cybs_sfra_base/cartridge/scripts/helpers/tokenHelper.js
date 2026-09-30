@@ -3,11 +3,6 @@
  * @param {*} result *
  */
 function TokenizeCard(result) {
-    var configObject = require('../../configuration/index');
-    if (configObject.networkTokenizationEnabled && result.processorInformation && result.processorInformation.paymentAccountReferenceNumber) {
-        var networkTokenSubscription = require('~/cartridge/scripts/http/networkTokenSubscription');
-        networkTokenSubscription.createNetworkTokenSubscription();
-    }
     if (session.getCustomer().isAuthenticated() && result.tokenInformation) {
         var TRLHelper = require('~/cartridge/scripts/helpers/tokenRateLimiterHelper.js');
         var CustomerMgr = require('dw/customer/CustomerMgr');
@@ -15,7 +10,15 @@ function TokenizeCard(result) {
         var profile = session.getCustomer().getProfile();
         //@ts-ignore
         var customer = CustomerMgr.getCustomerByCustomerNumber(profile.customerNo);
-        var isallowed = TRLHelper.IsCustumerAllowedSinglePaymentInstrumentInsertion(customer);
+        var server = require('server');
+        var paymentForm = server.forms.getForm('billing');
+        // Unified Checkout tokens are NOT rate-limited — the limiter is kept only for the default (Flex)
+        // card form. So for a UC save, skip the limiter and treat it as allowed; only the default form is
+        // checked here (and has its counter updated below).
+        var saveCardUC = paymentForm && !empty(paymentForm.creditCardFields.ucpaymenttoken.htmlValue);
+        var isallowed = saveCardUC
+            ? { result: true, resetTimer: false, increaseCounter: false }
+            : TRLHelper.IsCustumerAllowedSinglePaymentInstrumentInsertion(customer);
         if (isallowed.result) {
             // Check for duplicate  instrument
             //@ts-ignore
@@ -28,9 +31,6 @@ function TokenizeCard(result) {
             var token = mapper.deserializeTokenInformation(session.privacy.tokenInformation);
             var serializedToken = mapper.serializeTokenInformation(token);
             var duplicateExists;
-            var server = require('server');
-            var paymentForm = server.forms.getForm('billing');
-            var saveCardUC = !empty(paymentForm.creditCardFields.ucpaymenttoken.htmlValue);
 
             var skipFlexCheck = 'flex';
             var tokenInformation = result.tokenInformation;
@@ -95,13 +95,13 @@ function TokenizeCard(result) {
                 }
 
             }
-            var limiterResult = TRLHelper.IsCustumerAllowedSinglePaymentInstrumentInsertion(customer);
-            if (limiterResult.result) {
-                if (limiterResult.resetTimer) {
+            // Only the default (Flex) form updates the rate-limiter counter; UC is not limited.
+            // Reuse isallowed (already computed above) — no need for a second API call.
+            if (!saveCardUC) {
+                if (isallowed.resetTimer) {
                     TRLHelper.resetTimer(customer);
                 }
-
-                if (limiterResult.increaseCounter) {
+                if (isallowed.increaseCounter) {
                     TRLHelper.increaseCounter(customer);
                 }
             }

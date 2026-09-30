@@ -26,7 +26,7 @@ exports.authorizeOrderPayment = function (order, response) {
     var helpers = require('~/cartridge/scripts/util/helpers');
     var enableCaptureForApplePay = false;
 
-    if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_ApplePayTransactionType').value === 'sale') {
+    if (dw.system.Site.getCurrent().getCustomPreferenceValue('VisaAcceptance_ApplePayTransactionType').value === 'sale') {
         enableCaptureForApplePay = true;
     }
 
@@ -103,7 +103,6 @@ exports.authorizeOrderPayment = function (order, response) {
         clientReferenceInformation: {
             code: order.currentOrderNo,
             partner: {
-                developerId: configObject.developerId,
                 solutionId: configObject.solutionId
             }
         },
@@ -132,6 +131,9 @@ exports.authorizeOrderPayment = function (order, response) {
     var paymentError = null;
     var ApplePayHookResult = require('dw/extensions/applepay/ApplePayHookResult');
     var cybersourceRestApi = require('~/cartridge/apiClient/index');
+    var webhookActivationHelper = require('~/cartridge/scripts/helpers/webhookActivationHelper');
+    webhookActivationHelper.activateWebhooks();
+
     var instance = new cybersourceRestApi.PaymentsApi(configObject);
     // eslint-disable-next-line no-undef
     session.privacy.orderPaymentSuccessful = false;
@@ -197,7 +199,7 @@ exports.placeOrder = function (order) {
     }
     var URLUtils = require('dw/web/URLUtils');
     var ApplePayHookResult = require('dw/extensions/applepay/ApplePayHookResult');
-    var response = new ApplePayHookResult(Status(Status.OK), URLUtils.url('COPlaceOrder-Submit', 'order_id', order.currentOrderNo));
+    var response = new ApplePayHookResult(Status(Status.OK), URLUtils.url('COPlaceOrder-Submit', 'order_id', order.currentOrderNo, 'order_token', order.getOrderToken()));
     return response;
 };
 

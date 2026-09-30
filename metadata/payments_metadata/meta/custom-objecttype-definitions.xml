@@ -1,38 +1,106 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <metadata xmlns="http://www.demandware.com/xml/impex/metadata/2006-10-31">
-<custom-type type-id="Network Tokens Webhook">
-        <display-name xml:lang="x-default">Network Tokens Webhook</display-name>
-        <description xml:lang="x-default">Webhook subscription for network token updates</description>       
+    <custom-type type-id="VisaAcceptanceWebhookSubscription">
+        <display-name xml:lang="x-default">Visa Acceptance Webhook Subscription</display-name>
+        <description xml:lang="x-default">Stores Visa Acceptance webhook subscription state (per product config and globalConfiguration) managed by the Business Manager Webhook Manager.</description>
         <staging-mode>no-staging</staging-mode>
         <storage-scope>organization</storage-scope>
-        <key-definition attribute-id="MerchantId">
+        <key-definition attribute-id="ConfigId">
+            <display-name xml:lang="x-default">Config Id</display-name>
             <type>string</type>
             <min-length>0</min-length>
         </key-definition>
         <attribute-definitions>
-            <attribute-definition attribute-id="SecurityKey">
-                <display-name xml:lang="x-default">Security Key</display-name>
+            <attribute-definition attribute-id="WebhookId">
+                <display-name xml:lang="x-default">Webhook Id</display-name>
                 <type>string</type>
                 <localizable-flag>false</localizable-flag>
-                <mandatory-flag>true</mandatory-flag>
+                <mandatory-flag>false</mandatory-flag>
                 <externally-managed-flag>false</externally-managed-flag>
                 <min-length>0</min-length>
             </attribute-definition>
-            <attribute-definition attribute-id="SubscriptionId">
-                <display-name xml:lang="x-default">Subscription Id</display-name>
+            <attribute-definition attribute-id="WebhookUrl">
+                <display-name xml:lang="x-default">Webhook URL</display-name>
                 <type>string</type>
                 <localizable-flag>false</localizable-flag>
-                <mandatory-flag>true</mandatory-flag>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="Status">
+                <display-name xml:lang="x-default">Status</display-name>
+                <type>string</type>
+                <localizable-flag>false</localizable-flag>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="Product">
+                <display-name xml:lang="x-default">Product</display-name>
+                <description xml:lang="x-default">Fraud product this subscription was created for (decisionManager or fraudManagementEssentials); empty for the Unified Checkout and globalConfiguration records.</description>
+                <type>string</type>
+                <localizable-flag>false</localizable-flag>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="BaseUrl">
+                <display-name xml:lang="x-default">Base URL</display-name>
+                <type>string</type>
+                <localizable-flag>false</localizable-flag>
+                <mandatory-flag>false</mandatory-flag>
                 <externally-managed-flag>false</externally-managed-flag>
                 <min-length>0</min-length>
             </attribute-definition>
         </attribute-definitions>
         <group-definitions>
-            <attribute-group group-id="Network Tokens Webhook">
-                <display-name xml:lang="x-default">Network Tokens Webhook</display-name>
+            <attribute-group group-id="VisaAcceptanceWebhookSubscription">
+                <display-name xml:lang="x-default">Visa Acceptance Webhook Subscription</display-name>
+                <attribute attribute-id="ConfigId"/>
+                <attribute attribute-id="WebhookId"/>
+                <attribute attribute-id="WebhookUrl"/>
+                <attribute attribute-id="Status"/>
+                <attribute attribute-id="Product"/>
+                <attribute attribute-id="BaseUrl"/>
+            </attribute-group>
+        </group-definitions>
+    </custom-type>
+    <custom-type type-id="VisaAcceptanceWebhookSecurityKey">
+        <display-name xml:lang="x-default">Visa Acceptance Webhook Security Key</display-name>
+        <description xml:lang="x-default">Stores each webhook signing key minted in KMS, keyed by its keyId, so WebhookNotification can fetch the exact key named in a notification's v-c-signature header.</description>
+        <staging-mode>no-staging</staging-mode>
+        <storage-scope>organization</storage-scope>
+        <key-definition attribute-id="KeyId">
+            <display-name xml:lang="x-default">Key Id</display-name>
+            <type>string</type>
+            <min-length>0</min-length>
+        </key-definition>
+        <attribute-definitions>
+            <attribute-definition attribute-id="Key">
+                <display-name xml:lang="x-default">Key</display-name>
+                <description xml:lang="x-default">Base64 shared secret returned by KMS at key creation; HMAC-SHA256 signing key for webhook signature validation.</description>
+                <type>string</type>
+                <localizable-flag>false</localizable-flag>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="MerchantId">
+                <display-name xml:lang="x-default">Merchant Id</display-name>
+                <description xml:lang="x-default">Merchant ID (VisaAcceptance_MerchantID) this signing key was minted for. Used to reuse the key while the MID is unchanged and, after a MID change, mint a fresh key and delete the previous MID's keys.</description>
+                <type>string</type>
+                <localizable-flag>false</localizable-flag>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+        </attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="VisaAcceptanceWebhookSecurityKey">
+                <display-name xml:lang="x-default">Visa Acceptance Webhook Security Key</display-name>
+                <attribute attribute-id="KeyId"/>
+                <attribute attribute-id="Key"/>
                 <attribute attribute-id="MerchantId"/>
-                <attribute attribute-id="SecurityKey"/>
-                <attribute attribute-id="SubscriptionId"/>
             </attribute-group>
         </group-definitions>
     </custom-type>

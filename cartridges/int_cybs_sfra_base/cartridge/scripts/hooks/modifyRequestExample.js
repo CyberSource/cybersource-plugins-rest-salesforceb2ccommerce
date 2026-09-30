@@ -3,7 +3,7 @@
 /**
  * Example of how to customize and modify the Auth Reversal request.
  *
- * @param {Object} requestIn - The request object about to be sent to Cybersource.
+ * @param {Object} requestIn - The request object about to be sent to Visa Acceptance.
  * @returns {Object} - A modified version of requestIn.
  */
 function AuthReversal(requestIn) {
@@ -17,7 +17,7 @@ function AuthReversal(requestIn) {
 /**
  * Example of how to customize and modify the Credit Card Capture request.
  *
- * @param {Object} requestIn - The request object about to be sent to Cybersource.
+ * @param {Object} requestIn - The request object about to be sent to Visa Acceptance.
  * @returns {Object} - A modified version of requestIn.
  */
 function Capture(requestIn) {

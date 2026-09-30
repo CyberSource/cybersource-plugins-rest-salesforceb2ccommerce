@@ -31,97 +31,11 @@ function processForm(req, paymentForm, viewFormData) {
         viewData = ucPaymentHelper.updateViewDataFromForm(paymentForm, viewFormData);
     }
     var viewData = viewFormData;
-    if (paymentForm.creditCardFields.flexresponse.value) {
-        var correctCardType = '';
-        switch (paymentForm.creditCardFields.cardType.value) { // eslint-disable-line default-case
-            case 'visa':
-                correctCardType = 'Visa';
-                break;
-            case 'mastercard':
-                correctCardType = 'Master Card';
-                break;
-            case 'amex':
-                correctCardType = 'Amex';
-                break;
-            case 'discover':
-                correctCardType = 'Discover';
-                break;
-            case 'dinersclub':
-                correctCardType = 'DinersClub';
-                break;
-            case 'maestro':
-                correctCardType = 'Maestro';
-                break;
-            case 'jcb':
-                correctCardType = 'JCB';
-                break;
-            case "cartesbancaires":
-                correctCardType = "CartesBancaires";
-                break;
-            case "elo":
-                correctCardType = "Elo";
-                break;
-            case "cup":
-                correctCardType = "China UnionPay";
-                break;
-            case "jcrew":
-                correctCardType = "JCrew";
-                break;
-            case 'meeza':
-                correctCardType = 'Meeza';
-                break;
-            case 'carnet':
-                correctCardType = 'Carnet';
-                break;
-            case 'mada':
-                correctCardType = 'Mada';
-                break;
-            case 'eftpos':
-                correctCardType = 'EFTPOS';
-                break;
-            case 'jaywan':
-                correctCardType = 'Jaywan';
-                break;
-        }
-        // eslint-disable-next-line no-param-reassign
-        paymentForm.creditCardFields.cardType.value = correctCardType;
-        viewData.paymentMethod = {
-            value: paymentForm.paymentMethod.value,
-            htmlName: paymentForm.paymentMethod.value
-        };
-        viewData.paymentInformation = {
-            cardType: {
-                value: paymentForm.creditCardFields.cardType.value,
-                htmlName: paymentForm.creditCardFields.cardType.htmlName
-            },
-            cardNumber: {
-                value: paymentForm.creditCardFields.cardNumber.value,
-                htmlName: paymentForm.creditCardFields.cardNumber.htmlName
-            },
-            expirationMonth: {
-                value: parseInt(
-                    paymentForm.creditCardFields.expirationMonth.selectedOption,
-                    10
-                ),
-                htmlName: paymentForm.creditCardFields.expirationMonth.htmlName
-            },
-            expirationYear: {
-                value: parseInt(paymentForm.creditCardFields.expirationYear.value, 10),
-                htmlName: paymentForm.creditCardFields.expirationYear.htmlName
-            }
-        };
-        viewData.saveCard = paymentForm.creditCardFields.saveCard.checked;
-
-        return {
-            error: false,
-            viewData: viewData
-        };
-    }
     var creditCardErrors = {};
 
     if (!req.form.storedPaymentUUID) {
         // verify credit card form data
-        if (!configObject.flexMicroformEnabled && !configObject.unifiedCheckoutEnabled) {
+        if (!configObject.unifiedCheckoutEnabled) {
             creditCardErrors = COHelpers.validateCreditCard(paymentForm);
         }
     }
@@ -216,7 +130,7 @@ function savePaymentInformation(req, basket, billingData) {
 
 var overrides = {};
 if (configObject.cartridgeEnabled) {
-    if (configObject.flexMicroformEnabled || configObject.unifiedCheckoutEnabled) {
+    if (configObject.unifiedCheckoutEnabled) {
         overrides.processForm = processForm;
     }
     overrides.savePaymentInformation = savePaymentInformation;

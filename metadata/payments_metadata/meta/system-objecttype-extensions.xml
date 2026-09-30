@@ -2,14 +2,64 @@
 <metadata xmlns="http://www.demandware.com/xml/impex/metadata/2006-10-31">
     <type-extension type-id="PaymentTransaction">
         <custom-attribute-definitions>
-            <attribute-definition attribute-id="AmountPaid">
-                <display-name xml:lang="x-default">Amount Paid</display-name>
-                <type>double</type>
-                <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>false</externally-managed-flag>
-            </attribute-definition>
             <attribute-definition attribute-id="paymentDetails">
                 <display-name xml:lang="x-default">Payment Details</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="reconciliationId">
+                <display-name xml:lang="x-default">Reconciliation ID</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="approvalCode">
+                <display-name xml:lang="x-default">Approval Code</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="networkTransactionId">
+                <display-name xml:lang="x-default">Network Transaction ID</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+                        <attribute-definition attribute-id="clientReferenceCode">
+                <display-name xml:lang="x-default">Client Reference Code</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="processorTransactionId">
+                <display-name xml:lang="x-default">Processor Transaction ID</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="authMethod">
+                <display-name xml:lang="x-default">Auth Method</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="resultTimestamp">
+                <display-name xml:lang="x-default">Result Timestamp (ISO-8601)</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="cybsTransactionStatus">
+                <display-name xml:lang="x-default">Visa Acceptance Transaction Status</display-name>
                 <type>string</type>
                 <mandatory-flag>false</mandatory-flag>
                 <externally-managed-flag>false</externally-managed-flag>
@@ -19,8 +69,83 @@
         <group-definitions>
             <attribute-group group-id="Custom">
                 <display-name xml:lang="x-default">Custom</display-name>
-                <attribute attribute-id="AmountPaid"/>
                 <attribute attribute-id="paymentDetails"/>
+                <!-- START GENAI -->
+                <attribute attribute-id="reconciliationId"/>
+                <attribute attribute-id="approvalCode"/>
+                <attribute attribute-id="networkTransactionId"/>
+                <attribute attribute-id="cybsTransactionStatus"/>
+                <!-- END GENAI -->
+                <attribute attribute-id="clientReferenceCode"/>
+                <attribute attribute-id="processorTransactionId"/>
+                <attribute attribute-id="authMethod"/>
+                <attribute attribute-id="resultTimestamp"/>
+            </attribute-group>
+        </group-definitions>
+    </type-extension>
+    <type-extension type-id="Order">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="AmountPaid">
+                <display-name xml:lang="x-default">Amount Paid</display-name>
+                <type>double</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+            <attribute-definition attribute-id="remainingToCapture">
+                <display-name xml:lang="x-default">Remaining To Capture</display-name>
+                <type>double</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+            <attribute-definition attribute-id="captureTransactionIds">
+                <display-name xml:lang="x-default">Capture Transaction IDs</display-name>
+                <type>text</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+            <attribute-definition attribute-id="refundedAmount">
+                <display-name xml:lang="x-default">Refunded Amount</display-name>
+                <type>double</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+            <attribute-definition attribute-id="remainingRefundable">
+                <display-name xml:lang="x-default">Remaining Refundable</display-name>
+                <type>double</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+            <attribute-definition attribute-id="refundTransactionIds">
+                <display-name xml:lang="x-default">Refund Transaction IDs</display-name>
+                <type>text</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+            <attribute-definition attribute-id="reversalTransactionIds">
+                <display-name xml:lang="x-default">Reversal Transaction IDs</display-name>
+                <type>text</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+            <attribute-definition attribute-id="reversedAuthTransactionIds">
+                <display-name xml:lang="x-default">Reversed Authorization Transaction IDs</display-name>
+                <description xml:lang="x-default">Authorization (payment) ids whose hold has already been released. Written before the reversal call so an at-least-once webhook redelivery cannot reverse the same authorization twice.</description>
+                <type>text</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+        </custom-attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="VisaAcceptanceOrderManagement">
+                <display-name xml:lang="x-default">Visa Acceptance Order Management</display-name>
+                <attribute attribute-id="AmountPaid"/>
+                <attribute attribute-id="remainingToCapture"/>
+                <attribute attribute-id="captureTransactionIds"/>
+                <attribute attribute-id="refundedAmount"/>
+                <attribute attribute-id="remainingRefundable"/>
+                <attribute attribute-id="refundTransactionIds"/>
+                <attribute attribute-id="reversalTransactionIds"/>
+                <attribute attribute-id="reversedAuthTransactionIds"/>
             </attribute-group>
         </group-definitions>
     </type-extension>
@@ -34,7 +159,7 @@
                 <min-length>0</min-length>
             </attribute-definition>
             <attribute-definition attribute-id="deleteInstrumentId">
-                <display-name xml:lang="x-default">Payment Instrument to be deleted from cybersource</display-name>
+                <display-name xml:lang="x-default">Payment Instrument to be deleted from Visa Acceptance</display-name>
                 <type>set-of-string</type>
                 <mandatory-flag>false</mandatory-flag>
                 <externally-managed-flag>false</externally-managed-flag>
@@ -68,26 +193,29 @@
                 <mandatory-flag>false</mandatory-flag>
                 <externally-managed-flag>false</externally-managed-flag>
             </attribute-definition>
-            <attribute-definition attribute-id="UCToken">
-                <display-name xml:lang="x-default">UCToken</display-name>
-                <type>string</type>
-                <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>false</externally-managed-flag>
-            </attribute-definition>
-             <attribute-definition attribute-id="isGooglePaycardHolderAuthenticated">
-                <display-name xml:lang="x-default">Google Pay Card Holder Authenticated</display-name>
-                <type>boolean</type>
-                <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>false</externally-managed-flag>
-                <min-length>0</min-length>
-            </attribute-definition>
-            <attribute-definition attribute-id="GooglePayEncryptedData">
-                <display-name xml:lang="x-default">Google Pay Encrypted Data</display-name>
+            <!-- START GENAI -->
+            <attribute-definition attribute-id="apmPaymentType">
+                <display-name xml:lang="x-default">APM Payment Type</display-name>
                 <type>string</type>
                 <mandatory-flag>false</mandatory-flag>
                 <externally-managed-flag>false</externally-managed-flag>
                 <min-length>0</min-length>
             </attribute-definition>
+            <attribute-definition attribute-id="apmMethod">
+                <display-name xml:lang="x-default">APM Method</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="apmMandateType">
+                <display-name xml:lang="x-default">APM Mandate Type</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <!-- END GENAI -->
         </custom-attribute-definitions>
         <group-definitions>
             <attribute-group group-id="Custom">
@@ -96,10 +224,36 @@
             </attribute-group>
             <attribute-group group-id="UnifiedCheckout">
                 <attribute attribute-id="UCToken"/>
+                <!-- START GENAI -->
+                <attribute attribute-id="apmPaymentType"/>
+                <attribute attribute-id="apmMethod"/>
+                <attribute attribute-id="apmMandateType"/>
+                <!-- END GENAI -->
             </attribute-group>
-            <attribute-group group-id="GooglePay">
-                <attribute attribute-id="isGooglePaycardHolderAuthenticated"/>
-                <attribute attribute-id="GooglePayEncryptedData"/>
+        </group-definitions>
+    </type-extension>
+    <type-extension type-id="CustomerPaymentInstrument">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="isDefault">
+                <display-name xml:lang="x-default">Default Payment Instrument</display-name>
+                <description xml:lang="x-default">Marks this saved card as the shopper's default. Exactly one saved card should have this set to true.</description>
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+            <attribute-definition attribute-id="echeckRoutingNumber">
+                <display-name xml:lang="x-default">eCheck Routing Number</display-name>
+                <description xml:lang="x-default">Bank routing number for a saved eCheck (bank transfer) instrument. Used to render the saved-instrument tile in the wallet and checkout selectors.</description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+        </custom-attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="Custom">
+                <display-name xml:lang="x-default">Custom</display-name>
+                <attribute attribute-id="isDefault"/>
+                <attribute attribute-id="echeckRoutingNumber"/>
             </attribute-group>
         </group-definitions>
     </type-extension>

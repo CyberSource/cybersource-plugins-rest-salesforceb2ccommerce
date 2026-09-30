@@ -1,0 +1,4 @@
+// account/dashboard.css is referenced by account/accountDashboard.isml
+// (assets.addCss('/css/account/dashboard.css')). SFRA base ships no dashboard.scss,
+// so this bundle exists to style the default-saved-card badge on the dashboard tile.
+@import "../components/defaultPayment";

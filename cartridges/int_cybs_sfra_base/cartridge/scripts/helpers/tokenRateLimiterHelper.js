@@ -303,7 +303,7 @@ function checkDuplicateInstrumentIdentifier(paymentInstruments, tokenInfo, custo
                         expiryYear = billingForm.creditCardFields.expirationYear.value;
  
                     }
-                    // patch call to cybersource
+                    // patch call to Visa Acceptance
                     result = tokenManagement.httpUpdateCustomerPaymentInstrument(customer.profile.custom.customerID, oldPaymentInstrumentId, expiryMonth, expiryYear, address, email, instrumentIdentifierId);
                     break;
                 }
@@ -317,7 +317,7 @@ function checkDuplicateInstrumentIdentifier(paymentInstruments, tokenInfo, custo
         // delete PI from wallet
         // eslint-disable-next-line block-scoped-var
         deleteInstrumentFromWallet(customer, newPaymentInstrumentId, paymentInstruments, oldPaymentInstrumentId, skipFlexCheck); // send old payment instrument id here too
-        // Adding payment instument to be deleted from cybersource in custom attribute
+        // Adding payment instument to be deleted from Visa Acceptance in custom attribute
         var paymentIns = [newPaymentInstrumentId];
         try {
             Transaction.wrap(function () {

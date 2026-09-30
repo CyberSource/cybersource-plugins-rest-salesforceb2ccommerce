@@ -31,17 +31,18 @@ module.exports = {
   SANDBOX_RUN_ENV: "cybersource.environment.sandbox",
   PRODUCTION_RUN_ENV: "cybersource.environment.production",
   APPLICATION_NAME: "Salesforce B2C(REST)",
-  APPLICATION_VERSION: "26.2.0",
+  APPLICATION_VERSION: "2.0.0",
   
   /* Digest Constants*/
   SIGNATURE_ALGORITHAM: "SHA-256=",
   HmacSHA256: "HmacSHA256",
 
-  /* Flex microform constants */
-  CLIENT_VERSION : "v2",
+  /* Shared-secret JWT signing algorithm (HMAC). See restgs-jwt-con-shared-secret-intro.md. */
+  JWT_SHARED_SECRET_ALG: "HS256",
 
   /* Unified Checkout constants */
-  UC_CLIENT_VERSION: "0.32",
+  // v1.x: Auto-versioning recommended - omit clientVersion or set to "1.0"
+  UC_CLIENT_VERSION: "1.0",
 
  
 

@@ -15,7 +15,7 @@ server.prepend(
         if (session.getCustomer().getProfile() !== null) {
             // eslint-disable-next-line no-undef
             var paymentInstrumentToBeDeleted = session.getCustomer().getProfile().custom.deleteInstrumentId;
-            if (paymentInstrumentToBeDeleted.length !== 0) {
+            if (paymentInstrumentToBeDeleted && paymentInstrumentToBeDeleted.length !== 0) {
                 var tokenManagement = require('~/cartridge/scripts/http/tokenManagement.js');
                 // eslint-disable-next-line no-undef
                 var result = tokenManagement.httpDeleteCustomerPaymentInstrument(session.getCustomer().getProfile().custom.customerID, paymentInstrumentToBeDeleted[0]);

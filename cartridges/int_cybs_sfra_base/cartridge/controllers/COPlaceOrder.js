@@ -14,7 +14,17 @@ var secureResponseHelper = require('~/cartridge/scripts/helpers/secureResponseHe
 
 if (configObject.cartridgeEnabled) {
     server.post('Submit', function (req, res, next) {
-        var order = OrderMgr.getOrder(req.querystring.order_id);
+        // Require both order_id and order_token for secure order retrieval
+        var orderId = req.querystring.order_id;
+        var orderToken = req.querystring.order_token;
+
+        if (!orderId || !orderToken) {
+            // eslint-disable-next-line consistent-return
+            return next(new Error('Order ID and token are required'));
+        }
+
+        // Use two-argument form to verify order ownership via token
+        var order = OrderMgr.getOrder(orderId, orderToken);
 
         // eslint-disable-next-line no-undef
         if (session.privacy.orderPaymentSuccessful !== true) return;

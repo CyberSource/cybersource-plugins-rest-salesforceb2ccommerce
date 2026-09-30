@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extensions xmlns="http://www.demandware.com/xml/bmmodules/2007-12-11"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.demandware.com/xml/bmmodules/2007-12-11 bmext.xsd">
+    <menuitem id="cybs_payment_services" site="true">
+        <!-- START GENAI -->
+        <name xml:lang="x-default">Visa Acceptance Payment Services</name>
+        <short_description xml:lang="x-default">Visa Acceptance Payment Services</short_description>
+        <!-- END GENAI -->
+    </menuitem>
+    <menuaction id="cybs_webhook_manager" menupath="cybs_payment_services" position="100" site="true">
+        <name xml:lang="x-default">Webhook Manager</name>
+        <!-- START GENAI -->
+        <short_description xml:lang="x-default">Manage Visa Acceptance webhook subscriptions for Fraud Management and Unified Checkout</short_description>
+        <description xml:lang="x-default">Manage Visa Acceptance webhook subscriptions for Fraud Management and Unified Checkout</description>
+        <!-- END GENAI -->
+        <exec pipeline="WebhookManager" node="Show"/>
+        <sub-pipelines>
+            <pipeline name="WebhookManager-Show" />
+            <pipeline name="WebhookManager-Save" />
+        </sub-pipelines>
+        <icon>images/icon_payment.png</icon>
+    </menuaction>
+</extensions>

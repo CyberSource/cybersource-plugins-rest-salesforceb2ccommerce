@@ -93,7 +93,7 @@ function savePaymentInstrumentToWallet(billingData, currentBasket, customer) {
 
     // Determine payment method - check if UC token exists
     var isUCPayment = !empty(transientToken);
-    var isFlexPayment = !isUCPayment && billingData.paymentInformation;
+    var isDirectCardPayment = !isUCPayment && billingData.paymentInformation;
     if (isUCPayment) {
         return Transaction.wrap(function () {
             var paymentInstrument = wallet.createPaymentInstrument(PaymentInstrument.METHOD_CREDIT_CARD);
@@ -110,7 +110,7 @@ function savePaymentInstrumentToWallet(billingData, currentBasket, customer) {
             return paymentInstrument;
         });
 
-    } else if (isFlexPayment) {
+    } else if (isDirectCardPayment) {
         return Transaction.wrap(function () {
             var storedPaymentInstrument = wallet.createPaymentInstrument(PaymentInstrument.METHOD_CREDIT_CARD);
 
@@ -144,16 +144,7 @@ function savePaymentInstrumentToWallet(billingData, currentBasket, customer) {
  */
 function placeOrder(order, fraudDetectionStatus) {
     var result = { error: false };
-    Transaction.wrap(function () {
-        // Clean up UCToken from all payment instruments
-        var paymentInstruments = order.getPaymentInstruments();
-        if (paymentInstruments && paymentInstruments.length > 0) {
-            for (var i = 0; i < paymentInstruments.length; i++) {
-                var paymentInstrument = paymentInstruments[i];
-                CardHelper.cleanupPaymentInstrumentCustomAttributes(paymentInstrument);
-            }
-        }
-    });
+
     try {
         Transaction.begin();
         if (fraudDetectionStatus.status === 'review') {
@@ -298,6 +289,84 @@ function handlePayments(order, orderNumber) {
 
     return result;
 }
+/**
+ * Returns the order number reserved by the early Payer Authentication setup, but only when it
+ * legitimately belongs to THIS order.
+ *
+ * PayerAuthEarlySetup reserves a number before calling setup so that setup, enrollment and the
+ * order all share one clientReferenceInformation.code. That number must only be consumed for a
+ * payer-auth card payment on the standard Salesforce credit card form: if the shopper reserved
+ * one and then paid with a wallet method, or Unified Checkout is driving checkout, the order has
+ * to get an ordinary number instead.
+ *
+ * @param {dw.order.Basket} currentBasket - The current basket
+ * @returns {string|null} the reserved order number, or null when it does not apply
+ */
+function earlyPayerAuthOrderNo(currentBasket) {
+    var reserved = session.privacy.cybsEarlyPaOrderNo;
+    if (!reserved || configObject.unifiedCheckoutEnabled) {
+        return null;
+    }
+    try {
+        var payerAuthentication = require('../http/payerAuthentication');
+        var paymentInstrument = CardHelper.getNonGCPaymemtInstument(currentBasket);
+        if (!payerAuthentication.shouldApplyPayerAuthForInstrument(paymentInstrument)) {
+            // Worth surfacing: a number was reserved for payer auth, so something changed between
+            // card entry and order creation (most likely a switch to a wallet payment method).
+            require('dw/system/Logger').getLogger('VisaAcceptance', 'checkoutHelpers')
+                .warn('createOrder: discarding order number reserved for payer auth - it does not apply to the instrument being paid with');
+            return null;
+        }
+    } catch (e) {
+        // Never let this decision block order creation - fall back to an ordinary number.
+        require('dw/system/Logger').getLogger('VisaAcceptance', 'checkoutHelpers')
+            .warn('createOrder: could not confirm payer auth applies, using a normal order number: {0}', e.message || e);
+        return null;
+    }
+    return reserved;
+}
+
+/**
+ * Attempts to create an order from the current basket
+ * @param {dw.order.Basket} currentBasket - The current basket
+ * @param {string} [orderNo] - Explicit order number to assign. Pass the Visa Acceptance
+ *        clientReferenceInformation.code from the completeMandate JWT here: it is the
+ *        authoritative reference the transaction/webhooks use, and it survives a
+ *        redirect flow that may have dropped session.privacy.
+ *        Falls back to the reserved session.privacy.ucOrderNo, then to the number reserved by
+ *        early Payer Authentication setup, when not supplied.
+ * @returns {dw.order.Order} The order object created from the current basket
+ */
+function createOrder(currentBasket, orderNo) {
+    var order;
+    var reservedOrderNo = orderNo || session.privacy.ucOrderNo || earlyPayerAuthOrderNo(currentBasket);
+    try {
+        order = Transaction.wrap(function () {
+            if (reservedOrderNo) {
+                return OrderMgr.createOrder(currentBasket, reservedOrderNo);
+            }
+            return OrderMgr.createOrder(currentBasket);
+        });
+        if (order && session.privacy.ucOrderNo) {
+            session.privacy.ucOrderNo = null;
+        }
+        // Clear whether or not it was used: the checkout is over either way, and a number left
+        // behind here would be handed to the shopper's NEXT order and rejected as a duplicate.
+        if (order && session.privacy.cybsEarlyPaOrderNo) {
+            session.privacy.cybsEarlyPaOrderNo = '';
+        }
+    } catch (error) {
+        // Drop the reservation on failure too. If the failure WAS a duplicate order number,
+        // keeping it would make every retry in this session fail the same way; releasing it means
+        // the retry gets a clean number and at worst loses the setup/enrollment correlation.
+        session.privacy.cybsEarlyPaOrderNo = '';
+        require('dw/system/Logger').getLogger('VisaAcceptance', 'checkoutHelpers')
+            .warn('createOrder: order creation failed for reserved order number {0}: {1}',
+                reservedOrderNo || '(none)', error.message || error);
+        return null;
+    }
+    return order;
+}
 
 var overrides = {};
 if (configObject.cartridgeEnabled) {
@@ -305,7 +374,8 @@ if (configObject.cartridgeEnabled) {
         validateShippingForm: validateShippingForm,
         savePaymentInstrumentToWallet: savePaymentInstrumentToWallet,
         placeOrder: placeOrder,
-        handlePayments: handlePayments
+        handlePayments: handlePayments,
+        createOrder: createOrder
     };
 }
 

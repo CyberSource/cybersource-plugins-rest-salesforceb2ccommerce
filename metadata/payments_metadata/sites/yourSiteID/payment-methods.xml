@@ -2,12 +2,12 @@
 <payment-settings xmlns="http://www.demandware.com/xml/impex/paymentsettings/2009-09-15">
     <payment-method method-id="CLICK_TO_PAY">
         <name xml:lang="x-default">Click to Pay</name>
-        <enabled-flag>false</enabled-flag>
+        <enabled-flag>true</enabled-flag>
         <processor-id>PAYMENTS_CLICK_TO_PAY</processor-id>
     </payment-method>
     <payment-method method-id="DW_APPLE_PAY">
         <name xml:lang="x-default">Apple Pay</name>
-        <enabled-flag>false</enabled-flag>
+        <enabled-flag>true</enabled-flag>
         <processor-id>PAYMENTS_APPLEPAY</processor-id>
     </payment-method>
     <payment-method method-id="BANK_TRANSFER">
@@ -39,8 +39,24 @@
     </payment-method>
     <payment-method method-id="DW_GOOGLE_PAY">
         <name xml:lang="x-default">Google Pay</name>
-        <enabled-flag>false</enabled-flag>
-        <processor-id>PAYMENTS_CREDIT</processor-id>
+        <enabled-flag>true</enabled-flag>
+        <processor-id>PAYMENTS_GOOGLEPAY</processor-id>
+    </payment-method>
+    <payment-method method-id="DW_PAZE">
+        <name xml:lang="x-default">Paze</name>
+        <enabled-flag>true</enabled-flag>
+        <processor-id>PAYMENTS_PAZE</processor-id>
+    </payment-method>
+ 
+    <payment-method method-id="PAYPAL">
+        <name xml:lang="x-default">PayPal</name>
+        <enabled-flag>true</enabled-flag>
+        <processor-id>PAYMENTS_PAYPAL</processor-id>
+    </payment-method>
+    <payment-method method-id="VENMO">
+        <name xml:lang="x-default">Venmo</name>
+        <enabled-flag>true</enabled-flag>
+        <processor-id>PAYMENTS_VENMO</processor-id>
     </payment-method>
 
     <payment-card card-type="China UnionPay">
@@ -152,10 +168,6 @@
             <number-prefix/>
         </card-number-settings>
         <security-code-length>3</security-code-length>
-        <countries>
-            <country country-code="US"/>
-        </countries>
-     
     </payment-card>
 
     <payment-card card-type="Master Card">
@@ -197,3 +209,4 @@
         <security-code-length>3</security-code-length>
     </payment-card>
 </payment-settings>
+ 

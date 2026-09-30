@@ -16,43 +16,18 @@ var payerAuthentication = require('~/cartridge/scripts/http/payerAuthentication'
 var configObject = require('~/cartridge/configuration/index.js');
 
 /**
- * Check if Payer Authentication should be applied
+ * Check if Payer Authentication should be applied. Google Pay routes through
+ * its own processor (PAYMENTS_GOOGLEPAY) since the UC migration, so this hook
+ * only sees CREDIT_CARD instruments. The wallet/method exclusions below are
+ * defensive for any callers that may still pass non-credit instruments.
+ *
  * @param {dw.order.PaymentInstrument} paymentInstrument - The payment instrument
  * @returns {boolean} - Returns true if Payer Authentication conditions are met
  */
 function shouldApplyPayerAuthentication(paymentInstrument) {
-    var isVisaCTP = false;
-    var isApplePayUC = false;
-    var isEcheck = false;
-    var performPayerAuth = true;
-    var isGPay_PayerAuthEnabled = false;
-
-    if (empty(paymentInstrument)) {
-        return false;
-    }
-
-    var paymentMethod = paymentInstrument.paymentMethod;
-
-    if (!empty(paymentMethod)) {
-        isVisaCTP = paymentMethod.equals('CLICK_TO_PAY');
-    }
-    if (!empty(paymentMethod)) {
-        isApplePayUC = paymentMethod.equals('DW_APPLE_PAY');
-    }
-    if (!empty(paymentMethod)) {
-        isEcheck = paymentMethod.equals('BANK_TRANSFER');
-    }
-    // Get 3DS mode and card scheme
-    var threeDSMode = payerAuthentication.get3DSMode();
-    var cardType = payerAuthentication.getCardType(paymentInstrument);
-    // Check if 3DS should be skipped based on mode and card scheme
-    if ('NO' === threeDSMode.value || ('DATA_ONLY_NO' === threeDSMode.value && !('VISA' === cardType || 'MASTERCARD' === cardType || 'MAESTRO' === cardType))) {
-        performPayerAuth = false;
-    }
-    if (!empty(paymentInstrument.custom.GooglePayEncryptedData) && paymentInstrument.custom.isGooglePaycardHolderAuthenticated == false && performPayerAuth) {
-        isGPay_PayerAuthEnabled = true;
-    }
-    return ((performPayerAuth && empty(paymentInstrument.custom.GooglePayEncryptedData)) || isGPay_PayerAuthEnabled) && configObject.cartridgeEnabled && !isVisaCTP && !isEcheck && !isApplePayUC;
+    // The whole decision lives in payerAuthentication.js so that this hook, the early
+    // (card-entry time) setup route, and checkoutHelpers.createOrder cannot drift apart.
+    return payerAuthentication.shouldApplyPayerAuthForInstrument(paymentInstrument);
 }
 
 /**
@@ -108,29 +83,7 @@ function createToken(
             if (address) {
                 address = mapper.SFFCAddressToProviderAddress(address);
             }
-            var tokenInformation;
-            var billingForm;
-            if (skipFlexCheck !== undefined) {
-                if (!configObject.flexMicroformEnabled) {
-                    tokenInformation = tokenManagement.httpCreateToken(accounNumber, expiryMonth, expiryYear, securityCode, email, address, referenceCode, skipDMFlag);
-                } else {
-                    billingForm = server.forms.getForm('billing');
-                    tokenInformation = tokenManagement.httpFlexCreateToken(
-                        billingForm.creditCardFields.flexresponse.value,
-                        email,
-                        address,
-                        referenceCode
-                    );
-                }
-            } else {
-                billingForm = server.forms.getForm('billing');
-                tokenInformation = tokenManagement.httpFlexCreateToken(
-                    billingForm.creditCardFields.flexresponse.value,
-                    email,
-                    address,
-                    referenceCode
-                );
-            }
+            var tokenInformation = tokenManagement.httpCreateToken(accounNumber, expiryMonth, expiryYear, securityCode, email, address, referenceCode, skipDMFlag);
 
             if (tokenInformation.customer != null && tokenInformation.customer.id != null) {
                 // eslint-disable-next-line no-undef
@@ -162,6 +115,64 @@ function createToken(
 }
 
 /**
+ * Build a CREDIT_CARD payment instrument from the UC completeMandate flow.
+ * Used when PlaceOrderDirect dispatches Handle via hooksHelper with
+ * paymentInformation.fromUC = true. Skips form access and relies entirely on
+ * the JWT + transient token.
+ *
+ * @param {dw.order.Basket} basket
+ * @param {Object} paymentInformation - { jwtPayload, transientToken, fromUC, ... }
+ * @returns {Object} { fieldErrors, serverErrors, error }
+ */
+function handleUCCreditCard(basket, paymentInformation) {
+    var ucPaymentHelper = require('~/cartridge/scripts/helpers/ucPaymentHelper');
+    var Logger = require('dw/system/Logger');
+    var logger = Logger.getLogger('VisaAcceptance', 'PaymentProcessor');
+    var serverErrors = [];
+
+    try {
+        Transaction.wrap(function () {
+            basket.removeAllPaymentInstruments();
+
+            var existing = basket.getPaymentInstruments(PaymentInstrument.METHOD_CREDIT_CARD);
+            collections.forEach(existing, function (item) {
+                basket.removePaymentInstrument(item);
+            });
+
+            var paymentInstrument = basket.createPaymentInstrument(
+                PaymentInstrument.METHOD_CREDIT_CARD, basket.totalGrossPrice
+            );
+
+            if (basket.billingAddress && basket.billingAddress.fullName) {
+                paymentInstrument.setCreditCardHolder(basket.billingAddress.fullName);
+            }
+
+
+            var cardDetails = ucPaymentHelper.extractCardDetails(
+                paymentInformation.jwtPayload,
+                paymentInformation.transientToken,
+                basket.billingAddress
+            );
+            ucPaymentHelper.updatePaymentInstrumentCardDetails(paymentInstrument, cardDetails, false);
+        });
+
+        return {
+            fieldErrors: {},
+            serverErrors: serverErrors,
+            error: false
+        };
+    } catch (e) {
+        logger.error('payments_credit.handleUCCreditCard error for basket {0}: {1}', basket.UUID, e.message || e);
+        serverErrors.push(Resource.msg('error.payment.not.valid', 'checkout', null));
+        return {
+            fieldErrors: {},
+            serverErrors: serverErrors,
+            error: true
+        };
+    }
+}
+
+/**
  * Verifies that entered credit card information is a valid card. If the information is valid a
  * credit card payment instrument is created
  * @param {dw.order.Basket} basket Current users's basket
@@ -169,22 +180,27 @@ function createToken(
  * @return {Object} returns an error object
  */
 function Handle(basket, paymentInformation) {
+    // UC completeMandate flow (PlaceOrderDirect): no form, JWT-driven.
+    if (paymentInformation && paymentInformation.fromUC) {
+        return handleUCCreditCard(basket, paymentInformation);
+    }
+
     var configObject = require('~/cartridge/configuration/index.js');
     var Logger = require('dw/system/Logger');
-    var logger = Logger.getLogger('Cybersource', 'PaymentProcessor');
+    var logger = Logger.getLogger('VisaAcceptance', 'PaymentProcessor');
 
     var currentBasket = basket;
     var cardErrors = {};
     var serverErrors = [];
     var cardNumber = paymentInformation.cardNumber.value;
-    var cardSecurityCode = (configObject.flexMicroformEnabled || configObject.unifiedCheckoutEnabled) ? '' : paymentInformation.securityCode.value;
+    var cardSecurityCode = configObject.unifiedCheckoutEnabled ? '' : paymentInformation.securityCode.value;
     var expirationMonth = paymentInformation.expirationMonth.value;
     var expirationYear = paymentInformation.expirationYear.value;
     var email = basket.customerEmail;
     var cardType = paymentInformation.cardType.value;
 
     // Fallback to base implementation for traditional payment processing
-    if (!configObject.flexMicroformEnabled && !configObject.unifiedCheckoutEnabled) {
+    if (!configObject.unifiedCheckoutEnabled) {
         var baseResult = baseBasicCreditHook.Handle(basket, paymentInformation);
         if (baseResult.error) {
             return baseResult;
@@ -215,9 +231,6 @@ function Handle(basket, paymentInformation) {
             paymentInstrument.setCreditCardExpirationMonth(expirationMonth);
             paymentInstrument.setCreditCardExpirationYear(expirationYear);
 
-            if (configObject.unifiedCheckoutEnabled) {
-                paymentInstrument.custom.UCToken = paymentForm.creditCardFields.ucpaymenttoken.value;
-            }
             // Handle tokenization for registered users who choose to save card
 
             if (basket.customer.registered && configObject.tokenizationEnabled && paymentForm.creditCardFields.saveCard.checked) {
@@ -272,16 +285,11 @@ function Authorize(orderNumber, paymentInstrument, paymentProcessor) {
     var mapper = require('~/cartridge/scripts/util/mapper.js');
     var card = {
         token: paymentInstrument.creditCardToken,
-        jwttoken: paymentForm.creditCardFields.flexresponse.value,
-        ucJwtToken: paymentInstrument.custom.UCToken,
         creditcardnumber: paymentInstrument.creditCardNumber,
         securityCode: paymentForm.creditCardFields.securityCode.htmlValue,
         expirationMonth: paymentInstrument.creditCardExpirationMonth,
         expirationYear: paymentInstrument.creditCardExpirationYear,
-        cardType: paymentInstrument.creditCardType ? paymentInstrument.creditCardType.toLowerCase() : null,
-        // eslint-disable-next-line no-undef
-        gPayToken: paymentInstrument.custom.GooglePayEncryptedData,
-
+        cardType: paymentInstrument.creditCardType ? paymentInstrument.creditCardType.toLowerCase() : null
     };
 
     // Check if payer authentication is required before proceeding with authorization. If required, return early to trigger payer authentication setup, enroll and validation.
@@ -322,21 +330,14 @@ function Authorize(orderNumber, paymentInstrument, paymentProcessor) {
             session.privacy.orderStatus = result.status;
             paymentInstrument.paymentTransaction.setTransactionID(result.id);
             paymentInstrument.paymentTransaction.setPaymentProcessor(paymentProcessor);
-            if (!empty(card.gPayToken)) {
-                paymentInstrument.paymentTransaction.custom.paymentDetails = paymentInstrument.maskedCreditCardNumber + ', '
-                    + paymentInstrument.creditCardType;
-            } else if (paymentInstrument.custom.UCToken !== null && paymentInstrument.paymentMethod === 'DW_GOOGLE_PAY') {
-            } else {
-                paymentInstrument.paymentTransaction.custom.paymentDetails = paymentInstrument.creditCardNumber + ', ' + paymentInstrument.creditCardType;
-            }
+            paymentInstrument.paymentTransaction.custom.paymentDetails = paymentInstrument.maskedCreditCardNumber + ', ' + paymentInstrument.creditCardType;
 
-            delete paymentInstrument.custom.UCToken;
         });
     } catch (e) {
         error = true;
         var errorData = {};
 
-        // Extract CyberSource response data from declined payment error
+        // Extract Visa Acceptance response data from declined payment error
         var cybersourceResponseData = null;
 
         if (typeof e === 'object' && e !== null) {
@@ -344,7 +345,7 @@ function Authorize(orderNumber, paymentInstrument, paymentProcessor) {
             if (e.type === 'CARD_NOT_AUTHORIZED_ERROR' && e.messageText) {
                 try {
                     cybersourceResponseData = JSON.parse(e.messageText);
-                    // Set transaction details if we found CyberSource response data
+                    // Set transaction details if we found Visa Acceptance response data
                     if (cybersourceResponseData && cybersourceResponseData.id) {
                         Transaction.wrap(function () {
                             // Set transaction ID and processor even for declined payments
@@ -352,17 +353,8 @@ function Authorize(orderNumber, paymentInstrument, paymentProcessor) {
                             session.privacy.orderStatus = cybersourceResponseData.status;
                             paymentInstrument.paymentTransaction.setTransactionID(cybersourceResponseData.id);
                             paymentInstrument.paymentTransaction.setPaymentProcessor(paymentProcessor);
-                            if (!empty(card.gPayToken)) {
-                                paymentInstrument.paymentTransaction.custom.paymentDetails = paymentInstrument.maskedCreditCardNumber + ', '
-                                    + paymentInstrument.creditCardType;
-                            } else if (paymentInstrument.custom.UCToken !== null && paymentInstrument.paymentMethod === 'DW_GOOGLE_PAY') {
-                            } else {
-                                paymentInstrument.paymentTransaction.custom.paymentDetails = paymentInstrument.creditCardNumber + ', ' + paymentInstrument.creditCardType;
-                            }
+                            paymentInstrument.paymentTransaction.custom.paymentDetails = paymentInstrument.maskedCreditCardNumber + ', ' + paymentInstrument.creditCardType;
 
-                            paymentInstrument.custom.UCToken = null;
-                            paymentInstrument.custom.GooglePayEncryptedData = null;
-                            paymentInstrument.custom.isGooglePaycardHolderAuthenticated = null;
                         });
                     }
                     errorData.message = cybersourceResponseData.errorInformation.message; // Store original for debugging
@@ -376,7 +368,7 @@ function Authorize(orderNumber, paymentInstrument, paymentProcessor) {
         serverErrors.push(
             Resource.msg('error.technical', 'checkout', null)
         );
-        Logger.getLogger('Cybersource', 'PaymentAuthorization').error('Authorization error for order {0}: {1}', orderNumber, JSON.stringify(errorData));
+        Logger.getLogger('VisaAcceptance', 'PaymentAuthorization').error('Authorization error for order {0}: {1}', orderNumber, JSON.stringify(errorData));
     }
     return {
         fieldErrors: fieldErrors,

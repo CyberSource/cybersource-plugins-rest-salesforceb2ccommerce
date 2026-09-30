@@ -1,0 +1,30 @@
+<iscomment>
+    Overrides app_storefront_base/account/paymentCard.isml so the dashboard payment tile
+    shows the shopper's DEFAULT saved card. The base tile uses pdict.payment, which is the
+    raw first card in the wallet (no default concept). customerPaymentInstruments is sorted
+    default-first by the account model override (int_cybs_sfra_base/models/account.js), so
+    index 0 is the default card; we fall back to pdict.payment if it is unavailable.
+</iscomment>
+<isset name="defaultCard" value="${pdict.account && pdict.account.customerPaymentInstruments && pdict.account.customerPaymentInstruments.length ? pdict.account.customerPaymentInstruments[0] : pdict.payment}" scope="page" />
+<div class="card">
+    <div class="card-header clearfix">
+        <h2 class="pull-left">${Resource.msg('label.payment','account',null)}</h2>
+        <isif condition="${defaultCard}">
+            <a href="${pdict.viewSavedPaymentsUrl}" class="pull-right" aria-label="${Resource.msg('label.payment.viewsavedpaymentmethods','account',null)}">${Resource.msg('link.view','account',null)}</a>
+        </isif>
+    </div>
+    <isif condition="${defaultCard}">
+        <div class="card-body card-info-group">
+            <div class="dashboard-cards-block-title">
+                ${Resource.msg('label.payment.default', 'payment', null)}
+            </div>
+            <isset name="payment" value="${defaultCard}" scope="page">
+            <isinclude template="account/payment/savedPayment"/>
+        </div>
+    </isif>
+    <isif condition="${pdict.addPaymentUrl}">
+        <div class="card-footer card-footer-border text-center">
+            <a href="${pdict.addPaymentUrl}" class="card-link" aria-label="${Resource.msg('label.payment.addnewpayment','payment',null)}">${Resource.msg('link.addnew','account',null)}</a>
+        </div>
+    </isif>
+</div>

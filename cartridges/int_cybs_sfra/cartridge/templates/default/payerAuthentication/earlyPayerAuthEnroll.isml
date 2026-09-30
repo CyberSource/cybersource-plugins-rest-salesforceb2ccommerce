@@ -1,0 +1,26 @@
+<iscomment>
+	TEMPLATENAME: earlyPayerAuthEnroll.isml
+
+	Bridges the order-time flow straight to enrollment when Payer Auth setup and Device Data
+	Collection already ran at card-entry time (see the PayerAuthEarlySetup controller).
+
+	This is the counterpart to deviceDataCollection.isml, minus the DDC iframe: the referenceId
+	comes from the early setup and the browser fields are already in the session, so there is
+	nothing left to collect here and PayerAuthEnroll can be posted to immediately.
+</iscomment>
+<iscontent type="text/html" charset="UTF-8" compact="true"/>
+<link rel="stylesheet" href="${URLUtils.staticURL('/css/deviceDataCollection.css')}"/>
+<div id="earlyPayerAuthEnroll" class="early-payerauth-enroll">
+	<h2 id="paymentprocessingmessage">
+		${Resource.msg('processing.payment', 'payments', null)}
+	</h2>
+
+	<form class="payerAuthRedirect" action="${pdict.action}" method="POST" name="payerAuthRedirect"
+		  target="_parent">
+		<input type="hidden" name="orderID" value="${pdict.orderNo}"/>
+		<input type="hidden" name="referenceId" value="${pdict.referenceId}"/>
+		<input type="hidden" name="isScaFlow" value="${pdict.isScaFlow}"/>
+	</form>
+
+	<script src="${URLUtils.staticURL('/js/earlyPayerAuthEnroll.js')}"></script>
+</div>
