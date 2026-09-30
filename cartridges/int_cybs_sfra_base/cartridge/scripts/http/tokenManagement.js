@@ -9,25 +9,74 @@ var STATUSCODES = {
 };
 
 /**
- *
- * @param {string} paymentInstrumentId PI ID
- * @returns {Object} Payment Instrument
+ * Parses a service error body into an object, tolerating a JSON string or a
+ * pre-parsed object, and never throwing.
+ * @param {string|Object} data - the error body passed to the SDK callback
+ * @returns {Object} the parsed body, or {} if absent/unparseable
+ */
+function parseErrorBody(data) {
+    try {
+        return (typeof data === 'string') ? JSON.parse(data) : (data || {});
+    } catch (e) {
+        return {};
+    }
+}
+
+/**
+ * Detects a "payment instrument no longer exists at TMS" outcome (HTTP 404/410),
+ * tolerating the several shapes SFCC/Visa Acceptance surface it in: the dw.svc.Result
+ * `error` or `statusCode` fields, or a `statusCode` in the parsed JSON error body
+ * (tolerant of the several shapes Visa Acceptance/SFCC surface a 404/410 in).
+ * @param {Object} response - the dw.svc.Result passed to the SDK callback
+ * @param {string|Object} data - the error body (JSON string or object)
+ * @returns {boolean} true when the instrument is gone (404/410)
+ */
+function isInstrumentGone(response, data) {
+    if (response && (response.error === 404 || response.error === 410
+            || response.statusCode === 404 || response.statusCode === 410)) {
+        return true;
+    }
+    var body = parseErrorBody(data);
+    return body.statusCode === 404 || body.statusCode === 410;
+}
+
+/**
+ * Retrieves a TMS payment instrument and classifies the outcome. Never throws so a
+ * single failure cannot block the saved-card refresh flow.
+ * @param {string} paymentInstrumentId - the TMS payment-instrument token id
+ * @returns {{status: string, data: Object|null}} status is 'updated' (data = TMS
+ *   response), 'notAvailable' (404/410), or 'softFail' (any other error)
  */
 function httpRetrievePaymentInstrument(paymentInstrumentId) {
     var configObject = require('../../configuration/index');
     var cybersourceRestApi = require('../../apiClient/index');
+    var Logger = require('dw/system/Logger');
     var instance = new cybersourceRestApi.PaymentInstrumentApi(configObject);
-    var paymentInstrument = null;
-    instance.getPaymentInstrument(configObject.profileId, paymentInstrumentId, function (data, error, response) {
+    var verdict = { status: 'softFail', data: null };
+    // SDK signature is getPaymentInstrument(paymentInstrumentTokenId, opts, callback):
+    // the token id MUST be the first argument; the second carries the optional
+    // profile-id header. Mirrors the live getInstrumentIdentifier/deletePaymentInstrument calls.
+    instance.getPaymentInstrument(paymentInstrumentId, configObject.profileId, function (data, error, response) {
         if (!error) {
-            paymentInstrument = data;
-        } else if (response.error === 404 || response.error === 410) {
-            paymentInstrument = null;
+            verdict = { status: 'updated', data: data };
+        } else if (isInstrumentGone(response, data)) {
+            verdict = { status: 'notAvailable', data: null };
         } else {
-            throw new Error(data);
+            // Diagnostic: surface the real shape of an unclassified failure so the
+            // retrieve outcome is observable (can be dialed to debug level later).
+            var body = parseErrorBody(data);
+            Logger.getLogger('VisaAcceptance', 'SavedCardRefresh').error(
+                'TMS retrieve soft-fail: Result.error={0} Result.status={1} Result.statusCode={2} body.reason={3} body.statusCode={4}',
+                response && response.error,
+                response && response.status,
+                response && response.statusCode,
+                body.reason || body.status || '',
+                body.statusCode
+            );
+            verdict = { status: 'softFail', data: null };
         }
     });
-    return paymentInstrument;
+    return verdict;
 }
 
 /**
@@ -40,11 +89,9 @@ function httpRetrievePaymentInstrument(paymentInstrumentId) {
  */
 function httpUCCreateToken(ucTransientToken, customerEmail, billingAddress, referenceCode) {
     var Logger = require('dw/system/Logger');
-    var logger = Logger.getLogger('Cybersource', 'UC-TokenManagement');
+    var logger = Logger.getLogger('VisaAcceptance', 'UC-TokenManagement');
     
     try {
-        logger.info('Creating UC token for reference: {0}', referenceCode);
-        
         var payments = require('~/cartridge/scripts/http/payments.js');
         var result = payments.httpZeroDollarAuthWithTransientToken(
             ucTransientToken,
@@ -55,7 +102,6 @@ function httpUCCreateToken(ucTransientToken, customerEmail, billingAddress, refe
         );
         
         if (result.status === STATUSCODES.AUTHORIZED || result.status === 'AUTHORIZED_PENDING_REVIEW') {
-            logger.info('UC token created successfully for reference: {0}', referenceCode);
             return {result:result.tokenInformation,
                 success:true
             };
@@ -101,33 +147,6 @@ function httpCreateToken(
         return result.tokenInformation;
     }
     throw new Error(new errors.CARD_NOT_AUTHORIZED_ERROR('Error in token'));
-}
-
-/**
- * @param {*} transientToken *
- * @param {*} customerEmail *
- * @param {*} address *
- * @param {*} referenceCode *
- * @returns {*} *
- */
-function httpFlexCreateToken(
-    transientToken,
-    customerEmail, address, referenceCode
-) {
-    try { // eslint-disable-line no-useless-catch
-        var payments = require('~/cartridge/scripts/http/payments.js');
-        var result = payments.httpZeroDollarAuthWithTransientToken(
-            transientToken,
-            customerEmail, referenceCode,
-            address, site.current.getDefaultCurrency()
-        );
-        if (result.status === STATUSCODES.AUTHORIZED) {
-            return result.tokenInformation;
-        }
-        return result.status;
-    } catch (e) {
-        throw e;
-    }
 }
 
 /**
@@ -210,7 +229,6 @@ function httpDeleteCustomerPaymentInstrument(customerTokenId, paymentInstrumentT
 
 module.exports = {
     httpCreateToken: httpCreateToken,
-    httpFlexCreateToken: httpFlexCreateToken,
     httpUCCreateToken: httpUCCreateToken,
     httpDeletePaymentInstrument: httpDeletePaymentInstrument,
     httpRetrievePaymentInstrument: httpRetrievePaymentInstrument,

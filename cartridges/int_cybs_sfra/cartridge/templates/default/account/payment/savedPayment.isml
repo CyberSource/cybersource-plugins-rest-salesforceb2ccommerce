@@ -1,0 +1,54 @@
+<iscomment>
+    Overrides app_storefront_base/account/payment/savedPayment.isml to render saved
+    eCheck instruments correctly. eChecks are stored under METHOD_CREDIT_CARD with
+    creditCardType="eCheck"; the base template renders "Credit eCheck / ****XXXX /
+    Ending null/null" because it unconditionally treats every saved PI as a card.
+
+    For eCheck rows: show "Electronic Check" heading, the masked account, and a
+    masked routing number (•••••<last4>) pulled from custom.echeckRoutingNumber on
+    the raw wallet PI. The account model does not surface custom attributes, so we
+    look up the wallet PI by UUID here.
+</iscomment>
+<isscript>
+    var isEcheckRow = payment.creditCardType === 'eCheck';
+    var maskedEcheckRoutingNumber = '';
+    if (isEcheckRow) {
+        try {
+            var customer = session.getCustomer();
+            if (customer && customer.authenticated && customer.profile && customer.profile.wallet) {
+                var rawPIs = customer.profile.wallet.getPaymentInstruments('CREDIT_CARD').toArray();
+                for (var i = 0; i < rawPIs.length; i++) {
+                    if (rawPIs[i].UUID === payment.UUID) {
+                        var routing = '';
+                        try {
+                            routing = (rawPIs[i].custom && rawPIs[i].custom.echeckRoutingNumber) || '';
+                        } catch (eRouting) {
+                            routing = '';
+                        }
+                        if (routing && routing.length >= 4) {
+                            maskedEcheckRoutingNumber = '•••••' + routing.slice(-4);
+                        } else if (routing) {
+                            maskedEcheckRoutingNumber = routing;
+                        }
+                        break;
+                    }
+                }
+            }
+        } catch (e) {
+            // Wallet lookup failed; suppress the routing line gracefully.
+        }
+    }
+</isscript>
+<isif condition="${isEcheckRow}">
+    <p>Electronic Check</p>
+    <isif condition="${!empty(payment.maskedCreditCardNumber) && payment.maskedCreditCardNumber !== 'null'}">
+        <p>${payment.maskedCreditCardNumber}</p>
+    </isif>
+    <isif condition="${!empty(maskedEcheckRoutingNumber)}">
+        <p>Routing: ${maskedEcheckRoutingNumber}</p>
+    </isif>
+<iselse/>
+    <p>${payment.creditCardType}</p>
+    <p>${payment.maskedCreditCardNumber}</p>
+    <p>${Resource.msg('label.payment.ending','account',null)} ${payment.creditCardExpirationMonth}/${payment.creditCardExpirationYear}</p>
+</isif> 

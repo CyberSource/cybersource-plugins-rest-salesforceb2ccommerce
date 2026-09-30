@@ -48,6 +48,9 @@ function setPaymentProcessorDetails(result, paymentInstrument) {
  * @returns {*} *
  */
 function paSetup(billingDetails, referenceInformationCode, cardData, order, paymentInstrument) {
+    var webhookActivationHelper = require('~/cartridge/scripts/helpers/webhookActivationHelper');
+    webhookActivationHelper.activateWebhooks();
+
     var instance = new cybersourceRestApi.PayerAuthenticationApi(configObject);
 
     var clientReferenceInformation = new cybersourceRestApi.Ptsv2paymentsClientReferenceInformation();
@@ -65,19 +68,27 @@ function paSetup(billingDetails, referenceInformationCode, cardData, order, paym
     }
     amountDetails.currency = order.currencyCode;
 
+    // `order` is an Order on the order-time path but a Basket on the early (card-entry time)
+    // path - every member read below exists on both. A basket reached from the payment step may
+    // still be missing one of the two addresses (the shopper has not submitted billing yet, or
+    // has no default address), so fall back to whichever one is present rather than
+    // dereferencing null. On the order-time path both always exist, so this is a no-op there.
+    var rawShippingAddress = order.shipments[0].shippingAddress;
+    var billingAddress = order.billingAddress || rawShippingAddress;
+    var shippingAddress = rawShippingAddress || order.billingAddress;
+
     var billTo = new cybersourceRestApi.Ptsv2paymentsOrderInformationBillTo();
     billTo.email = order.getCustomerEmail();
-    billTo.country = order.billingAddress.countryCode.toString().toUpperCase();
-    billTo.firstName = order.billingAddress.firstName;
-    billTo.lastName = order.billingAddress.lastName;
-    billTo.phoneNumber = order.billingAddress.phone;
-    billTo.address1 = order.billingAddress.address1;
-    billTo.address2 = order.billingAddress.address2;
-    billTo.postalCode = order.billingAddress.postalCode;
-    billTo.administrativeArea = order.billingAddress.stateCode;
-    billTo.locality = order.billingAddress.city;
+    billTo.country = billingAddress.countryCode.toString().toUpperCase();
+    billTo.firstName = billingAddress.firstName;
+    billTo.lastName = billingAddress.lastName;
+    billTo.phoneNumber = billingAddress.phone;
+    billTo.address1 = billingAddress.address1;
+    billTo.address2 = billingAddress.address2;
+    billTo.postalCode = billingAddress.postalCode;
+    billTo.administrativeArea = billingAddress.stateCode;
+    billTo.locality = billingAddress.city;
 
-    var shippingAddress = order.shipments[0].shippingAddress;
     var mapper = require('~/cartridge/scripts/util/mapper.js');
     var lineItems = mapper.MapOrderLineItems(order.allLineItems, true);
 
@@ -122,11 +133,18 @@ function paSetup(billingDetails, referenceInformationCode, cardData, order, paym
         tokenInformation = new cybersourceRestApi.Ptsv2paymentsTokenInformation();
         tokenInformation.transientTokenJwt = cardData.jwttoken;
         request.tokenInformation = tokenInformation;
-    } else if (cardData.googlePayFluidData != null) {
-        processingInformation.paymentSolution = '012';  //googlepay
-        var fluidData = new cybersourceRestApi.Ptsv2paymentsPaymentInformationFluidData();
-        fluidData.value = cardData.googlePayFluidData;
-        paymentInformation.fluidData = fluidData;
+    } else if (cardData.number) {
+        // Early (card-entry time) setup: the card details arrive on the request because the
+        // billing form has not been submitted yet, so billingDetails is not available. No
+        // securityCode is sent - setup does not need one, and the CVV must never leave the
+        // browser this early. card.type carries the same value the order-time branch below
+        // sends (the cleave display name, e.g. 'Visa'), so the request shape is unchanged.
+        card = new cybersourceRestApi.Ptsv2paymentsPaymentInformationCard();
+        card.expirationMonth = cardData.expirationMonth;
+        card.expirationYear = cardData.expirationYear;
+        card.number = cardData.number;
+        card.type = cardData.type;
+        paymentInformation.card = card;
     } else {
         card = new cybersourceRestApi.Ptsv2paymentsPaymentInformationCard();
         card.expirationMonth = billingDetails.creditCardFields.expirationMonth.value;
@@ -156,7 +174,12 @@ function paSetup(billingDetails, referenceInformationCode, cardData, order, paym
             throw new Error(data);
         }
     });
-    setPaymentProcessorDetails(result, paymentInstrument);
+    // The early (card-entry time) path has no payment instrument yet - the basket only gains one
+    // when the billing form is submitted. Nothing is lost by skipping this: paEnroll makes the
+    // same setPaymentProcessorDetails call once the order exists.
+    if (paymentInstrument) {
+        setPaymentProcessorDetails(result, paymentInstrument);
+    }
     return result;
 }
 
@@ -175,6 +198,9 @@ function paSetup(billingDetails, referenceInformationCode, cardData, order, paym
 function paEnroll(billingDetails, shippingAddress, referenceInformationCode, total, currency, referenceId, cardData, lineItems, order, isScaFlow, payerauthArgs, paymentInstrument) {
     var tokenHelper = require('~/cartridge/scripts/helpers/tokenHelper.js');
 
+    var webhookActivationHelper = require('~/cartridge/scripts/helpers/webhookActivationHelper');
+    webhookActivationHelper.activateWebhooks();
+
     var instance = new cybersourceRestApi.PaymentsApi(configObject);
 
     var clientReferenceInformation = new cybersourceRestApi.Ptsv2paymentsClientReferenceInformation();
@@ -192,11 +218,6 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
         }
     }
     else {
-        if (paymentInstrument.paymentMethod === 'DW_GOOGLE_PAY') {
-            if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_GooglePayTransactionType').value === 'sale') {
-                processingInformation.capture = true;
-            }
-        }
         if (paymentInstrument.paymentMethod === 'CREDIT_CARD') {
             if (configObject.cardTransactionType.value === 'sale') {
                 processingInformation.capture = true;
@@ -283,7 +304,11 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
     }
 
     consumerAuthenticationInformation.referenceId = referenceId;
-    consumerAuthenticationInformation.returnUrl = URLUtils.https('PayerAuthentication-PayerAuthValidation').toString();
+    // Points at the thin interstitial, NOT straight at PayerAuthValidation. The interstitial tells
+    // the parent window the challenge is over and then forwards this exact POST on to validation,
+    // which is what lets the storefront show a spinner for the whole post-challenge wait instead
+    // of leaving the shopper on a blank iframe. See PayerAuthentication-PayerAuthReturn.
+    consumerAuthenticationInformation.returnUrl = URLUtils.https('PayerAuthentication-PayerAuthReturn').toString();
 
     // Set deviceChannel from browser fields if available, otherwise default to 'Browser'
     if (payerauthArgs && payerauthArgs.parsedBrowserfields && payerauthArgs.parsedBrowserfields.deviceChannel) {
@@ -312,7 +337,12 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
         session.privacy.iv = iv;
     }
 
+    var ucPaymentHelper = require('~/cartridge/scripts/helpers/ucPaymentHelper');
     var deviceInformation = new cybersourceRestApi.Ptsv2paymentsDeviceInformation();
+    // ipAddress is required whenever deviceInformation is sent. Default to the server-resolved
+    // shopper IP (the global `request` is shadowed by the local CreatePaymentRequest below);
+    // the client-reported browser IP overrides it below when present.
+    deviceInformation.ipAddress = ucPaymentHelper.getRemoteIpAddress();
 
     if (configObject.deviceFingerprintEnabled && configObject.fmeDmEnabled) {
         deviceInformation.fingerprintSessionId = session.privacy.dfID;
@@ -329,7 +359,9 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
         deviceInformation.httpBrowserTimeDifference = browserData.httpBrowserTimeDifference ? browserData.httpBrowserTimeDifference.toString() : undefined;
         deviceInformation.userAgentBrowserValue = browserData.httpUserAgent;
         deviceInformation.httpAcceptContent = browserData.httpAcceptContent;
-        deviceInformation.ipAddress = browserData.ipAddress;
+        if (browserData.ipAddress) {
+            deviceInformation.ipAddress = browserData.ipAddress;
+        }
     }
 
     request.deviceInformation = deviceInformation;
@@ -352,11 +384,6 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
         tokenInformation = new cybersourceRestApi.Ptsv2paymentsTokenInformation();
         tokenInformation.transientTokenJwt = cardData.jwttoken;
         request.tokenInformation = tokenInformation;
-    } else if (cardData.googlePayFluidData != null) {
-        processingInformation.paymentSolution = '012';  //googlepay
-        var fluidData = new cybersourceRestApi.Ptsv2paymentsPaymentInformationFluidData();
-        fluidData.value = cardData.googlePayFluidData;
-        paymentInformation.fluidData = fluidData;
     } else {
         card = new cybersourceRestApi.Ptsv2paymentsPaymentInformationCard();
         card.expirationMonth = billingDetails.creditCardFields.expirationMonth.value;
@@ -423,6 +450,9 @@ function paEnroll(billingDetails, shippingAddress, referenceInformationCode, tot
 function paConsumerAuthenticate(billingDetails, referenceInformationCode, total, currency, transactionId, cardData, lineItems, order, paymentInstrument) {
     var tokenHelper = require('~/cartridge/scripts/helpers/tokenHelper.js');
 
+    var webhookActivationHelper = require('~/cartridge/scripts/helpers/webhookActivationHelper');
+    webhookActivationHelper.activateWebhooks();
+
     var instance = new cybersourceRestApi.PaymentsApi(configObject);
 
     var clientReferenceInformation = new cybersourceRestApi.Ptsv2paymentsClientReferenceInformation();
@@ -460,11 +490,6 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
         }
     }
     else {
-        if (paymentInstrument.paymentMethod === 'DW_GOOGLE_PAY') {
-            if (dw.system.Site.getCurrent().getCustomPreferenceValue('Cybersource_GooglePayTransactionType').value === 'sale') {
-                processingInformation.capture = true;
-            }
-        }
         if (paymentInstrument.paymentMethod === 'CREDIT_CARD') {
             if (configObject.cardTransactionType.value === 'sale') {
                 processingInformation.capture = true;
@@ -502,8 +527,12 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
     var paymentInformation = new cybersourceRestApi.Ptsv2paymentsPaymentInformation();
     var request = new cybersourceRestApi.CreatePaymentRequest();
 
+    var ucPaymentHelper = require('~/cartridge/scripts/helpers/ucPaymentHelper');
     var deviceSessionId = new cybersourceRestApi.Ptsv2paymentsDeviceInformation();
     deviceSessionId.fingerprintSessionId = session.privacy.dfID;
+    // ipAddress is required by Visa Acceptance when deviceInformation is sent; resolve via
+    // helper because the local CreatePaymentRequest above shadows the global `request`.
+    deviceSessionId.ipAddress = ucPaymentHelper.getRemoteIpAddress();
 
     if (configObject.deviceFingerprintEnabled && configObject.fmeDmEnabled) {
         request.deviceInformation = deviceSessionId;
@@ -526,11 +555,6 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
         var tokenInformation = new cybersourceRestApi.Ptsv2paymentsTokenInformation(); // eslint-disable-line no-redeclare
         tokenInformation.transientTokenJwt = cardData.jwttoken;
         request.tokenInformation = tokenInformation;
-    } else if (cardData.googlePayFluidData != null) {
-        processingInformation.paymentSolution = '012';  //googlepay
-        var fluidData = new cybersourceRestApi.Ptsv2paymentsPaymentInformationFluidData();
-        fluidData.value = cardData.googlePayFluidData;
-        paymentInformation.fluidData = fluidData;
     } else {
         var card = new cybersourceRestApi.Ptsv2paymentsPaymentInformationCard(); // eslint-disable-line no-redeclare
         card.expirationMonth = billingDetails.creditCardFields.expirationMonth.value;
@@ -584,13 +608,19 @@ function paConsumerAuthenticate(billingDetails, referenceInformationCode, total,
 }
 
 /**
- * Get the 3DS Mode configuration from Business Manager
- * @returns {string} - Returns the configured 3DS mode: 'Yes', 'No', 'DataOnlyYes', or 'DataOnlyNo'
+ * Get the 3DS Mode configuration from Business Manager.
+ *
+ * VisaAcceptance_PayerAuthEnabled is an enum-of-string preference, so this returns the raw
+ * dw.value.EnumValue, NOT a string - callers must read .value ('YES' | 'NO' | 'DATA_ONLY_YES' |
+ * 'DATA_ONLY_NO'). When the preference is unset the EnumValue is still truthy and .value is null,
+ * so testing the EnumValue itself for truthiness always succeeds and tells you nothing.
+ *
+ * @returns {dw.value.EnumValue} - the configured 3DS mode
  */
 function get3DSMode() {
     var Site = require('dw/system/Site');
     var currentSite = Site.getCurrent();
-    var threeDSMode = currentSite.getCustomPreferenceValue('Cybersource_PayerAuthEnabled');
+    var threeDSMode = currentSite.getCustomPreferenceValue('VisaAcceptance_PayerAuthEnabled');
     return threeDSMode;
 }
 
@@ -617,12 +647,104 @@ function getCardType(paymentInstrument) {
 }
 
 
+/**
+ * Single home for the "does Payer Authentication apply?" decision, keyed on a card type
+ * NAME rather than a payment instrument. The early (card-entry time) setup runs before any
+ * payment instrument exists on the basket, so it cannot use getCardType(paymentInstrument);
+ * shouldApplyPayerAuthentication() in payments_credit.js delegates here so the two callers
+ * can never drift apart.
+ *
+ * Pass null for the card type to answer the weaker question "is the 3DS mode switched on at
+ * all" - used to decide whether to render the early-setup client assets.
+ *
+ * @param {string} cardTypeName - card type name, e.g. 'Visa', 'Master Card' (may be null)
+ * @returns {boolean} true when Payer Authentication should run
+ */
+function isPayerAuthApplicableForCardType(cardTypeName) {
+    if (!configObject.cartridgeEnabled) {
+        return false;
+    }
+
+    // VisaAcceptance_PayerAuthEnabled is enum-of-string. An UNSET enum preference returns a
+    // truthy EnumValue whose .value is null, so the mode must be read off .value - never off
+    // the EnumValue itself, and never via String(), which would turn null into "null".
+    var mode = get3DSMode();
+    var modeValue = (mode && mode.value) ? String(mode.value) : null;
+    if (!modeValue || modeValue === 'NO') {
+        return false;
+    }
+
+    var cardType = cardTypeName ? String(cardTypeName).replace(/\s+/g, '').toUpperCase() : '';
+    if (modeValue === 'DATA_ONLY_NO'
+        && !('VISA' === cardType || 'MASTERCARD' === cardType || 'MAESTRO' === cardType)) {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Whether EARLY (card-entry time) Payer Auth setup applies. Same decision as
+ * isPayerAuthApplicableForCardType plus the Unified Checkout exclusion: UC drives its own 3DS
+ * through the SDK and places orders via PlaceOrderDirect, so the early setup must stay out of it.
+ *
+ * The UC exclusion lives here rather than in isPayerAuthApplicableForCardType so that the
+ * order-time shouldApplyPayerAuthentication() decision stays exactly what it has always been.
+ *
+ * Pass null for the card type to test only whether the feature is switched on at all - used to
+ * decide whether to render the early-setup client assets.
+ *
+ * @param {string} cardTypeName - card type name, e.g. 'Visa' (may be null)
+ * @returns {boolean} true when early setup should run
+ */
+function isEarlyPayerAuthApplicable(cardTypeName) {
+    if (configObject.unifiedCheckoutEnabled) {
+        return false;
+    }
+    return isPayerAuthApplicableForCardType(cardTypeName);
+}
+
+/**
+ * Whether Payer Authentication applies to a given payment instrument: the wallet/method
+ * exclusions plus the 3DS mode / card type decision.
+ *
+ * This is the single home for that answer. payments_credit.js's shouldApplyPayerAuthentication
+ * delegates here, and checkoutHelpers.createOrder uses it to decide whether an order number
+ * reserved for early setup belongs to this order. Deliberately does NOT exclude Unified
+ * Checkout - that would change the long-standing order-time Authorize behaviour. Callers that
+ * need the UC exclusion apply it themselves.
+ *
+ * @param {dw.order.PaymentInstrument} paymentInstrument - the instrument being paid with
+ * @returns {boolean} true when Payer Authentication should run for it
+ */
+function shouldApplyPayerAuthForInstrument(paymentInstrument) {
+    if (empty(paymentInstrument)) {
+        return false;
+    }
+
+    var paymentMethod = paymentInstrument.paymentMethod;
+    var isVisaCTP = !empty(paymentMethod) && paymentMethod.equals('CLICK_TO_PAY');
+    var isApplePayUC = !empty(paymentMethod) && paymentMethod.equals('DW_APPLE_PAY');
+    var isGooglePay = !empty(paymentMethod) && paymentMethod.equals('DW_GOOGLE_PAY');
+    var isEcheck = !empty(paymentMethod) && paymentMethod.equals('BANK_TRANSFER');
+
+    if (isVisaCTP || isEcheck || isApplePayUC || isGooglePay) {
+        return false;
+    }
+
+    return isPayerAuthApplicableForCardType(getCardType(paymentInstrument));
+}
+
+
 if (configObject.cartridgeEnabled) {
     module.exports = {
         paSetup: paSetup,
         paEnroll: paEnroll,
         paConsumerAuthenticate: paConsumerAuthenticate,
         get3DSMode: get3DSMode,
-        getCardType: getCardType
+        getCardType: getCardType,
+        isPayerAuthApplicableForCardType: isPayerAuthApplicableForCardType,
+        isEarlyPayerAuthApplicable: isEarlyPayerAuthApplicable,
+        shouldApplyPayerAuthForInstrument: shouldApplyPayerAuthForInstrument
     };
 }

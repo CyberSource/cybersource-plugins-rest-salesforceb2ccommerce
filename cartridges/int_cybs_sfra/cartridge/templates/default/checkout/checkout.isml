@@ -6,7 +6,6 @@
 	<isscript>
         var assets = require('*/cartridge/scripts/assets.js');
         assets.addJs('/js/checkout.js');
-				assets.addJs('/js/googlePay.js');
 				assets.addJs('/js/paymentFormToggle.js');
         assets.addCss('/css/checkout/checkout.css');
     </isscript>
@@ -48,9 +47,12 @@
 				<!-- Checkout Forms: Shipping, Payment, Coupons, Billing, etc -->
 				<!----------------------------------------------------------------------------------->
 
-				<div class="alert alert-danger error-message" role="alert">
-					<p class="error-message-text"></p>
-				</div>
+
+				<isif condition="${!('payerAuthError' in pdict.CurrentHttpParameterMap && pdict.CurrentHttpParameterMap.payerAuthError.stringValue !== null)}">
+					<div class="alert alert-danger error-message" role="alert">
+						<p class="error-message-text"></p>
+					</div>
+				</isif>
 
 				<iscomment>Payer Auth Error Display </iscomment>
 

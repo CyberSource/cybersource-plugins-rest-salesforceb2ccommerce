@@ -51,22 +51,46 @@ function getSelectedPaymentInstruments(selectedPaymentInstruments) {
         if (paymentInstrument.paymentMethod === 'CREDIT_CARD') {
             results.lastFour = paymentInstrument.creditCardNumberLastDigits;
             results.owner = paymentInstrument.creditCardHolder;
-            results.expirationYear = paymentInstrument.creditCardExpirationYear;
             results.type = paymentInstrument.creditCardType;
-            results.maskedCreditCardNumber = paymentInstrument.maskedCreditCardNumber;
-            results.expirationMonth = paymentInstrument.creditCardExpirationMonth;
+            // UC's transient token does not always carry the masked PAN
+            // (notably for Google Pay UC). When it is missing, suppress both
+            // the masked number AND the expiry on the storefront's
+            // Order-Confirm page so it never renders "null" or an orphan
+            // "Ending {month}/{year}" line for a card we have no number for.
+            // The expiry is still set on the underlying paymentInstrument and
+            // is available to BM, the confirmation email, and order history.
+            var ccMasked = paymentInstrument.maskedCreditCardNumber;
+            results.maskedCreditCardNumber = ccMasked || '';
+            results.expirationMonth = ccMasked ? paymentInstrument.creditCardExpirationMonth : '';
+            results.expirationYear = ccMasked ? paymentInstrument.creditCardExpirationYear : '';
         } else if (paymentInstrument.paymentMethod === 'GIFT_CERTIFICATE') {
             results.giftCertificateCode = paymentInstrument.giftCertificateCode;
             results.maskedGiftCertificateCode = paymentInstrument.maskedGiftCertificateCode;
         } else if (paymentInstrument.paymentMethod === 'DW_GOOGLE_PAY') {
             results.type = paymentInstrument.creditCardType;
-            results.maskedCreditCardNumber = paymentInstrument.maskedCreditCardNumber;
+            // Same guard as CREDIT_CARD above. Google Pay UC frequently has no
+            // masked PAN in the transient token; surface '' for both the PAN
+            // and expiry so the Order-Confirm template prints neither "null"
+            // nor an orphan "Ending {month}/{year}" line.
+            var gpMasked = paymentInstrument.maskedCreditCardNumber;
+            results.maskedCreditCardNumber = gpMasked || '';
+            results.expirationMonth = gpMasked ? paymentInstrument.creditCardExpirationMonth : '';
+            results.expirationYear = gpMasked ? paymentInstrument.creditCardExpirationYear : '';
         } else if (paymentInstrument.paymentMethod === 'BANK_TRANSFER') {
             // Bank Transfer / eCheck details
             results.bankAccountHolder = paymentInstrument.bankAccountHolder;
             results.bankAccountNumber = paymentInstrument.bankAccountNumber;
             results.bankRoutingNumber = paymentInstrument.bankRoutingNumber;
 
+        } else if (paymentInstrument.paymentMethod === 'PAYPAL'
+            || paymentInstrument.paymentMethod === 'VENMO') {
+            if ('apmPaymentType' in paymentInstrument.custom) {
+                results.apmPaymentType = paymentInstrument.custom.apmPaymentType;
+            }
+            if ('apmMethod' in paymentInstrument.custom) {
+                results.apmMethod = paymentInstrument.custom.apmMethod;
+            }
+            results.paymentDetails = paymentInstrument.paymentTransaction.custom.paymentDetails;
         }
 
         return results;

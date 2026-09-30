@@ -71,7 +71,27 @@
         {
             "name": "app.payment.form.processor.payments_applepay",
             "script": "./cartridge/scripts/hooks/payment/processor/apple_pay_uc_form_processor"
+        },
+        {
+            "name": "app.payment.processor.payments_googlepay",
+            "script": "./cartridge/scripts/hooks/payment/processor/google_pay_uc"
+        },
+        {
+            "name": "app.payment.processor.payments_paypal",
+            "script": "./cartridge/scripts/hooks/payment/processor/payments_paypal"
+        },
+        {
+            "name": "app.payment.processor.payments_venmo",
+            "script": "./cartridge/scripts/hooks/payment/processor/payments_venmo"
+        },
+        {
+            "name": "app.payment.processor.payments_paze",
+            "script": "./cartridge/scripts/hooks/payment/processor/payments_paze"
+        },
+        {
+            "name": "app.payment.modifyrequest",
+            "script": "./cartridge/scripts/hooks/payment/modifyRequest"
         }
-        
+
     ]
 }

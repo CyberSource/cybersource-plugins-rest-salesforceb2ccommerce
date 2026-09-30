@@ -75,7 +75,7 @@ function processForm(req, paymentForm, viewFormData) {
       viewData: viewData
     };
   } catch (e) {
-    var logger = Logger.getLogger("Cybersource", "BankTransferFormProcessor");
+    var logger = Logger.getLogger("VisaAcceptance", "BankTransferFormProcessor");
     var errorMessage = (e instanceof Error) ? e.message : String(e);
     logger.error("Unexpected error in processForm for bank transfer: {0}", errorMessage);
     

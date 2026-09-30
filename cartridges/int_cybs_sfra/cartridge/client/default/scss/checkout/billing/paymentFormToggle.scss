@@ -1,6 +1,6 @@
 /**
  * Payment Form Toggle Styles
- * Styles for UC/Flex microform toggle functionality
+ * Styles for Unified Checkout payment toggle functionality
  * Following SFCC SFRA SCSS structure and patterns
  */
  
@@ -35,23 +35,6 @@
     .creditCardFields {
         &.checkout-hidden {
             display: none;
-        }
-    }
-}
- 
-// Flex microform styles
-.flex-microform {
-    .form-control {
-        border: 1px solid #ced4da;
-        border-radius: 0.25rem;
-        padding: 0.375rem 0.75rem;
-       
-        &.is-invalid {
-            border-color: #dc3545;
-        }
-       
-        &.is-valid {
-            border-color: #28a745;
         }
     }
 }

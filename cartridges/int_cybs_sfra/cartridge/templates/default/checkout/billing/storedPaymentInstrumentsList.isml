@@ -1,0 +1,109 @@
+<isloop items="${pdict.customer.customerPaymentInstruments}" var="paymentInstrument" status="loopState">
+    <isscript>
+        // Extract TMS paymentInstrumentId from the raw wallet PI (the pdict model
+        // doesn't expose creditCardToken). While we have the raw PI, also pull the
+        // eCheck routing number so we can render it below the masked account.
+        var tmsPaymentInstrumentId = '';
+        var echeckRoutingNumber = '';
+        try {
+            var CustomerMgr = require('dw/customer/CustomerMgr');
+            var customer = session.getCustomer();
+            if (customer && customer.authenticated && customer.profile && customer.profile.wallet) {
+                var rawPIs = customer.profile.wallet.getPaymentInstruments('CREDIT_CARD').toArray();
+                for (var i = 0; i < rawPIs.length; i++) {
+                    if (rawPIs[i].UUID === paymentInstrument.UUID) {
+                        var token = rawPIs[i].creditCardToken;
+                        if (token && token.indexOf('-') > 0) {
+                            var tokenParts = token.split('-');
+                            if (tokenParts.length >= 2) {
+                                tmsPaymentInstrumentId = tokenParts[1];
+                            }
+                        }
+                        try {
+                            echeckRoutingNumber = (rawPIs[i].custom && rawPIs[i].custom.echeckRoutingNumber) || '';
+                        } catch (eRouting) {
+                            echeckRoutingNumber = '';
+                        }
+                        // Mask the routing number to last 4 for the shopper-facing tile.
+                        // Routing numbers are publicly published per bank, but masking
+                        // mirrors the visual treatment of the masked account number above.
+                        var maskedEcheckRoutingNumber = '';
+                        if (echeckRoutingNumber && echeckRoutingNumber.length >= 4) {
+                            maskedEcheckRoutingNumber = '•••••' + echeckRoutingNumber.slice(-4);
+                        } else if (echeckRoutingNumber) {
+                            maskedEcheckRoutingNumber = echeckRoutingNumber;
+                        }
+                        break;
+                    }
+                }
+            }
+        } catch (e) {
+            // Log error but continue
+        }
+        // eCheck rows are stored under METHOD_CREDIT_CARD with creditCardType="eCheck".
+        // Detect via the type so we render the row as an eCheck (routing line, no expiry)
+        // instead of a generic card.
+        var isEcheckRow = paymentInstrument.creditCardType === 'eCheck';
+    </isscript>
+    <iscomment>
+        Pre-select the shopper's default saved card. The account model sorts the default
+        card first, so isDefault is set on it; loopState.first is the fallback for shoppers
+        who have no default flagged yet. Exactly one card ends up with 'selected-payment'.
+    </iscomment>
+    <isscript>
+        // eCheck rows have no card-brand image, and maskedCreditCardNumber can be the
+        // literal string 'null' if the original save didn't supply a masked account.
+        // Pre-compute the displayed account string here so the template stays clean.
+        var displayedAccount = paymentInstrument.maskedCreditCardNumber;
+        if (!displayedAccount || displayedAccount === 'null') {
+            displayedAccount = isEcheckRow ? '' : displayedAccount;
+        }
+    </isscript>
+    <iscomment>
+        data-card-type lets the early Payer Auth trigger decide whether this row is eligible for
+        card-entry-time setup without another server round trip. eCheck rows live in this same
+        list, so they are labelled as such and the trigger skips them.
+    </iscomment>
+    <div class="row saved-payment-instrument ${(paymentInstrument.isDefault || loopState.first) ? 'selected-payment' : ''}" data-uuid="${paymentInstrument.UUID}" data-pi-id="${tmsPaymentInstrumentId}" data-card-type="${isEcheckRow ? 'eCheck' : paymentInstrument.creditCardType}">
+        <div class="saved-payment-information col-6 col-md-3">
+            <isif condition="${!isEcheckRow}">
+                <img class="card-image"
+                     src="${paymentInstrument.cardTypeImage.src}"
+                     alt="${paymentInstrument.cardTypeImage.alt}" />
+            </isif>
+        </div>
+        <div class="saved-payment-information col-6 col-md-9">
+            <div class="saved-credit-card-type">
+                <span>
+                    <isif condition="${isEcheckRow}">
+                        Electronic Check
+                    <iselse/>
+                        ${paymentInstrument.creditCardType}
+                    </isif>
+                </span>
+                <isif condition="${paymentInstrument.isDefault}">
+                    <span class="default-payment-badge">${Resource.msg('label.payment.default', 'payment', null)}</span>
+                </isif>
+            </div>
+            <isif condition="${!empty(displayedAccount)}">
+                <div class="saved-credit-card-number">
+                    ${displayedAccount}
+                </div>
+            </isif>
+            <isif condition="${isEcheckRow}">
+                <isif condition="${!empty(maskedEcheckRoutingNumber)}">
+                    <div class="saved-echeck-routing-number small text-muted">
+                        Routing: ${maskedEcheckRoutingNumber}
+                    </div>
+                </isif>
+            <iselse/>
+                <div class="saved-credit-card-expiration-date">
+                    <span>
+                        ${Resource.msg('msg.card.type.ending', 'confirmation', null)}
+                        ${paymentInstrument.creditCardExpirationMonth}/${paymentInstrument.creditCardExpirationYear}
+                    </span>
+                </div>
+            </isif>
+        </div>
+    </div>
+</isloop>

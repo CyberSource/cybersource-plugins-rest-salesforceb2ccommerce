@@ -4,7 +4,7 @@ var server = require('server');
 var configObject = require('../configuration/index');
 var secureResponseHelper = require('~/cartridge/scripts/helpers/secureResponseHelper');
 /*
- * Controller that handles the Cybersource Device Fingerprint
+ * Controller that handles the Visa Acceptance Device Fingerprint
 */
 
 /**

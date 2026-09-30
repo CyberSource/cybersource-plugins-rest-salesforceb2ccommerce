@@ -7,6 +7,12 @@
 	<field formid="grandtotalamount"  type="string" mandatory="true" binding="grandtotalamount" max-length="50" />
 	<field formid="currency" type="string" mandatory="true" binding="currency" max-length="50" />
 	<field formid="paymenttype" type="string" mandatory="true" binding="paymenttype" max-length="50" />
+	<field formid="refundEndpointType" type="string" mandatory="true" binding="refundEndpointType" max-length="50" >
+		<options>
+			<option optionid="payments" value="payments" label="eCheck"/>
+			<option optionid="captures" value="captures" label="Other payments"/>
+		</options>
+	</field>
 	<field formid="refundpaymenttype" type="string" mandatory="true" binding="refundpaymenttype" max-length="50" >
 		<options>
 			<option optionid="CreditCard" value="CC" label="CREDITCARD"/>
@@ -25,7 +31,6 @@
 			<option optionid="Klarna" value="KLI" label="KLARNA"/>
 			<option optionid="CreditCard" value="CC" label="CREDITCARD"/>
 			<option optionid="VisaSrc" value="visacheckout" label="VISASRC"/>
-			<option optionid="GooglePay" value="googlepay" label="GOOGLEPAY"/>
 			<option optionid="AliPay" value="APY" label="ALIPAY"/>
 		</options>
 	</field>
@@ -35,7 +40,6 @@
 			<option optionid="PayPal" value="PPL" label="PAYPAL"/>
 			<option optionid="Klarna" value="KLI" label="KLARNA"/>
 			<option optionid="VisaSrc" value="visacheckout" label="VISASRC"/>
-			<option optionid="GooglePay" value="googlepay" label="GOOGLEPAY"/>
 		</options>
 	</field>
 	<field formid="checkstatuspaymenttype" type="string" mandatory="true" binding="checkstatuspaymenttype" max-length="50" >

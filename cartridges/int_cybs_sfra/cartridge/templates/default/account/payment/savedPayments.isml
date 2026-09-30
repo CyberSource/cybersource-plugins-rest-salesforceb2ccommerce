@@ -1,0 +1,56 @@
+<iscomment>
+    Overrides app_storefront_base/account/payment/savedPayments.isml to surface the
+    default saved card: shows a "(Default)" badge on the default card and a "Make Default"
+    link on every other card (mirrors the OOB address book pattern). The isDefault flag
+    is supplied by the account model override (int_cybs_sfra_base/models/account.js).
+</iscomment>
+<div class="paymentInstruments">
+    <!-- Rows for Credit Cards -->
+    <isloop items="${pdict.paymentInstruments}" var="paymentInstrument">
+        <div class="row justify-content-center" id="uuid-${paymentInstrument.UUID}">
+            <div class="col-sm-8 col-md-6">
+                <div class="card ${paymentInstrument.isDefault ? 'default-payment' : ''}">
+                    <div class="card-header">
+                        <iscomment>
+                            Guard against a missing cardholder name: a saved card without a
+                            holder would otherwise render the literal string "null" here.
+                            Fall back to the masked card number as the tile heading.
+                        </iscomment>
+                        <h2 class="pull-left">${paymentInstrument.creditCardHolder ? paymentInstrument.creditCardHolder : paymentInstrument.maskedCreditCardNumber}</h2>
+                        <isif condition="${paymentInstrument.isDefault}">
+                            <span class="default-payment-badge pull-right">${Resource.msg('label.payment.default', 'payment', null)}</span>
+                        </isif>
+                    </div>
+                    <div class="card-body card-body-positioning">
+                        <div class="card-info-group">
+                            <isset name="payment" value="${paymentInstrument}" scope="page">
+                            <isinclude template="account/payment/savedPayment"/>
+                        </div>
+                        <isif condition="${!paymentInstrument.isDefault}">
+                            <div class="payment-make-default-link">
+                                <a href="${URLUtils.url('PaymentInstruments-SetDefault', 'UUID', paymentInstrument.UUID)}"
+                                    class="make-default-payment-link"
+                                    aria-label="${Resource.msg('link.payment.makedefault', 'payment', null)}">
+                                    ${Resource.msg('link.payment.makedefault', 'payment', null)}
+                                </a>
+                            </div>
+                        </isif>
+                        <button
+                            type="button"
+                            class="remove-btn remove-payment btn-light"
+                            data-toggle="modal"
+                            data-target="#deletePaymentModal"
+                            data-id="${paymentInstrument.UUID}"
+                            data-card="${paymentInstrument.maskedCreditCardNumber}"
+                            data-url="${pdict.actionUrl}"
+                            data-default="${paymentInstrument.isDefault ? 'true' : 'false'}"
+                            data-default-warning="${Resource.msg('msg.payment.default.delete','payment',null)}"
+                            aria-label="${Resource.msg('label.payment.deletepayment','payment',null)}">
+                            &times;
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </isloop>
+</div>

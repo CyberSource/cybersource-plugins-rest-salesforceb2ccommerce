@@ -2,156 +2,68 @@
 
 var Resource = require('dw/web/Resource');
 var Transaction = require('dw/system/Transaction');
-var OrderMgr = require('dw/order/OrderMgr');
 var Logger = require('dw/system/Logger');
-var server = require('server');
 
 /**
- * Verifies that entered Apple Pay information is valid. If the information is valid a
- * payment instrument is created for Apple Pay
- * @param {dw.order.Basket} basket Current users's basket
- * @param {Object} paymentInformation - the payment information
- * @return {Object} returns an error object
+ * Create the DW_APPLE_PAY payment instrument from the completeMandate JWT.
+ * Authorization is performed client-side by the UC SDK, so this hook only
+ * builds the instrument and stores the transient token for downstream mapping
+ * in PlaceOrderDirect.
+ *
+ * @param {dw.order.Basket} basket - Current basket
+ * @param {Object} paymentInformation - { jwtPayload, transientToken, paymentMethod, isDigitalWallet, fromUC }
+ * @returns {Object} { fieldErrors, serverErrors, error }
  */
 function Handle(basket, paymentInformation) {
     var collections = require('*/cartridge/scripts/util/collections');
-    var currentBasket = basket;
-    var cardErrors = {};
-    var applePayResponse = paymentInformation.payload;
-    var paymentForm = server.forms.getForm('billing');
+    var ucPaymentHelper = require('~/cartridge/scripts/helpers/ucPaymentHelper');
     var serverErrors = [];
 
     try {
         Transaction.wrap(function () {
-            currentBasket.removeAllPaymentInstruments();
+            basket.removeAllPaymentInstruments();
 
-            var paymentInstruments = currentBasket.getPaymentInstruments(
-                'DW_APPLE_PAY'
-            );
-            collections.forEach(paymentInstruments, function (item) {
-                currentBasket.removePaymentInstrument(item);
+            var existing = basket.getPaymentInstruments('DW_APPLE_PAY');
+            collections.forEach(existing, function (item) {
+                basket.removePaymentInstrument(item);
             });
 
-            var paymentInstrument = currentBasket.createPaymentInstrument(
-                'DW_APPLE_PAY', currentBasket.totalGrossPrice
-            );
+            var paymentInstrument = basket.createPaymentInstrument('DW_APPLE_PAY', basket.totalGrossPrice);
 
-            paymentInstrument.setCreditCardHolder(currentBasket.billingAddress.fullName);
-            paymentInstrument.setCreditCardNumber(applePayResponse.partialPaymentInstrument.lastFourDigits);
-
-            var cardType = applePayResponse.partialPaymentInstrument.paymentType.cardBrand;
-            cardType = cardType[0].toUpperCase() + cardType.slice(1).toLowerCase();
-            paymentInstrument.setCreditCardType(cardType);
-
-            var paymentInstruments = currentBasket.getPaymentInstruments();
-            if (paymentInstruments.length > 0) {
-                paymentInstruments[0].custom.UCToken = paymentForm.creditCardFields.ucpaymenttoken.value;
+            if (basket.billingAddress && basket.billingAddress.fullName) {
+                paymentInstrument.setCreditCardHolder(basket.billingAddress.fullName);
             }
+
+            var cardDetails = ucPaymentHelper.extractCardDetails(
+                paymentInformation && paymentInformation.jwtPayload,
+                paymentInformation && paymentInformation.transientToken,
+                basket.billingAddress
+            );
+            ucPaymentHelper.updatePaymentInstrumentCardDetails(paymentInstrument, cardDetails, true);
         });
 
         return {
-            fieldErrors: cardErrors,
+            fieldErrors: {},
             serverErrors: serverErrors,
             error: false
         };
     } catch (e) {
-        serverErrors.push(
-            Resource.msg('error.payment.not.valid', 'checkout', null)
+        Logger.getLogger('VisaAcceptance', 'PaymentProcessor').error(
+            'apple_pay_uc.Handle error for basket {0}: {1}', basket.UUID, e.message || e
         );
+        serverErrors.push(Resource.msg('error.payment.not.valid', 'checkout', null));
         return {
-            fieldErrors: [],
+            fieldErrors: {},
             serverErrors: serverErrors,
             error: true
         };
     }
 }
 
-/**
- * Authorizes a payment using Apple Pay with Unified Checkout token
- * @param {number} orderNumber - The current order's number
- * @param {dw.order.PaymentInstrument} paymentInstrument -  The payment instrument to authorize
- * @param {dw.order.PaymentProcessor} paymentProcessor -  The payment processor of the current
- *      payment method
- * @return {Object} returns an error object
- */
-function Authorize(orderNumber, paymentInstrument, paymentProcessor) {
-    var payments = require('../../../http/payments');
-    var serverErrors = [];
-    var fieldErrors = {};
-    var error = false;
-    var order = OrderMgr.getOrder(orderNumber);
-    var billingAddress = order.billingAddress;
-    var shippingAddress = order.shipments[0].shippingAddress;
-    var total = order.totalGrossPrice;
-    var mapper = require('~/cartridge/scripts/util/mapper.js');
-    var customerEmail = order.customerEmail;
-    var currencyCode = order.currencyCode.toUpperCase();
-
-    var card = {
-        ucJwtToken: paymentInstrument.custom.UCToken
-    };
-
-    try {
-        // process authorization
-        var lineItems = mapper.MapOrderLineItems(order.allLineItems, true);
-        var result = payments.httpAuthorizeWithToken(
-            card,
-            customerEmail,
-            orderNumber,
-            total.value,
-            currencyCode,
-            billingAddress,
-            shippingAddress,
-            lineItems
-        );
-
-        Transaction.wrap(function () {
-            /* eslint-disable no-undef */
-            /* eslint-disable no-param-reassign */
-            session.privacy.orderStatus = result.status;
-            paymentInstrument.paymentTransaction.setTransactionID(result.id);
-            paymentInstrument.paymentTransaction.setPaymentProcessor(paymentProcessor);
-
-            paymentInstrument.paymentTransaction.custom.paymentDetails = paymentInstrument.creditCardNumber + ', '
-                + paymentInstrument.creditCardType;
-
-            delete paymentInstrument.custom.UCToken;
-        });
-    } catch (e) {
-        // Clean up UCToken on authorization failure
-        Transaction.wrap(function () {
-            if (paymentInstrument.custom.UCToken) {
-                paymentInstrument.custom.UCToken = null;
-            }
-        });
-        var errorData = {};
-        error = true;
-        if (typeof e === 'object' && e !== null) {
-            if ('message' in e) {
-                errorData.message = e.message;
-            }
-            if ('details' in e) {
-                errorData.details = e.details;
-            }
-        }
-        serverErrors.push(
-            Resource.msg('error.technical', 'checkout', null)
-        );
-        Logger.getLogger('Cybersource', 'PaymentAuthorization').error('Authorization error for order {0}: {1}', orderNumber, JSON.stringify(errorData));
-    }
-
-    return {
-        fieldErrors: fieldErrors,
-        serverErrors: serverErrors,
-        error: error
-    };
-}
-
 var ProcessorExport = {};
 var configObject = require('~/cartridge/configuration/index.js');
 
 if (configObject.cartridgeEnabled) {
-    ProcessorExport.Authorize = Authorize;
     ProcessorExport.Handle = Handle;
 }
 

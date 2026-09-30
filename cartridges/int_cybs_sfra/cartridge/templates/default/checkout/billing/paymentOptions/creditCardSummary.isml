@@ -1,0 +1,24 @@
+<iscomment>
+    Cartridge override of SFRA stock creditCardSummary.isml.
+    The "Ending" and "/" literals live in the template, not the data, so the model-side
+    fix that empties expirationMonth/Year when the masked PAN is missing would otherwise
+    render "Ending /". Each line is gated on its own data so missing values suppress the
+    whole line — same pattern as googlePaySummary.isml. Google Pay UC orders with no PAN/
+    expiry render only the "Credit {type}" line.
+</iscomment>
+<div class="credit-card-type">
+    <isif condition="${!empty(payment.type)}">
+        <span>${Resource.msg('msg.payment.type.credit', 'confirmation', null)}
+        ${payment.type}</span>
+    </isif>
+</div>
+<div class="credit-card-number">
+    <isif condition="${!empty(payment.maskedCreditCardNumber)}">
+        <isprint value="${payment.maskedCreditCardNumber}" />
+    </isif>
+</div>
+<div class="credit-card-expiration-date">
+    <isif condition="${!empty(payment.expirationMonth) && !empty(payment.expirationYear)}">
+        <span>${Resource.msg('msg.card.type.ending', 'confirmation', null)} ${payment.expirationMonth}/${payment.expirationYear}</span>
+    </isif>
+</div>

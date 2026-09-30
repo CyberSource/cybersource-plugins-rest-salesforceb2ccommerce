@@ -12,8 +12,8 @@ Please provide this information:
 
 1. **Summary of the issue**
 2. **Steps to reproduce the issue**
-3. **Cybersource B2C Commerce cartridge version**
-4. **Cybersource Merchant ID**
+3. **Visa Acceptance B2C Commerce cartridge version**
+4. **Visa Acceptance Merchant ID**
 5. **Configuration screenshots:** Please provide screenshots of Custom Preference Configurations
 6. **Log file and other relevant data:** Download the logs from **Administration > Site Development > Development Setup > Log files**
 

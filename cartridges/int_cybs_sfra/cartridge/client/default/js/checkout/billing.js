@@ -35,8 +35,9 @@ function updateBillingAddressFormValues(order) {
         $('select[name$=expirationYear]', form).val(instrument.expirationYear);
         // Force security code and card number clear
         $('input[name$=securityCode]', form).val('');
-        if (document.getElementById('flexTokenResponse') != null && !document.getElementById('flexTokenResponse').value) {
-            $('input.cardNumber').data('cleave').setRawValue('');
+        var cardNumberCleave = $('input.cardNumber').data('cleave');
+        if (cardNumberCleave) {
+            cardNumberCleave.setRawValue('');
         }
     }
 }

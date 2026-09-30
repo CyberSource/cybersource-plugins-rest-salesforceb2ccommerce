@@ -2,28 +2,40 @@
 
 ---
 
-## 8.1 Digital Payment Methods
+## Digital Payment Methods
 
-You can offer Apple Pay and Google Pay as standalone options, or you can offer them alongside Click to Pay within Unified Checkout.
+Digital wallets are offered through Unified Checkout, which presents card entry (PAN), Click to Pay, and the enabled wallets in a single widget. The wallets available through Unified Checkout are **Apple Pay, Google Pay, Paze, PayPal, and Venmo**.
 
-You can configure digital payment methods in two ways: through Unified Checkout or as standalone options.
-
+> **Note:** Standalone Google Pay has been removed. Google Pay is now offered through Unified Checkout. Standalone Apple Pay (the Salesforce B2C Commerce default) remains available.
 ### Unified Checkout Configuration
 
-1. Go to **Merchant Tools > Site Preferences > Custom Preferences > Secure Integration Configuration** and set these parameters:
-   - **Digital Payment Methods in Unified Checkout:** Choose from Apple Pay, Google Pay and/or Click to Pay
-   - **Enable Unified Checkout for Cart and Mini Cart:** Enable this to display digital payment methods for quick checkout on the cart and mini cart pages
+1. Go to **Merchant Tools > Site Preferences > Custom Preferences > Secure Integration Configuration** and set the **Secure Integration Method** to **Unified Checkout**.
 
-2. Go to **Merchant Tools > Ordering > Payment Methods** and confirm these are set/enabled for the methods you want to accept:
-   - **DW_APPLE_PAY** – check Payment Processor is `PAYMENTS_APPLEPAY`
-   - **DW_GOOGLE_PAY** – check it is enabled and Payment Processor is `PAYMENTS_CREDIT`
-   - **CLICK_TO_PAY** – check Payment Processor is `PAYMENTS_CLICK_TO_PAY`
+2. Go to **Merchant Tools > Ordering > Payment Methods** and confirm each method below has the correct **Payment Processor** mapping. Which wallets and methods are actually presented in Unified Checkout is controlled by what you enable for your Merchant ID in the Visa Acceptance Business Center (EBC).
+   - **DW_APPLE_PAY** – Payment Processor `PAYMENTS_APPLEPAY`
+   - **DW_GOOGLE_PAY** – Payment Processor `PAYMENTS_GOOGLEPAY`
+   - **DW_PAZE** – Payment Processor `PAYMENTS_PAZE`
+   - **PAYPAL** – Payment Processor `PAYMENTS_PAYPAL`
+   - **VENMO** – Payment Processor `PAYMENTS_VENMO`
+   - **CLICK_TO_PAY** – Payment Processor `PAYMENTS_CLICK_TO_PAY`
 
-> **Important:** If you are using Unified Checkout for digital payment methods, they must be enabled for your Merchant ID in Business Center.
+> **Important:** The digital payment methods you want to offer through Unified Checkout must be enabled for your Merchant ID in the Visa Acceptance Business Center (EBC) — that is where enablement is controlled, not in Business Manager.
+
+### Unified Checkout Display Options
+
+The following optional settings under **Custom Preferences > Secure Integration Configuration** control how Unified Checkout is presented:
+
+| Field | Description |
+|-------|-------------|
+| Checkout Label for Unified Checkout | Label for the Unified Checkout tab on the payment page (up to 60 characters). Default: "Secure Payments powered by Visa Acceptance Solutions" |
+| Enable Express Pay | Split Unified Checkout into separate wallet and non-wallet instances |
+| Checkout Version (optional) | Pin a specific Unified Checkout 1.x version. Leave blank for the latest release |
+| Card Prefix (BIN) in UC Response | Card prefix (BIN) length returned in the UC token response: Six-digit or Eight-digit |
+| Non-Wallet UC Display Mode | Display mode for the card / non-wallet UC instance: Embedded or Sidebar |
 
 ---
 
-### 8.1.1 Apple Pay Standalone Configuration
+### Apple Pay Standalone Configuration
 
 To offer Apple Pay outside of Unified Checkout, follow these steps to enable Apple Pay in your Salesforce B2C Commerce store.
 
@@ -35,11 +47,11 @@ To offer Apple Pay outside of Unified Checkout, follow these steps to enable App
 
 3. Fill in the "Onboarding" form:
    - Ensure "Apple Merchant ID" and "Apple Merchant Name" match settings in your Apple account.
-   - Ensure all other fields match your supported Cybersource settings.
+   - Ensure all other fields match your supported Visa Acceptance settings.
    - **Country Code:** Enter the country code for the locale of your site. The country code is a two letter ISO 3166 country code (e.g. US).
    - **Merchant Capabilities:** Check box for 3-D Secure, leave other fields unchecked
-   - **Supported Networks:** Select the types of payment you support: Amex, MasterCard, and Visa are supported by Cybersource.
-   - **Required Shipping Address Fields:** Select the fields that are required on the shipping form. Cybersource recommends Email, Name, Phone, and Postal Address
+   - **Supported Networks:** Select the types of payment you support: Amex, MasterCard, and Visa are supported by Visa Acceptance.
+   - **Required Shipping Address Fields:** Select the fields that are required on the shipping form. Visa Acceptance recommends Email, Name, Phone, and Postal Address
    - **Required Billing Address Fields:** Select Name and Postal Address
 
 4. Fill in the "Storefront Injection" form:
@@ -48,9 +60,9 @@ To offer Apple Pay outside of Unified Checkout, follow these steps to enable App
 5. Fill in "Payment Integration" form:
    - **Use Commerce Cloud Apple Pay Payment API?** Checked
    - **Payment Provider URL:**
-     - Test: `https://apitest.cybersource.com/partner/demandware/payments/v1/authorizations`
-     - Production: `https://api.cybersource.com/partner/demandware/payments/v1/authorizations`
-   - **Payment Provider Merchant ID:** Enter your Cybersource merchant ID
+     - Test: `https://apitest.visaacceptance.com/partner/demandware/payments/v1/authorizations`
+     - Production: `https://api.visaacceptance.com/partner/demandware/payments/v1/authorizations`
+   - **Payment Provider Merchant ID:** Enter your Visa Acceptance merchant ID
    - **API Version:** v1
    - **Use Basic Authorization?** Unchecked
    - **Payment Provider User:** Not Applicable
@@ -58,7 +70,7 @@ To offer Apple Pay outside of Unified Checkout, follow these steps to enable App
    - **Use JWS?** Yes
    - **JWS Private Key Alias:** Merchant's .p12 Key Alias
 
-   > The private key alias is created when a merchant uploads their .p12 key file (from Cybersource self-serve) to Commerce Cloud's Salesforce Business Manager Module, Private Keys and Certificates (**Administration > Operations > Private Keys and Certificates**)
+   > The private key alias is created when a merchant uploads their .p12 key file (from Visa Acceptance self-serve) to Commerce Cloud's Salesforce Business Manager Module, Private Keys and Certificates (**Administration > Operations > Private Keys and Certificates**)
 
 6. Click "Submit".
 
@@ -72,51 +84,47 @@ To offer Apple Pay outside of Unified Checkout, follow these steps to enable App
 
 #### Transaction Type
 
-Go to **Merchant Tools > Site Preferences > Custom Preferences > Apple Pay** and choose Authorization or Sale.
+Go to **Merchant Tools > Site Preferences > Custom Preferences > Apple Pay Configuration** and choose Authorization or Sale.
 
 ---
 
-### 8.1.2 Google Pay Standalone Configuration
+## Alternative Payment Methods
 
-To offer Google Pay outside of Unified Checkout, follow these steps to enable Google Pay in your Salesforce B2C Commerce store.
+Alternative Payment Methods (APMs) and bank transfer are offered through Unified Checkout. APMs are locale/currency-specific and must also be enabled for your Merchant ID in the Visa Acceptance Business Center (EBC).
 
-1. Go to **Merchant Tools > Site Preferences > Custom Preferences > Google Pay**
+### Supported Alternative Payment Methods
 
-2. Configure Google Pay settings:
+- iDEAL
+- Bancontact
+- Multibanco
+- MyBank
+- Tink Pay by Bank
+- Przelewy24
+- Dragonpay
+- Konbini
 
-| Field | Description |
-|-------|-------------|
-| Enable Google Pay | set to Enable to enable Google Pay |
-| Enable Google Pay on Mini Cart | set to Enable to show Google Pay as a checkout option in the mini cart |
-| Enable Google Pay on Cart | set to Enable to show Google Pay as a checkout option in the cart |
-| Google Pay Merchant Id | Enter your Google Pay merchant ID (for live processing only) |
-| Google Pay Environment | Set to Test for testing and Production for live |
-| Google Pay Transaction Type | Choose Authorization or Sale |
+For APMs, go to **Merchant Tools > Ordering > Payment Methods** and confirm the correct **Payment Processor** mapping:
 
----
+- **ALT_PAYMENT_METHOD** – Payment Processor `ALT_PAYMENT`
 
-## 8.2 Alternative Payment Methods
+The individual APMs presented to the shopper depend on their locale and currency and on what you have enabled for your Merchant ID in the Business Center.
 
-Configure alternative payment methods such as eCheck for your Salesforce B2C Commerce store.
+### eCheck / Bank Transfer Configuration
 
-### eCheck Configuration
+eCheck is offered as a bank transfer option within Unified Checkout. Enable eCheck for your Merchant ID in the Visa Acceptance Business Center (EBC); in Business Manager you only need the correct payment-processor mapping.
 
-eCheck can be enabled as a payment option within Unified Checkout.
-
-1. Go to **Merchant Tools > Site Preferences > Custom Preferences > Secure Integration Configuration**
-
-2. **Enable eCheck:** set to Yes to enable eCheck
-
-3. Go to **Merchant Tools > Ordering > Payment Methods** and confirm this is set/enabled:
-   - **BANK_TRANSFER** – check Payment Processor is `BANK_TRANSFER`
+1. Go to **Merchant Tools > Ordering > Payment Methods** and confirm the correct **Payment Processor** mapping:
+   - **BANK_TRANSFER** – Payment Processor `BANK_TRANSFER`
 
 ---
 
-## 8.3 Payer Authentication/3D-Secure
+## Payer Authentication/3D-Secure
 
 Configure Payer Authentication/3D-Secure for enhanced transaction security.
 
-1. Go to **Merchant Tools > Site Preferences > Custom Preferences > Cybersource_PayerAuthentication**
+> **Note:** These settings apply to the Salesforce default card form (Direct API) only. For Unified Checkout, configure Payer Authentication in the Visa Acceptance Business Center (EBC).
+
+1. Go to **Merchant Tools > Site Preferences > Custom Preferences > Salesforce Default Acceptance Configuration**
 
 2. Select **Payer Authentication Mode:**
 
@@ -131,15 +139,15 @@ Configure Payer Authentication/3D-Secure for enhanced transaction security.
    | Data Only + No | Data Only will be used for Visa and Mastercard/Maestro. All other card
    brands will process without 3D-Secure. |
 
-3. **IsSCAEnabled:** Set to Enable to enforce Strong Consumer Authentication (3D-Secure Challenge) when a customer is saving their payment card for future transactions
+3. **Enable SCA:** Set to Enable to enforce Strong Consumer Authentication (3D-Secure Challenge) when a customer is saving their payment card for future transactions
 
 ---
 
-## 8.4 Tokenization
+## Tokenization
 
 Tokenization allows you to offer the ability for your customers to save their payment cards securely for future payments.
 
-1. To enable tokenization, go to **Merchant Tools > Site Preferences > Custom Preferences > Cybersource_Tokenization**
+1. To enable tokenization, go to **Merchant Tools > Site Preferences > Custom Preferences > Tokenization Configuration**
 
 | Field | Description |
 |-------|-------------|
@@ -147,26 +155,27 @@ Tokenization allows you to offer the ability for your customers to save their pa
 | Enable Limiting Saved Card | Set to Enable to set the limits associated to saving cards |
 | Saved Cards Allowed | Enter the number of cards a customer can save in the defined time limit |
 | Reset Interval | The number of hours before the saved card limit resets |
-| Network Token Updates | If your Cybersource MID is configured for Network Tokens, enabling this will inform the cartridge to subscribe for Token Life Cycle Updates webhooks |
+| Network Token | Enable this to subscribe to token updates. Updated tokens are retrieved from the Token Management Service (TMS) via API. |
 
-2. Go to **Merchant Tools > Custom objects > Custom Object Editor** and check the custom object type "Network Tokens Webhook" exists
+> **Note:** Token updates are now retrieved through the Token Management Service (TMS) API. The previous Network Token webhook and its "Network Tokens Webhook" custom object have been removed.
 
 ---
 
-## 8.5 Fraud Screening
+## Fraud Screening
 
 Enabling Fraud Screening tells the cartridge to look for fraud screening responses. Fraud Screening profiles need to be set up in the Business Center.
 
-1. Go to **Merchant Tools > Site Preferences > Custom Preferences > Cybersource_DecisionManager** and set these:
+> **Note:** Decision Manager settings apply to the Salesforce default card form (Direct API) only. For Unified Checkout, configure fraud controls in the Visa Acceptance Business Center (EBC).
+
+1. Go to **Merchant Tools > Site Preferences > Custom Preferences > Salesforce Default Acceptance Configuration** and set these:
 
 | Field | Description |
 |-------|-------------|
 | Enable Decision Manager Services | set to Enable to turn on |
-| Conversion Detail Report Lookback Time | If you are using REVIEW rules and configure the Decision Manager Update Job, set the number of hours to look back for updates to transactions in REVIEW status. The maximum is 24 hours. |
 
-2. To enable the Decision Manager Update Job to poll for updates to the reviewed transactions:
+2. Decision Manager order updates are delivered primarily through webhook notifications (see the [Webhooks](Webhooks.md) guide). The Decision Manager Update Job remains available as a fallback in case of webhook delivery issues.
 
-   Go to **Administration > Operations > Jobs** and select **Payment: Decision Manager Order Update** and set these values:
+   To enable the fallback job, go to **Administration > Operations > Jobs**, select **Payment: Decision Manager Order Update**, and set these values:
 
    | Field | Description |
    |-------|-------------|
@@ -179,11 +188,11 @@ Enabling Fraud Screening tells the cartridge to look for fraud screening respons
 
 ---
 
-## 8.6 Device FingerPrint
+## Device FingerPrint
 
 Device FingerPrinting collects information about the device used when paying for an order and can assist in fraud screening decisions.
 
-Go to **Merchant Tools > Site Preferences > Custom Preferences > Cybersource_DeviceFingerprint** and set these:
+Go to **Merchant Tools > Site Preferences > Custom Preferences > Device Finger Print Configuration** and set these:
 
 | Field | Description |
 |-------|-------------|
@@ -194,19 +203,19 @@ Go to **Merchant Tools > Site Preferences > Custom Preferences > Cybersource_Dev
 
 ---
 
-## 8.7 Delivery Address Verification
+## Delivery Address Verification
 
 To have the customers shipping address verified during checkout, configure Delivery Address Verification services.
 
-Go to **Merchant Tools > Site Preferences > Custom Preferences > Cybersource_DeliveryAddressVerification** and set **Enable Delivery Address Verification Services** to Enable.
+Go to **Merchant Tools > Site Preferences > Custom Preferences > Delivery Address Verification Configuration** and set **Enable Delivery Address Verification Services** to Enable.
 
 ---
 
-## 8.8 Tax Calculation
+## Tax Calculation
 
 To calculate local taxes once the customer has entered their address on the checkout, configure Tax Calculation services.
 
-1. Go to **Merchant Tools > Site Preferences > Custom Preferences > Cybersource_TaxConfiguration** and set these:
+1. Go to **Merchant Tools > Site Preferences > Custom Preferences > Tax Configuration** and set these:
 
 | Field | Description |
 |-------|-------------|
@@ -232,42 +241,23 @@ To calculate local taxes once the customer has entered their address on the chec
 
 ---
 
-## 8.9 Message Level Encryption
+## Meta Key
 
-Message Level Encryption uses certificates that ensures each message is securely encrypted and tied to the sender's verified identity, without needing to share secret keys in advance.
+Meta Key lets a portfolio or account process transactions on behalf of its child merchants using a single set of credentials. We can assign a single meta key to dozens or hundreds of transacting MIDs simultaneously. Follow the steps mentioned in [Create a Meta Key](https://developer.cybersource.com/docs/cybs/en-us/security-keys/user/all/ada/security-keys/keys-meta-intro.html) that you can use to authenticate requests.
+Creating and Using Security Keys - Meta Key Creation and Management
+ 
 
-This provides stronger authentication, easier key management, and better protection against fraud or tampering.
-
-A shared secret uses the same key for both sending and receiving messages, meaning both parties must securely exchange and protect that key in advance. While it can be simpler, it offers less identity verification and can be more vulnerable if the key is compromised.
-
-Using Message Level Encryption requires a .p12 certificate to be created.
-
-### Extract Certificate
-
-Convert the p12 certificate to .pem format using this command:
-
-```bash
-openssl pkcs12 -in <key filename>.p12 -cacerts -nokeys -out <key filename>.crt
-```
-
-Make a note of the Serial Number of the `Cybersource_SJC_US` certificate.
-
-### Import Certificate
-
-Go to **Administration > Operations > Private Keys and Certificates** and import the extracted .crt and make a note of the alias.
-
-### Enable Message Level Encryption
-
-1. Go to **Merchant Tools > Site Preferences > Custom Preferences > Cybersource_MLE**
+Go to **Merchant Tools > Site Preferences > Custom Preferences > Visa Acceptance Cartridge configuration** and set these:
 
 | Field | Description |
 |-------|-------------|
-| Enable Message-Level Encryption | set to Enable |
-| Alias of the Certificate | enter the Alias from when the certificate was imported |
-| Certificate Serial Number | enter the Serial Number from the Cybersource_SJC_US certificate |
+| Enable Meta Key | Set to enable to turn on Meta Key |
+| Meta Key Portfolio Merchant ID | The portfolio/account merchant ID that owns the Meta Key |
+
+Meta Key authenticates with the REST Shared Secret and Key ID configured in Visa Acceptance Core; no certificate is required.
 
 ---
 
 ---
 
-[Next: Order Management →](Order-Management.md)
+[Next: Webhooks →](Webhooks.md)

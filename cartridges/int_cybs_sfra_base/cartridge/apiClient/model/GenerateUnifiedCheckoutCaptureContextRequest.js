@@ -100,6 +100,19 @@
       if (data.hasOwnProperty('transientTokenResponseOptions')) {
         obj['transientTokenResponseOptions'] = Microformv2sessionsTransientTokenResponseOptions.constructFromObject(data['transientTokenResponseOptions']);
       }
+      // UC v1 additional fields
+      if (data.hasOwnProperty('paymentConfigurations')) {
+        obj['paymentConfigurations'] = ApiClient.convertToType(data['paymentConfigurations'], Object);
+      }
+      if (data.hasOwnProperty('buttonType')) {
+        obj['buttonType'] = ApiClient.convertToType(data['buttonType'], 'String');
+      }
+      if (data.hasOwnProperty('data')) {
+        obj['data'] = ApiClient.convertToType(data['data'], Object);
+      }
+      if (data.hasOwnProperty('appearance')) {
+        obj['appearance'] = ApiClient.convertToType(data['appearance'], Object);
+      }
     }
     return obj;
   }
@@ -150,6 +163,26 @@
    * @member {module:model/Microformv2sessionsTransientTokenResponseOptions} transientTokenResponseOptions
    */
   exports.prototype['transientTokenResponseOptions'] = undefined;
+  /**
+   * Payment configurations for digital wallets and saved cards (TMS_TOKEN, GOOGLEPAY, CLICKTOPAY, etc.)
+   * @member {Object} paymentConfigurations
+   */
+  exports.prototype['paymentConfigurations'] = undefined;
+  /**
+   * Button type for the UC widget (CHECKOUT, SAVE_CARD, etc.)
+   * @member {String} buttonType
+   */
+  exports.prototype['buttonType'] = undefined;
+  /**
+   * Data object containing orderInformation, deviceInformation, clientReferenceInformation, etc.
+   * @member {Object} data
+   */
+  exports.prototype['data'] = undefined;
+  /**
+   * Appearance configuration for theming the UC widget
+   * @member {Object} appearance
+   */
+  exports.prototype['appearance'] = undefined;
 
 
 

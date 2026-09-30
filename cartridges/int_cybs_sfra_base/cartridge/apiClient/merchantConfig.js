@@ -14,7 +14,9 @@ var ApiException = require('./ApiException');
 
 function MerchantConfig(result) {
   /*Common Parameters*/
-  this.authenticationType = result.authenticationType;
+  // Auth mechanism is no longer merchant-selectable: shared-secret JWT is used for every REST
+  // call, including /uc/v1/sessions. The payment transaction's authMethod is recorded from the
+  // configuration module's authenticationType, not from MerchantConfig.
   this.url;
   this.requestHost;
   this.requestJsonPath = result.requestJsonPath;
@@ -49,19 +51,10 @@ function MerchantConfig(result) {
   this.merchantsecretKey = result.merchantsecretKey;
   this.runEnvironment = result.runEnvironment;
   this.solutionId = result.solutionId;
-  this.developerId = result.developerId;
   /* Fallback logic*/
 
   this.defaultPropValues();
 }
-
-MerchantConfig.prototype.getAuthenticationType = function getAuthenticationType() {
-  return this.authenticationType;
-};
-
-MerchantConfig.prototype.setAuthenticationType = function setAuthenticationType(authType) {
-  this.authenticationType = authType;
-};
 
 MerchantConfig.prototype.setMerchantID = function setMerchantID(merchantID) {
   this.merchantID = merchantID;
@@ -101,9 +94,6 @@ MerchantConfig.prototype.setLogDirectory = function setLogDirectory(logDirectory
 
 MerchantConfig.prototype.setSolutionId = function setSolutionId(solutionId) {
   this.solutionId = solutionId;
-};
-MerchantConfig.prototype.setDeveloperId = function setDeveloperId(developerId) {
-  this.developerId = developerId;
 };
 
 MerchantConfig.prototype.setURL = function setURL(url) {
@@ -148,9 +138,6 @@ MerchantConfig.prototype.getLogDirectory = function getLogDirectory() {
 
 MerchantConfig.prototype.getSolutionId = function getSolutionId() {
   return this.solutionId;
-};
-MerchantConfig.prototype.getDeveloperId = function getDeveloperId() {
-  return this.developerId;
 };
 
 MerchantConfig.prototype.getURL = function getURL() {
@@ -306,54 +293,20 @@ MerchantConfig.prototype.defaultPropValues = function defaultPropValues() {
 
   if (this.merchantID === null || this.merchantID === "" || this.merchantID === undefined) {
     ApiException.ApiException(Constants.MERCHANTID_REQ, logger);
+  } else if (typeof this.merchantID !== "string") {
+    this.merchantID = this.merchantID.toString();
   }
 
-  if (this.authenticationType === null || this.authenticationType === "" || this.authenticationType === undefined) {
-    ApiException.ApiException(Constants.AUTHENTICATION_REQ, logger);
-  } //authentication mechanism specific checks
+  // Shared-secret JWT signs its token with the REST shared-secret key pair (KeyId = kid,
+  // Secret Key = HMAC key), so the KeyId and Secret Key are always required.
+  if (this.merchantKeyId === null || this.merchantKeyId === "" || this.merchantKeyId === undefined) {
+    ApiException.ApiException(Constants.MERCHANT_KEY_ID_REQ, logger);
+  }
 
-
-  if (typeof this.authenticationType === "string") {
-    if (this.authenticationType.toLowerCase() === Constants.HTTP) {
-      if (this.merchantKeyId === null || this.merchantKeyId === "" || this.merchantKeyId === undefined) {
-        ApiException.ApiException(Constants.MERCHANT_KEY_ID_REQ, logger);
-      } else if (typeof this.merchantID !== "string") {
-        this.merchantID = this.merchantID.toString();
-      }
-
-      if (this.merchantsecretKey === null || this.merchantsecretKey === "" || this.merchantsecretKey === undefined) {
-        ApiException.ApiException(Constants.MERCHANT_SECRET_KEY_REQ, logger);
-      } else if (typeof this.merchantsecretKey !== "string") {
-        this.merchantsecretKey = this.merchantsecretKey.toString();
-      }
-    } else if (this.authenticationType.toLowerCase() === Constants.JWT) {
-      if (this.keyAlias === null || this.keyAlias === "" || this.keyAlias === undefined) {
-        this.keyAlias = this.merchantID;
-        logger.warn(Constants.KEY_ALIAS_NULL_EMPTY);
-      } else if (this.keyAlias !== this.merchantID) {
-        this.keyAlias = this.merchantID;
-        logger.warn(Constants.INCORRECT_KEY_ALIAS);
-      }
-
-      if (this.keyPass === null || this.keyPass === "" || this.keyPass === undefined) {
-        this.keyPass = this.merchantID;
-        logger.warn(Constants.KEY_PASS_EMPTY);
-      }
-
-      if (this.keysDirectory === null || this.keysDirectory === "" || this.keysDirectory === undefined) {
-        this.keysDirectory = Constants.DEFAULT_KEYS_DIRECTORY;
-        logger.warn(Constants.KEY_DIRECTORY_EMPTY);
-      }
-
-      if (this.keyFilename === null || this.keyFilename === "" || this.keyFilename === undefined) {
-        this.keyFilename = this.merchantID;
-        logger.warn(Constants.KEY_FILE_EMPTY);
-      }
-    } else {
-      ApiException.ApiException(Constants.AUTH_ERROR, logger);
-    }
-  } else {
-    ApiException.ApiException(Constants.AUTH_ERROR, logger);
+  if (this.merchantsecretKey === null || this.merchantsecretKey === "" || this.merchantsecretKey === undefined) {
+    ApiException.ApiException(Constants.MERCHANT_SECRET_KEY_REQ, logger);
+  } else if (typeof this.merchantsecretKey !== "string") {
+    this.merchantsecretKey = this.merchantsecretKey.toString();
   }
   /**
    * This method is to log all merchantConfic properties

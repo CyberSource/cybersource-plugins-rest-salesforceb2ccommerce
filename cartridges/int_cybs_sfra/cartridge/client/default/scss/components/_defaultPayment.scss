@@ -1,0 +1,39 @@
+// Default saved card styling.
+// Self-contained (no external SCSS variable dependencies) so it can be imported into
+// multiple bundles: account/payment.css (My Account list), account/dashboard.css
+// (dashboard tile) and checkout.css (saved-card picker). Used by the "(Default)" badge
+// and the "Make Default" link rendered in savedPayments.isml, paymentCard.isml and
+// storedPaymentInstruments.isml.
+
+$default-payment-accent: #008827 !default;
+
+.default-payment-badge {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.3;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #fff;
+    background-color: $default-payment-accent;
+    border-radius: 0.75rem;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+// Emphasise the default card in the saved-cards list and checkout picker.
+.card.default-payment,
+.saved-payment-instrument.selected-payment {
+    border: 1px solid $default-payment-accent;
+}
+
+.payment-make-default-link {
+    margin-top: 0.5rem;
+
+    .make-default-payment-link {
+        font-size: 0.875rem;
+        text-decoration: underline;
+        cursor: pointer;
+    }
+}

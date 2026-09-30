@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xmlns="http://www.demandware.com/xml/impex/metadata/2006-10-31">
+    <type-extension type-id="SitePreferences">
+     <custom-attribute-definitions>
+            <attribute-definition attribute-id="VisaAcceptance_DecisionManager">
+                <display-name xml:lang="x-default">Enable Decision Manager Services</display-name>
+                <description xml:lang="x-default">Enable or Disable Decision Manager for VisaAcceptance Cartridge</description>
+                <type>boolean</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>true</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="VisaAcceptance_CardTransactionType">
+                <display-name xml:lang="x-default">Transaction Type</display-name>
+                <description xml:lang="x-default">Transaction Type (Authorization or Sale) for the Salesforce default card form (Direct API) only. For Unified Checkout, configure the transaction type in the Visa Acceptance Business Center (EBC).</description>
+                <type>enum-of-string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <value-definitions>
+                    <value-definition default="true">
+                        <display xml:lang="x-default">Auth</display>
+                        <value>auth</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Sale</display>
+                        <value>sale</value>
+                    </value-definition>
+                </value-definitions>
+            </attribute-definition>
+            <attribute-definition attribute-id="VisaAcceptance_PayerAuthEnabled">
+                <display-name xml:lang="x-default">Payer Authentication Mode</display-name>
+                <description xml:lang="x-default">Select Payer Authentication mode.</description>
+                <type>enum-of-string</type>
+                <mandatory-flag>true</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <value-definitions>
+                    <value-definition>
+                        <display xml:lang="x-default">Yes</display>
+                        <value>YES</value>
+                    </value-definition>
+                    <value-definition default="true">
+                        <display xml:lang="x-default">No</display>
+                        <value>NO</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Data Only + Yes</display>
+                        <value>DATA_ONLY_YES</value>
+                    </value-definition>
+                    <value-definition>
+                        <display xml:lang="x-default">Data Only + No</display>
+                        <value>DATA_ONLY_NO</value>
+                    </value-definition>
+                </value-definitions>
+            </attribute-definition>
+            <attribute-definition attribute-id="VisaAcceptance_IsSCAEnabled">
+                <display-name xml:lang="x-default">Enable SCA</display-name>
+                <description xml:lang="x-default">Enable or Disable Strong Customer Authentication</description>
+                <type>boolean</type>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>false</default-value>
+            </attribute-definition>
+        </custom-attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="VisaAcceptance_SalesforceDefaultAcceptance_Configuration">
+                <display-name xml:lang="x-default">Salesforce Default Acceptance Configuration</display-name>
+                <attribute attribute-id="VisaAcceptance_CardTransactionType"/>
+                <attribute attribute-id="VisaAcceptance_DecisionManager"/>
+                <attribute attribute-id="VisaAcceptance_PayerAuthEnabled"/>
+                <attribute attribute-id="VisaAcceptance_IsSCAEnabled"/>
+            </attribute-group>
+        </group-definitions>
+    </type-extension>
+</metadata>

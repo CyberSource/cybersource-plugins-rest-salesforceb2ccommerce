@@ -12,18 +12,12 @@ var LogfileMaxSize = '5242880'; // 10 MB In Bytes
 
 // Partner Information
 
-/** DeveloperId
- * Identifier for the developer that helped integrate a partner solution to CyberSource.
- * Send this value in all requests that are sent through the partner solutions built by that developer. CyberSource assigns the ID to the developer.
- * Note When you see a developer ID of 999 in reports, the developer ID that was submitted is incorrect.
- */
-
 /** SolutionId
- * Identifier for the partner that is integrated to CyberSource.
- * Send this value in all requests that are sent through the partner solution. CyberSource assigns the ID to the partner.
+ * Identifier for the partner that is integrated to Visa Acceptance.
+ * Send this value in all requests that are sent through the partner solution. Visa Acceptance assigns the ID to the partner.
  * Note When you see a partner ID of 999 in reports, the partner ID that was submitted is incorrect.
  */
-var SolutionId = 'AWRA0PP7';
+var SolutionId = '7114dw8t';
 
 var CruiseDDCEndPoint = {
     Stage: 'https://centinelapistag.cardinalcommerce.com/V1/Cruise/Collect',
@@ -42,7 +36,10 @@ function getConfig(config) {
     
     return {
         // Api Client config
-        authenticationType: 'http_signature',
+        // Auth mechanism is no longer merchant-selectable: ApiClient.callApi uses shared-secret
+        // JWT for every REST call, including /uc/v1/sessions. This value is informational only
+        // (recorded as the payment transaction's authMethod).
+        authenticationType: 'jwt',
         runEnvironment: 'cybersource.environment.SANDBOX',
         enableLog: EnableLog,
         logFilename: LogFileName,
@@ -56,8 +53,12 @@ function getConfig(config) {
         merchantID: config.merchantID || customPreferences.Core.Preferences.MerchantID.getValue(),
         merchantKeyId: config.merchantKeyId || customPreferences.Core.Preferences.MerchantKeyId.getValue(),
         merchantsecretKey: config.merchantSecretKey || customPreferences.Core.Preferences.MerchantKeySecret.getValue(),
-        developerId: config.developerId || customPreferences.Core.Preferences.DeveloperId.getValue(),
         CommerceIndicator: config.CommerceIndicator || customPreferences.Core.Preferences.CommerceIndicator.getValue(),
+
+        // Meta Key
+        metaKeyEnabled: config.metaKeyEnabled || customPreferences.Core.Preferences.MetaKeyEnabled.getValue(),
+        metaKeyMerchantId: config.metaKeyMerchantId || customPreferences.Core.Preferences.MetaKeyMerchantId.getValue(),
+
 
         // Delivery address verification
         davEnabled: config.davEnabled || customPreferences.DeliveryAddressVerification.Preferences.DAVEnabled.getValue(),
@@ -91,20 +92,21 @@ function getConfig(config) {
             route: 'CheckoutShippingServices-SubmitShipping'
         },
         {
-            route: 'CheckoutServices-GetGooglePayToken'
-        },
-        {
-            route: 'CheckoutServices-SubmitPaymentGP'
-        },
-        {
             route: 'CheckoutServices-SubmitPayment'
+        },
+        {
+            // Non-UC place-order path: SFRA CheckoutServices-PlaceOrder recalculates the
+            // basket (calculateTotals) right before createOrder/handlePayments. Without this
+            // route the recalc falls back to SFCC default tax, so the order, the authorization
+            // request, the payer-auth request, and the confirmation page all use the wrong tax.
+            // (UC PlaceOrderDirect is unaffected — it reconciles from the transient-token amount.)
+            route: 'CheckoutServices-PlaceOrder'
         }
         ],
         taxCookieId: '_taxvalue',
        
         // DecisionManager
         fmeDmEnabled: config.fmeDmEnabled || customPreferences.DecisionManager.Preferences.DecisionManagerEnabled.getValue(),
-        fmeDmConversionDetailReportLookbackTime: config.ConversionDetailReportLookbackTime || customPreferences.DecisionManager.Preferences.ConversionDetailReportLookbackTime.getValue(),
 
         // Device Fingerprint
         deviceFingerprintEnabled: config.deviceFingerprintEnabled || customPreferences.DeviceFingerprint.Preferences.DeviceFingerprintEnabled.getValue(),
@@ -118,30 +120,40 @@ function getConfig(config) {
         payerAuthenticationEnabled: config.payerAuthenticationEnabled || customPreferences.PayerAuthentication.Preferences.EnablePayerAuthentication.getValue(),
         isSCAEnabled: config.isSCAEnabled || customPreferences.PayerAuthentication.Preferences.IsSCAEnabled.getValue(),
 
-        // GooglePay
-        googlePayEnabled: config.googlePayEnabled || customPreferences.GooglePay.Preferences.EnableGooglePay.getValue(),
-        googlePayMerchantId: config.googlePayMerchantId || customPreferences.GooglePay.Preferences.GooglePayMerchantId.getValue(),
-        enableGooglePayOnMiniCart: config.enableGooglePayOnMiniCart || customPreferences.GooglePay.Preferences.EnableGooglePayOnMiniCart.getValue(),
-        googlePayEnvironment: config.googlePayEnvironment || customPreferences.GooglePay.Preferences.GooglePayEnvironment.getValue(),
-        enableGooglePayOnCart: config.enableGooglePayOnCart || customPreferences.GooglePay.Preferences.EnableGooglePayOnCart.getValue(),
-
         //MLE
-        mleEnabled: config.mleEnabled || customPreferences.MLE.Preferences.EnableMLE.getValue(),
-        mleCertificateSerialNumber: config.mleCertificateSerialNumber || customPreferences.MLE.Preferences.MLECertificateSerialNumber.getValue(),
-        mleCertificateAlias: config.mleCertificateAlias || customPreferences.MLE.Preferences.MLECertificateAlias.getValue(),
+        requestMleCertificateAlias: config.requestMleCertificateAlias || customPreferences.MLE.Preferences.RequestMLECertificateAlias.getValue(),
+        responseMlePrivateKeyAlias: config.responseMlePrivateKeyAlias ||customPreferences.MLE.Preferences.ResponseMLEPrivateKeyAlias.getValue(),
+        // Master MLE switch, gating BOTH request and response encryption. Off unless explicitly
+        // enabled, so an unset preference (an instance whose metadata predates this field) is
+        // treated the same as unticked.
+        //
+        // Coerced via String(): getValue() returns the raw site-preference value, which on this
+        // engine can be a Java-backed Boolean. Those are ALWAYS truthy in JavaScript, so a plain
+        // `||`/`&&` on the raw value would read an unticked checkbox as enabled.
+        mleEnabled: typeof config.mleEnabled === 'boolean'
+            ? config.mleEnabled
+            : String(customPreferences.MLE.Preferences.MLEEnabled.getValue()) === 'true',
+        // Single-file MLE: when set, the .p12 in IMPEX supplies the request-MLE certificate and
+        // its key id (see scripts/mle/p12Reader.js). Response MLE is not affected — it is gated
+        // on responseMlePrivateKeyAlias alone.
+        requestMleP12ImpexPath: config.requestMleP12ImpexPath || customPreferences.MLE.Preferences.RequestMLEP12ImpexPath.getValue(),
 
         //SecureIntegrationConfiguration
         secureIntegrationMethod: secureIntegrationMethod,
         UnifiedCheckoutPaymentAcceptanceLocation: config.unifiedCheckoutPaymentAcceptanceLocation || customPreferences.SecureIntegrationConfiguration.Preferences.UnifiedCheckoutPaymentAcceptanceLocation.getValue(),
-        allowedCardNetworks: config.allowedCardNetworks || customPreferences.SecureIntegrationConfiguration.Preferences.AllowedCardNetworks.getValue(),
-        digitalPaymentMethods: config.digitalPaymentMethods || customPreferences.SecureIntegrationConfiguration.Preferences.DigitalPaymentMethods.getValue(),
-        eCheckEnabledForUnifiedCheckout: config.eCheckEnabledForUnifiedCheckout || customPreferences.SecureIntegrationConfiguration.Preferences.ECheckEnabledforUnifiedCheckout.getValue(),
         unifiedCheckoutLabel: config.unifiedCheckoutLabel || customPreferences.SecureIntegrationConfiguration.Preferences.CheckoutLabelforUnifiedCheckout.getValue(),
-        minicartEnabled: config.VisaAcceptance_UnifiedCheckout_Cart_Minicart || customPreferences.SecureIntegrationConfiguration.Preferences.VisaAcceptance_UnifiedCheckout_Cart_Minicart.getValue(),
         cardTransactionType: config.cardTransactionType || customPreferences.SecureIntegrationConfiguration.Preferences.CardTransactionType.getValue(),
+        unifiedCheckoutExpressPay: typeof config.unifiedCheckoutExpressPay === 'boolean' ? config.unifiedCheckoutExpressPay : customPreferences.SecureIntegrationConfiguration.Preferences.UnifiedCheckoutExpressPay.getValue(),
+        unifiedCheckoutClientVersion: config.unifiedCheckoutClientVersion || customPreferences.SecureIntegrationConfiguration.Preferences.UnifiedCheckoutClientVersion.getValue(),
+        unifiedCheckoutAllowedCardPrefix: config.unifiedCheckoutAllowedCardPrefix || customPreferences.SecureIntegrationConfiguration.Preferences.UnifiedCheckoutAllowedCardPrefix.getValue(),
 
-        flexMicroformEnabled: secureIntegrationMethod == 'Microform',
         unifiedCheckoutEnabled: secureIntegrationMethod == 'Unified_Checkout',
+        // None = any selection other than Unified Checkout (the explicit "Salesforce Default
+        // Credit Card Payment Acceptance" enum value, or a blank/legacy preference). The
+        // cartridge falls back to SFRA's native card form path with the cartridge handling
+        // auth / DM / Payer Auth / TMS in the back-end. Settings for this flow live in the
+        // VisaAcceptance_SalesforceDefaultAcceptance_Configuration BM group.
+        noneIntegrationEnabled: secureIntegrationMethod !== 'Unified_Checkout',
     };
 }
 module.exports = getConfig();

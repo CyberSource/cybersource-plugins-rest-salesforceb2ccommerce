@@ -14,4 +14,5 @@ $(document).ready(function () {
         $('.saved-payment-instrument').removeClass('selected-payment');
         $(this).addClass('selected-payment');
     });
+    require('./checkout/savedCardRefresh').init();
 });

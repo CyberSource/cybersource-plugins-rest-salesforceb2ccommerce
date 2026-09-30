@@ -1,5 +1,4 @@
 <isset name="isCartridgeEnabled" value="${require('*/cartridge/configuration/index').cartridgeEnabled}" scope="page" />
-<isset name="googlePayEnabled" value="${require('*/cartridge/configuration/index').googlePayEnabled}" scope="page" />
 
 <isloop items="${pdict.order.billing.payment.applicablePaymentMethods}" var="paymentOption" status="loopSate">
     <isif condition="${paymentOption.ID === 'CREDIT_CARD'}">
@@ -8,12 +7,66 @@
     <isif condition="${paymentOption.ID === 'DW_APPLE_PAY' && isCartridgeEnabled}">
         <isinclude template="checkout/billing/paymentOptions/applePayContent" />
     </isif>
-    <isif condition="${paymentOption.ID === 'DW_GOOGLE_PAY' && isCartridgeEnabled}">
-        <isset name="isGooglePayEnabled" value="${googlePayEnabled}"
-            scope="page" />
-        <isif condition="${isGooglePayEnabled}">
-            <isinclude template="checkout/billing/paymentOptions/googlePayContent" />
-        </isif>
-    </isif>
 </isloop>
+
+<iscomment>
+    Early Payer Authentication host.
+
+    Rendered once, outside the new-card / saved-card conditionals, so a single container serves
+    both branches. Carries the endpoint URLs, a CSRF pair and the enabled card types for the
+    client engine and trigger; its mere presence is the feature switch those scripts test.
+
+    isEarlyPayerAuthApplicable(null) answers "is the 3DS mode switched on at all" and excludes
+    Unified Checkout. It must be used in preference to configObject.payerAuthenticationEnabled,
+    which reads an enum-of-string preference and so is an always-truthy EnumValue even when the
+    mode is No. The per-card-type decision then happens server-side on each setup request.
+</iscomment>
+<isscript>
+    var earlyPaConfig = require('*/cartridge/configuration/index');
+    var payerAuthHelper = require('*/cartridge/scripts/http/payerAuthentication');
+
+    // isEarlyPayerAuthApplicable is only exported while the cartridge is enabled, so check that
+    // first - the module exports an empty object otherwise.
+    var isEarlyPayerAuthEnabled = earlyPaConfig.cartridgeEnabled
+        && payerAuthHelper.isEarlyPayerAuthApplicable
+        && payerAuthHelper.isEarlyPayerAuthApplicable(null);
+
+    var earlyPaCsrfName = '';
+    var earlyPaCsrfToken = '';
+    var enabledCardTypes = '';
+
+    if (isEarlyPayerAuthEnabled) {
+        var CSRFProtection = require('dw/web/CSRFProtection');
+        earlyPaCsrfName = CSRFProtection.getTokenName();
+        earlyPaCsrfToken = CSRFProtection.generateToken();
+
+        var applicableCards = pdict.order.billing.payment.applicablePaymentCards;
+        if (applicableCards) {
+            var cardTypeNames = [];
+            for (var cardIndex = 0; cardIndex < applicableCards.length; cardIndex += 1) {
+                cardTypeNames.push(applicableCards[cardIndex].cardType);
+            }
+            enabledCardTypes = cardTypeNames.join(',');
+        }
+    }
+</isscript>
+<isif condition="${isEarlyPayerAuthEnabled}">
+    <div id="cybs-early-pa-host"
+         style="display: none"
+         data-setup-url="${URLUtils.url('PayerAuthEarlySetup-PayerAuthSetupData').toString()}"
+         data-save-device-url="${URLUtils.url('PayerAuthEarlySetup-SaveDeviceData').toString()}"
+         data-clear-url="${URLUtils.url('PayerAuthEarlySetup-ClearPayerAuthSetup').toString()}"
+         data-csrf-name="${earlyPaCsrfName}"
+         data-csrf-token="${earlyPaCsrfToken}"
+         data-enabled-card-types="${enabledCardTypes}"></div>
+
+    <iscomment>
+        Loaded synchronously and in this order: the trigger needs both jQuery and the engine
+        global to already exist. These two files are copied to static verbatim rather than
+        webpack-bundled, so they must stay plain browser JS with no require().
+    </iscomment>
+    <script src="${URLUtils.staticURL('/custom/lib/jquery/jquery-3.7.1.min.js')}"></script>
+    <script src="${URLUtils.staticURL('/custom/earlyPayerAuthEngine.js')}"></script>
+    <script src="${URLUtils.staticURL('/custom/earlyPayerAuthTrigger.js')}"></script>
+</isif>
 

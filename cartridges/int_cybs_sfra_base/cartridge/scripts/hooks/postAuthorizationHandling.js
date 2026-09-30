@@ -25,6 +25,8 @@ function postAuthorization(handlePaymentResult, order, options) { // eslint-disa
 
     // Check if payer authentication setup is required
     if (handlePaymentResult.performPayerAuthSetup) {
+        // eslint-disable-next-line no-undef
+        session.privacy.currentOrderNo = order.orderNo;
         return {
             error: false,
             orderID: order.orderNo,

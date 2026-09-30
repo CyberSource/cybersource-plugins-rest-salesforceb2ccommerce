@@ -1,0 +1,5 @@
+<div class="alt-payment-method">
+    <isif condition="${!empty(payment.paymentDetails)}">
+        <span>${payment.paymentDetails}</span>
+    </isif>
+</div>

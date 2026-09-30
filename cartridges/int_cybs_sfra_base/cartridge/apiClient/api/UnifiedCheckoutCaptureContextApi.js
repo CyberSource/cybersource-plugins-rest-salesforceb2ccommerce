@@ -87,11 +87,12 @@
       var contentTypes = ['application/json;charset=utf-8'];
       var accepts = ['application/jwt'];
       var returnType = 'String';
+      var isMLESupportedByCybsForApi = true;
 
       return this.apiClient.callApi(
-        '/up/v1/capture-contexts', 'POST',
+        '/uc/v1/sessions', 'POST',
         pathParams, queryParams, headerParams, formParams, postBody,
-        authNames, contentTypes, accepts, returnType, callback
+        authNames, contentTypes, accepts, returnType, callback, isMLESupportedByCybsForApi
       );
     }
   };

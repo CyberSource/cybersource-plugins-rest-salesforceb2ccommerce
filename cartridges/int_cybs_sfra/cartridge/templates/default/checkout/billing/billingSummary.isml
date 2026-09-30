@@ -1,0 +1,34 @@
+<iscomment>
+    Overrides app_storefront_base/checkout/billing/billingSummary.isml.
+
+    Minicart Venmo (and other e-wallet) orders can have no email/phone: the UC
+    getPaymentDetails response carries neither, and guest shoppers have no profile
+    to fall back to. The base template prints these unconditionally, so an absent
+    value renders as the literal "null" on the order confirmation page. Guard both
+    so an empty / null / "null" value renders as nothing instead.
+</iscomment>
+<span class="summary-section-label billing-addr-label">${Resource.msg('label.order.billing.address', 'confirmation', null)}</span><br/>
+<isif condition="${pdict.order.billing.billingAddress.address !== null}">
+    <isset name="address" value="${pdict.order.billing.billingAddress.address}" scope="page"/>
+    <iselse>
+    <isset name="address" value="{}" scope="page"/>
+</isif>
+
+<div class="summary-details billing">
+     <isinclude template="checkout/addressSummary" />
+    <isif condition="${!empty(pdict.order.orderEmail) && pdict.order.orderEmail !== 'null'}">
+        <span class="order-summary-email">${pdict.order.orderEmail}</span>
+        <br/>
+    </isif>
+    <isif condition="${pdict.order.billing.billingAddress.address !== null && !empty(pdict.order.billing.billingAddress.address.phone) && pdict.order.billing.billingAddress.address.phone !== 'null'}">
+        <span class="order-summary-phone">${pdict.order.billing.billingAddress.address.phone}</span>
+    <iselse>
+        <span class="order-summary-phone"></span>
+    </isif>
+</div>
+
+<!--- Payment information --->
+<div class="summary-details">
+    <span class="summary-section-label payment-info-label">${Resource.msg('label.order.payment.info', 'confirmation', null)}</span><br/>
+    <isinclude template="checkout/billing/paymentOptions/paymentOptionsSummary" />
+</div>

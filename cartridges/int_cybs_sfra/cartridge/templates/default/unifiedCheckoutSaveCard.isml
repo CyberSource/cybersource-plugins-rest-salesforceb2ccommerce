@@ -1,0 +1,60 @@
+<iscontent type="text/html" charset="UTF-8" compact="true"/>
+<iscomment>
+    UC v1 Save Card Template
+    Used for My Account "Add Payment" flow with completeMandate.type = 'SAVE_CARD'
+    UC widget collects card + billing address (billingType: 'FULL')
+</iscomment>
+
+<isset name="UnifiedCheckoutPaymentAcceptanceLocation" value="${require('*/cartridge/configuration/index').UnifiedCheckoutPaymentAcceptanceLocation}" scope="page" />
+
+<iscomment>Load jQuery if not already loaded</iscomment>
+<script src="${URLUtils.staticURL('/custom/lib/jquery/jquery-3.7.1.min.js')}" type="text/javascript"></script>
+
+<div class="unified-checkout-container uc-save-card">
+    <div class="row">
+        <div class="col-12">
+            <div id="unified-checkout-container" class="uc-container">
+                <iscomment>UC Save Card widget will be rendered here</iscomment>
+                <div id="buttonPaymentListContainer" class="payment-selection-container"></div>
+                <div id="embeddedPaymentContainer" class="payment-screen-container"></div>
+            </div>
+            <iscomment>Error display for server-side failures</iscomment>
+            <isif condition="${pdict.UcCaptureContext == null}">
+                <isset name="ucErrorClass" value="${pdict.serverError ? 'alert alert-danger' : 'alert alert-danger d-none'}" scope="page" />
+                <noscript>
+                    <div class="alert alert-danger">${Resource.msg('uc.tokenerror','payments',null)}</div>
+                </noscript>
+                <div id="uc-server-error" class="${ucErrorClass}">
+                    ${Resource.msg('uc.tokenerror','payments',null)}
+                </div>
+            </isif>
+        </div>
+    </div>
+</div>
+
+<isif condition="${pdict.UcCaptureContext != null}">
+    <isset name="ucCaptureContext" value="${pdict.UcCaptureContext}" scope="page" />
+    <input type="hidden" value="${ucCaptureContext}" name="ucCaptureContext" id="ucCaptureContext" />
+    <input type="hidden" value="${UnifiedCheckoutPaymentAcceptanceLocation}" name="unifiedCheckoutPaymentAcceptanceLocation" id="unifiedCheckoutPaymentAcceptanceLocation" />
+    <input type="hidden" value="${pdict.clientLibrary}" name="uc-client-library" id="uc-client-library" />
+    <input type="hidden" value="${pdict.clientLibraryIntegrity}" name="uc-client-library-integrity" id="uc-client-library-integrity" />
+</isif>
+
+<iscomment>Load UC SDK script</iscomment>
+<isif condition="${pdict.clientLibrary != null}">
+    <script src="${pdict.clientLibrary}" integrity="${pdict.clientLibraryIntegrity}" crossorigin="anonymous"></script>
+</isif>
+
+<iscomment>Load unifiedCheckout.js to handle widget initialization</iscomment>
+<script src="${URLUtils.staticURL('/custom/unifiedCheckout.js')}" type="text/javascript"></script>
+
+<iscomment>Initialize UC Save Card on page load</iscomment>
+<script type="text/javascript">
+    $(document).ready(function() {
+        if (typeof unifiedCheckout !== 'undefined' && unifiedCheckout.isSaveCardPage && unifiedCheckout.isSaveCardPage()) {
+            console.log('Initializing UC Save Card from template...');
+            unifiedCheckout.initSaveCard();
+            unifiedCheckout.bindSaveCardEvents();
+        }
+    });
+</script>

@@ -180,7 +180,6 @@ function buildRequestFromBasket(basket, referenceCode) {
     requestPayload.clientReferenceInformation = {
         code: referenceCode,
         partner: {
-            developerId: configObject.developerId,
             solutionId: configObject.solutionId
         }
     };

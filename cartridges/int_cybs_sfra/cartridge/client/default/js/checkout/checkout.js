@@ -148,6 +148,45 @@ $('button[value="submit-payment"]').on('click', function () {
     $('.payerAuthError').hide();
 });
 
+// Tracks whether the place-order veil is up, so the wait-for-DDC gate and handlePlaceOrder can
+// each ask for it without stacking two veils on top of each other.
+var placeOrderSpinnerShown = false;
+
+/**
+ * Page-level spinner for the final Place Order click. This file IS webpack-bundled, so SFRA's
+ * $.spinner plugin is normally registered - but guard anyway, since a missing plugin here would
+ * throw and abort order placement outright.
+ * @returns {Object} an object with start and stop methods
+ */
+function placeOrderSpinner() {
+    if (typeof $.spinner === 'function') {
+        return $.spinner();
+    }
+    return { start: function () {}, stop: function () {} };
+}
+
+/**
+ * Shows the Place Order spinner. Safe to call more than once.
+ */
+function startPlaceOrderSpinner() {
+    if (placeOrderSpinnerShown) {
+        return;
+    }
+    placeOrderSpinnerShown = true;
+    placeOrderSpinner().start();
+}
+
+/**
+ * Hides the Place Order spinner. Safe to call when it is not showing.
+ */
+function stopPlaceOrderSpinner() {
+    if (!placeOrderSpinnerShown) {
+        return;
+    }
+    placeOrderSpinnerShown = false;
+    placeOrderSpinner().stop();
+}
+
 /**
  * *
  * @returns {*} *
@@ -155,6 +194,9 @@ $('button[value="submit-payment"]').on('click', function () {
 function handlePlaceOrder() {
     var defer = $.Deferred(); // eslint-disable-line
     $('body').trigger('checkout:disableButton', '.next-step-button button');
+    // Order placement can take several seconds and, when payer auth applies, is followed by a
+    // full page POST to the enrollment flow. Keep the shopper covered for all of it.
+    startPlaceOrderSpinner();
     $.ajax({
         url: $('.place-order').data('action'),
         method: 'POST',
@@ -163,6 +205,7 @@ function handlePlaceOrder() {
             $('body').trigger('checkout:enableButton', '.next-step-button button');
             if (data.error) {
                 if (data.cartError) {
+                    // Navigating away - leave the spinner up so the page does not flash as idle.
                     window.location.href = data.redirectUrl;
                     defer.reject();
                 } else {
@@ -170,6 +213,8 @@ function handlePlaceOrder() {
                         window.location.href = data.redirectUrl;
                         defer.reject();
                     } else {
+                        // Shopper stays here to fix something, so give the page back to them.
+                        stopPlaceOrderSpinner();
                         defer.reject(data);
                     }
                 }
@@ -178,6 +223,7 @@ function handlePlaceOrder() {
                 var sanitizedContinueUrl = sanitizeUrl(data.continueUrl);
                 if (!sanitizedContinueUrl) {
                     console.error('Invalid continueUrl');
+                    stopPlaceOrderSpinner();
                     defer.reject({ errorMessage: 'Invalid redirect URL' });
                     return;
                 }
@@ -228,28 +274,73 @@ function handlePlaceOrder() {
         error: function (data) {
             // enable the placeOrder button here
             $('body').trigger('checkout:enableButton', $('.next-step-button button'));
+            stopPlaceOrderSpinner();
             defer.reject(data);
         }
     });
     return defer;
 }
 
+/**
+ * Shows the errors raised by a rejected place-order attempt.
+ * @param {Object} data - the rejection payload
+ */
+function showPlaceOrderFailure(data) {
+    if (data && data.errorMessage) {
+        $('.error-message').show();
+        $('.error-message-text').text(data.errorMessage);
+    } else if (data) {
+        $('.error-message').show();
+        $('.error-message-text').text(JSON.stringify(data));
+    }
+}
+
 $('#checkout-main').on('click', '.next-step-button button', function (event) {
     var step = $(this).attr('value');
+    var engine = window.CybsEarlyPaEngine;
+
+    // Early Payer Auth setup failed for this card, so there is no usable authentication
+    // reference. Block the step rather than let the shopper reach Place Order and fail there.
+    // The disabled attribute alone is not enough - SFRA re-enables .next-step-button button
+    // wholesale after every stage AJAX - so the click itself has to be stopped.
+    //
+    // place-order is covered too: a failure can only normally happen on the payment step, but if
+    // one is somehow outstanding here, engine.isRunning() is already false and the wait below
+    // would let the order through.
+    if ((step === 'submit-payment' || step === 'place-order') && engine && engine.isFailed()) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        $('.error-message').show();
+        return;
+    }
+
     if (step === 'place-order') {
         event.preventDefault();
         event.stopImmediatePropagation();
-        var promise = handlePlaceOrder();
-        promise.fail(function (data) {
-            // show errors
-            if (data && data.errorMessage) {
-                $('.error-message').show();
-                $('.error-message-text').text(data.errorMessage);
-            } else if (data) {
-                $('.error-message').show();
-                $('.error-message-text').text(JSON.stringify(data));
-            }
-        });
+
+        // When setup ran at card-entry time, device data collection is normally long finished by
+        // now. It may not be if the shopper moved through checkout quickly, so give it a bounded
+        // wait before placing the order. An idle engine (no early setup ran, or the shopper beat
+        // the debounce) resolves immediately and the order-time setup handles payer auth exactly
+        // as it did before this feature existed.
+        if (engine && engine.isRunning()) {
+            $('body').trigger('checkout:disableButton', '.next-step-button button');
+            // Cover the wait as well as the order call itself, so the shopper never sees an
+            // unexplained pause after clicking. handlePlaceOrder reuses this same veil.
+            startPlaceOrderSpinner();
+            engine.whenReady(function (proceed) {
+                $('body').trigger('checkout:enableButton', '.next-step-button button');
+                if (!proceed) {
+                    stopPlaceOrderSpinner();
+                    $('.error-message').show();
+                    return;
+                }
+                handlePlaceOrder().fail(showPlaceOrderFailure);
+            });
+            return;
+        }
+
+        handlePlaceOrder().fail(showPlaceOrderFailure);
     }
 });
 $('#applePayPaymentOptionLink').on('click', function (event) {

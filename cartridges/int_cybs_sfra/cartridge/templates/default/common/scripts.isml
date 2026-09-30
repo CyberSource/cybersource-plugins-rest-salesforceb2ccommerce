@@ -7,33 +7,3 @@
 </isloop>
 
 <script src="${URLUtils.staticURL('/custom/lib/jquery/jquery-3.7.1.min.js')}" type="text/javascript"></script>
-
-<script src="https://pay.google.com/gp/p/js/pay.js" type="text/javascript"></script>
-
-<isset name="googlePayMerchantIdPref" value="${require('*/cartridge/configuration/index').googlePayMerchantId}" scope="page" />
-<isset name="merchantIDPref" value="${require('*/cartridge/configuration/index').merchantID}" scope="page" />
-<isset name="googlePayEnabled" value="${require('*/cartridge/configuration/index').googlePayEnabled}" scope="page" />
-<isset name="googlePayEnvironmentPref" value="${require('*/cartridge/configuration/index').googlePayEnvironment}" scope="page" />
-<isset name="countryCode" value="${require('dw/util/Locale').getLocale(request.getLocale()).getCountry()}" scope="page" />
-
-<input type="hidden" name="googlePayMerchantID" id="googlePayMerchantID" value="${googlePayMerchantIdPref}"/>
-<input type="hidden" name="googlePaygatewayMerchantId" id="googlePaygatewayMerchantId" value="${merchantIDPref}"/>
-<input type="hidden" name="isGooglePayEnabled" id="isGooglePayEnabled" value="${googlePayEnabled}"/>
-<input type="hidden" name="googlePayEnvironment" id="googlePayEnvironment" value="${googlePayEnvironmentPref}"/>
-<input type="hidden" name="gPayPaymentMethodEnabled" id="gPayPaymentMethodEnabled" value="${dw.order.PaymentMgr.getPaymentMethod('DW_GOOGLE_PAY').isActive()}"/>
-
-<script>
-
-
-	 var   googlePayVariables = {
-                        currencyCode: "${session.getCurrency().getCurrencyCode()}",
-                        countryCode: "${countryCode}",
-                        totalPriceStatus: 'FINAL',
-                        sessionCallBack : "${dw.web.URLUtils.url('CheckoutServices-SubmitPaymentGP')}",
-                        submitURL : "${dw.web.URLUtils.https('Checkout-Begin', 'stage', 'placeOrder')}",
-                        getCartTotalURL : "${dw.web.URLUtils.url('CheckoutServices-GetCartTotal')}"
-                    }
-
- window.googlepayval = googlePayVariables;
-
-</script>
