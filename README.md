@@ -1,6 +1,6 @@
-### **Cybersource Storefront Reference Architecture Quick Launch Cartridge**
+### **Visa Acceptance Solutions B2C Commerce Cartridge**
 
-- **Description:** Cybersource, a Visa solution, is the only global, modular payment management platform built on secure Visa infrastructure with the payment reach and fraud insights of a massive $500B+ global processing network. You can find out more about what Cybersource does [here](https://www.cybersource.com/en-gb.html)
+- **Description:** The Visa Acceptance Solutions cartridge for Salesforce B2C Commerce enables merchants to connect their Salesforce store to the Visa Acceptance Platform for payment processing.  You can offer your customer a range of secure payment options including card payments, Apple Pay, Google Pay, Click to Pay, PayPal and other digital and alternative payment methods.
 - **Categories:** Payment Processing, Fraud Detection, Address Validation, Tax Computation
 - **Version:** 2.0.0
 - **Last Certification Date:** June 2026
